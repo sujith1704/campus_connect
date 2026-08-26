@@ -72,24 +72,15 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-
+// Connect to MongoDB
 const connectWithRetry = async () => {
   try {
     await connectDB();
   } catch (error) {
-    console.error('MongoDB is unavailable. Retrying connection in 5 seconds...');
-    setTimeout(connectWithRetry, 5000);
+    console.error('MongoDB is unavailable:', error.message);
   }
 };
 
-// Start Express HTTP Server immediately so API & CORS are always active
-app.listen(PORT, () => {
-  console.log(`=================================================`);
-  console.log(`🚀 CampusConnect Backend Server listening on port ${PORT}`);
-  console.log(`📡 Base API URL: http://localhost:${PORT}/api`);
-  console.log(`=================================================`);
-});
-
-// Keep trying so authentication starts working when MongoDB becomes available.
 connectWithRetry();
+
+module.exports = app;
