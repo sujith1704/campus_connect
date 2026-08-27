@@ -4,6 +4,7 @@ import API from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import EventCard from '../components/EventCard';
 import { Search, Filter, Calendar } from 'lucide-react';
+import { isPastEvent } from '../utils/date';
 
 const categories = ['All', 'Technical', 'Cultural', 'Sports', 'Workshop', 'Gaming', 'Seminar', 'Other'];
 
@@ -48,13 +49,15 @@ const EventsPage = () => {
     }
   };
 
-  // Local text search filter
+  // Local text search filter + hide expired events
   const filteredEvents = events.filter((event) => {
     const matchesSearch =
       event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.venue.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
+    // Only show events whose date/time is still upcoming
+    const notExpired = !isPastEvent(event);
+    return matchesSearch && notExpired;
   });
 
   return (

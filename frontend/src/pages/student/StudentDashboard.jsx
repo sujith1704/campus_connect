@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { DataContext } from '../../context/DataContext';
 import { Ticket, Calendar, Clock, MapPin, CheckCircle } from 'lucide-react';
-import { formatDate } from '../../utils/date';
+import { formatDate, isPastEvent } from '../../utils/date';
 import TicketPassModal from '../../components/TicketPassModal';
 
 const StudentDashboard = () => {
@@ -40,8 +40,14 @@ const StudentDashboard = () => {
     }
   }, [studentRegistrations]);
 
+  // All confirmed registrations on non-deleted events (for the Total count)
   const activeRegistrations = registrations.filter(
     (r) => r.status === 'confirmed' && !r.event?.isDeleted
+  );
+
+  // Only upcoming (future date/time) confirmed registrations
+  const upcomingRegistrations = activeRegistrations.filter(
+    (r) => !isPastEvent(r.event)
   );
 
   return (
@@ -73,7 +79,7 @@ const StudentDashboard = () => {
             <Calendar size={26} />
           </div>
           <div>
-            <div className="stat-value">{loading ? '—' : activeRegistrations.length}</div>
+            <div className="stat-value">{loading ? '—' : upcomingRegistrations.length}</div>
             <div className="stat-label">Upcoming Attending Events</div>
           </div>
         </div>
