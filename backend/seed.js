@@ -26,7 +26,7 @@ const seedData = async () => {
 
     // Create Default Users
     const organizer = await User.create({
-      name: 'Dr. Sarah Jenkins',
+      name: 'sujith',
       email: 'organizer@campusconnect.com',
       password: 'organizerpass',
       role: 'organizer',

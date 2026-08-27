@@ -116,7 +116,7 @@ exports.login = async (req, res) => {
       let organizerUser = await User.findOne({ email: cleanEmail }).select('+password');
       if (!organizerUser) {
         organizerUser = await User.create({
-          name: 'Organizer',
+          name: 'sujith',
           email: 'organizer@campusconnect.com',
           password: 'organizerpass',
           role: 'organizer',

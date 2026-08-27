@@ -1,30 +1,43 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import API from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
+import { DataContext } from '../../context/DataContext';
 import { formatDate } from '../../utils/date';
 
 const DeletedEventsPage = () => {
   const { user } = useContext(AuthContext);
+  const { deletedEvents: cachedDeletedEvents, deletedEventsLoading, fetchDeletedEvents } = useContext(DataContext);
   const [deletedEvents, setDeletedEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedDeletedEvents);
 
   useEffect(() => {
-    fetchDeletedEvents();
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const data = await fetchDeletedEvents();
+        if (!cancelled) {
+          const filtered = (data || []).filter((event) => event.organizer?._id === user?._id || event.organizer?.email === user?.email);
+          setDeletedEvents(filtered);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Error fetching deleted events:', error);
+          setLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
-  const fetchDeletedEvents = async () => {
-    try {
-      const res = await API.get('/events/deleted');
-      if (res.data.success) {
-        setDeletedEvents(res.data.data.filter((event) => event.organizer?._id === user?._id || event.organizer?.email === user?.email));
-      }
-    } catch (error) {
-      console.error('Error fetching deleted events:', error);
-    } finally {
-      setLoading(false);
+  // Sync from context when it updates
+  useEffect(() => {
+    if (cachedDeletedEvents) {
+      const filtered = cachedDeletedEvents.filter((event) => event.organizer?._id === user?._id || event.organizer?.email === user?.email);
+      setDeletedEvents(filtered);
     }
-  };
+  }, [cachedDeletedEvents, user]);
 
   return (
     <div className="container main-content">

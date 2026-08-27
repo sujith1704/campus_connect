@@ -1,35 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../services/api';
+import { DataContext } from '../../context/DataContext';
 import { PlusCircle, Edit3, Trash2, Users, AlertTriangle, X } from 'lucide-react';
 import { formatDate } from '../../utils/date';
 
 const ManageEventsPage = () => {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { organizerEvents, organizerEventsLoading, fetchOrganizerEvents, invalidateOrganizerEvents } = useContext(DataContext);
+  const [events, setEvents] = useState(organizerEvents || []);
+  const [loading, setLoading] = useState(!organizerEvents);
   const [deleteId, setDeleteId] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
 
   useEffect(() => {
-    fetchEvents();
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const data = await fetchOrganizerEvents();
+        if (!cancelled) {
+          setEvents(data || []);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Error loading organizer events:', error);
+          setMsg({ type: 'danger', text: error.response?.data?.message || 'Failed to load your events.' });
+          setLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
-  const fetchEvents = async () => {
-    try {
-      const res = await API.get('/events/organizer/my-events');
-      if (res.data.success) {
-        setEvents(res.data.data);
-      } else {
-        setMsg({ type: 'danger', text: res.data.message || 'Failed to load your events.' });
-      }
-    } catch (error) {
-      console.error('Error loading organizer events:', error);
-      setMsg({ type: 'danger', text: error.response?.data?.message || 'Failed to load your events.' });
-    } finally {
-      setLoading(false);
+  // Sync from context when it updates (e.g., cache hit from another page)
+  useEffect(() => {
+    if (organizerEvents) {
+      setEvents(organizerEvents);
     }
-  };
+  }, [organizerEvents]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -41,6 +51,7 @@ const ManageEventsPage = () => {
       if (res.data.success) {
         setMsg({ type: 'success', text: 'Event and associated registrations deleted successfully.' });
         setEvents((prev) => prev.filter((e) => e._id !== deleteId));
+        invalidateOrganizerEvents();
       }
     } catch (error) {
       setMsg({ type: 'danger', text: error.response?.data?.message || 'Failed to delete event.' });

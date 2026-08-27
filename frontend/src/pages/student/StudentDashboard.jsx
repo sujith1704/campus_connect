@@ -1,33 +1,44 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import API from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
+import { DataContext } from '../../context/DataContext';
 import { Ticket, Calendar, Clock, MapPin, CheckCircle } from 'lucide-react';
 import { formatDate } from '../../utils/date';
 import TicketPassModal from '../../components/TicketPassModal';
 
 const StudentDashboard = () => {
   const { user } = useContext(AuthContext);
-  const [registrations, setRegistrations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { studentRegistrations, studentRegistrationsLoading, fetchStudentRegistrations } = useContext(DataContext);
+  const [registrations, setRegistrations] = useState(studentRegistrations || []);
+  const [loading, setLoading] = useState(!studentRegistrations);
   const [selectedTicket, setSelectedTicket] = useState(null);
 
   useEffect(() => {
-    fetchMyRegistrations();
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const data = await fetchStudentRegistrations();
+        if (!cancelled) {
+          setRegistrations(data || []);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Error fetching registrations:', error);
+          setLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
-  const fetchMyRegistrations = async () => {
-    try {
-      const res = await API.get('/registrations/my-registrations');
-      if (res.data.success) {
-        setRegistrations(res.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching registrations:', error);
-    } finally {
-      setLoading(false);
+  // Sync from context when it updates
+  useEffect(() => {
+    if (studentRegistrations) {
+      setRegistrations(studentRegistrations);
     }
-  };
+  }, [studentRegistrations]);
 
   const activeRegistrations = registrations.filter(
     (r) => r.status === 'confirmed' && !r.event?.isDeleted
@@ -52,7 +63,7 @@ const StudentDashboard = () => {
             <Ticket size={26} />
           </div>
           <div>
-            <div className="stat-value">{activeRegistrations.length}</div>
+            <div className="stat-value">{loading ? '—' : activeRegistrations.length}</div>
             <div className="stat-label">Total Registered Events</div>
           </div>
         </div>
@@ -62,7 +73,7 @@ const StudentDashboard = () => {
             <Calendar size={26} />
           </div>
           <div>
-            <div className="stat-value">{activeRegistrations.length}</div>
+            <div className="stat-value">{loading ? '—' : activeRegistrations.length}</div>
             <div className="stat-label">Upcoming Attending Events</div>
           </div>
         </div>

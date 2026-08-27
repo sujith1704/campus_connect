@@ -1,30 +1,41 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import API from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
+import { DataContext } from '../../context/DataContext';
 import { formatDate } from '../../utils/date';
 
 const DeletedEventsPage = () => {
   const { user } = useContext(AuthContext);
+  const { deletedEvents: cachedDeletedEvents, deletedEventsLoading, fetchDeletedEvents } = useContext(DataContext);
   const [deletedEvents, setDeletedEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedDeletedEvents);
 
   useEffect(() => {
-    const fetchDeletedEvents = async () => {
+    let cancelled = false;
+    const load = async () => {
       try {
-        const res = await API.get('/events/deleted');
-        if (res.data.success) {
-          setDeletedEvents(res.data.data);
+        const data = await fetchDeletedEvents();
+        if (!cancelled) {
+          setDeletedEvents(data || []);
+          setLoading(false);
         }
       } catch (error) {
-        console.error('Error fetching deleted events:', error);
-      } finally {
-        setLoading(false);
+        if (!cancelled) {
+          console.error('Error fetching deleted events:', error);
+          setLoading(false);
+        }
       }
     };
-
-    fetchDeletedEvents();
+    load();
+    return () => { cancelled = true; };
   }, []);
+
+  // Sync from context when it updates
+  useEffect(() => {
+    if (cachedDeletedEvents) {
+      setDeletedEvents(cachedDeletedEvents);
+    }
+  }, [cachedDeletedEvents]);
 
   return (
     <div className="container main-content">

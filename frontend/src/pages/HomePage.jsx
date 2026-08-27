@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import API from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import OrganizerControlDesk from '../components/OrganizerControlDesk';
 import { Sparkles, Calendar, Users, Award, ShieldCheck, ArrowRight, Code, Music, Trophy, BookOpen, Gamepad2, Mic } from 'lucide-react';
@@ -14,7 +15,43 @@ const categoriesList = [
 ];
 
 const HomePage = () => {
-  const { user, isStudent, isOrganizer } = React.useContext(AuthContext);
+  const { user, isStudent, isOrganizer } = useContext(AuthContext);
+  const [stats, setStats] = useState({
+    eventsHosted: null,
+    activeRegistrations: null,
+    organizers: null,
+    verifiedEvents: 100,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchStats = async () => {
+      try {
+        const res = await API.get('/stats');
+        if (!cancelled && res.data) {
+          const data = res.data.data || res.data;
+          setStats({
+            eventsHosted: typeof data.eventsHosted === 'number' ? data.eventsHosted : 0,
+            activeRegistrations: typeof data.activeRegistrations === 'number' ? data.activeRegistrations : 0,
+            organizers: typeof data.organizers === 'number' ? data.organizers : 0,
+            verifiedEvents: 100,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching platform statistics:', error);
+      } finally {
+        if (!cancelled) {
+          setStatsLoading(false);
+        }
+      }
+    };
+
+    fetchStats();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (isOrganizer) {
     return (
@@ -77,7 +114,11 @@ const HomePage = () => {
               <Calendar size={28} />
             </div>
             <div>
-              <div className="stat-value">50+</div>
+              <div className="stat-value">
+                {statsLoading && stats.eventsHosted === null
+                  ? '—'
+                  : stats.eventsHosted}
+              </div>
               <div className="stat-label">College Events Hosted</div>
             </div>
           </div>
@@ -87,7 +128,11 @@ const HomePage = () => {
               <Users size={28} />
             </div>
             <div>
-              <div className="stat-value">1,200+</div>
+              <div className="stat-value">
+                {statsLoading && stats.activeRegistrations === null
+                  ? '—'
+                  : stats.activeRegistrations.toLocaleString()}
+              </div>
               <div className="stat-label">Active Student Registrations</div>
             </div>
           </div>
@@ -97,7 +142,11 @@ const HomePage = () => {
               <Award size={28} />
             </div>
             <div>
-              <div className="stat-value">25+</div>
+              <div className="stat-value">
+                {statsLoading && stats.organizers === null
+                  ? '—'
+                  : stats.organizers}
+              </div>
               <div className="stat-label">Clubs & Organizers</div>
             </div>
           </div>
