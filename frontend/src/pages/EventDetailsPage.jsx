@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import API from '../services/api';
 import { AuthContext } from '../context/AuthContext';
+import { DataContext } from '../context/DataContext';
 import { Calendar, Clock, MapPin, User, Users, CheckCircle, AlertTriangle, ArrowLeft, Ticket } from 'lucide-react';
 import { formatDate } from '../utils/date';
 
@@ -9,55 +10,81 @@ const EventDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated, isStudent } = useContext(AuthContext);
+  const { invalidateStudentRegistrations } = useContext(DataContext) || {};
 
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [isRegistered, setIsRegistered] = useState(false);
+  const [registrationStatus, setRegistrationStatus] = useState(
+    isAuthenticated && isStudent ? 'loading' : 'not_registered'
+  );
   const [registrationId, setRegistrationId] = useState(null);
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
-    fetchEventDetails();
-  }, [id]);
+    let isCancelled = false;
 
-  const fetchEventDetails = async () => {
-    try {
-      const res = await API.get(`/events/${id}`);
-      if (res.data.success) {
-        setEvent(res.data.data);
+    const loadEventAndRegistration = async () => {
+      setLoading(true);
+      setErrorMsg('');
 
-        // If student logged in, check if already registered
-        if (isAuthenticated && isStudent) {
-          checkUserRegistration();
+      if (isAuthenticated && isStudent) {
+        setRegistrationStatus('loading');
+      } else {
+        setRegistrationStatus('not_registered');
+      }
+
+      try {
+        const eventPromise = API.get(`/events/${id}`);
+        const regPromise = (isAuthenticated && isStudent)
+          ? API.get('/registrations/my-registrations').catch((err) => {
+              console.error('Error fetching registrations:', err);
+              return null;
+            })
+          : Promise.resolve(null);
+
+        const [eventRes, regRes] = await Promise.all([eventPromise, regPromise]);
+
+        if (isCancelled) return;
+
+        if (eventRes.data.success) {
+          setEvent(eventRes.data.data);
+        }
+
+        if (regRes && regRes.data && regRes.data.success) {
+          const found = regRes.data.data.find(
+            (reg) => (reg.event?._id === id || reg.event === id) && reg.status === 'confirmed'
+          );
+          if (found) {
+            setRegistrationStatus('registered');
+            setRegistrationId(found._id);
+          } else {
+            setRegistrationStatus('not_registered');
+            setRegistrationId(null);
+          }
+        } else {
+          setRegistrationStatus('not_registered');
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setErrorMsg('Failed to load event details.');
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
         }
       }
-    } catch (error) {
-      setErrorMsg('Failed to load event details.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const checkUserRegistration = async () => {
-    try {
-      const res = await API.get('/registrations/my-registrations');
-      if (res.data.success) {
-        const found = res.data.data.find(
-          (reg) => reg.event?._id === id && reg.status === 'confirmed'
-        );
-        if (found) {
-          setIsRegistered(true);
-          setRegistrationId(found._id);
-        }
-      }
-    } catch (error) {
-      console.error('Check registration error:', error);
-    }
-  };
+    loadEventAndRegistration();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [id, isAuthenticated, isStudent]);
 
   const handleCancelRegistration = async () => {
     if (!registrationId) return;
@@ -69,10 +96,13 @@ const EventDetailsPage = () => {
     try {
       const res = await API.delete(`/registrations/${registrationId}`);
       if (res.data.success) {
-        setIsRegistered(false);
+        setRegistrationStatus('not_registered');
         setRegistrationId(null);
         setShowCancelConfirmation(false);
         setSuccessMsg('Registration cancelled successfully.');
+        if (invalidateStudentRegistrations) {
+          invalidateStudentRegistrations();
+        }
         setEvent((prev) => ({
           ...prev,
           registeredCount: Math.max(0, (prev.registeredCount || 0) - 1),
@@ -109,8 +139,11 @@ const EventDetailsPage = () => {
       const res = await API.post(`/registrations/register/${id}`);
       if (res.data.success) {
         setSuccessMsg(res.data.message || 'Successfully registered for this event!');
-        setIsRegistered(true);
+        setRegistrationStatus('registered');
         setRegistrationId(res.data.data?._id || null);
+        if (invalidateStudentRegistrations) {
+          invalidateStudentRegistrations();
+        }
         // Refresh event data to show updated seats
         setEvent((prev) => ({
           ...prev,
@@ -257,7 +290,13 @@ const EventDetailsPage = () => {
                     </div>
                   )}
 
-                  {isRegistered ? (
+                  {registrationStatus === 'loading' ? (
+                    <div className="event-registration-content">
+                      <button className="btn btn-secondary btn-full btn-lg" disabled>
+                        Checking Registration Status...
+                      </button>
+                    </div>
+                  ) : registrationStatus === 'registered' ? (
                     <div className="event-registration-status">
                       <div className="event-registration-status-badge">
                         <CheckCircle size={24} /> Registered & Confirmed
