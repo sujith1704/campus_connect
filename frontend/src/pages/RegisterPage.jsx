@@ -115,7 +115,7 @@ const RegisterPage = () => {
               <GraduationCap size={28} />
             </div>
             <h1 className="auth-title">Create Account</h1>
-            <p className="auth-subtitle">Create your student account to discover college events</p>
+            <p className="auth-subtitle">Join CampusConnect as a Student</p>
           </div>
 
           {errorMsg && (
@@ -132,12 +132,12 @@ const RegisterPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} autoComplete="off">
             <div className="form-group">
               <label className="form-label">I am registering as a:</label>
               <button
                 type="button"
-                className="btn btn-primary"
+                className="btn btn-primary btn-full"
                 style={{ width: '100%', cursor: 'default' }}
               >
                 Student
@@ -152,6 +152,7 @@ const RegisterPage = () => {
                 placeholder="John Doe"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                autoComplete="off"
                 required
               />
             </div>
@@ -164,6 +165,7 @@ const RegisterPage = () => {
                 placeholder="john.doe@college.edu"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="off"
                 required
               />
             </div>
@@ -176,6 +178,7 @@ const RegisterPage = () => {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
                 required
               />
             </div>
@@ -188,6 +191,7 @@ const RegisterPage = () => {
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
                 required
               />
             </div>
