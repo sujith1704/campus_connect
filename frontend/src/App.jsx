@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AuthContext } from './context/AuthContext';
+import { DataProvider } from './context/DataContext';
 
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -175,7 +176,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <DataProvider>
+        <AppContent />
+      </DataProvider>
     </AuthProvider>
   );
 }

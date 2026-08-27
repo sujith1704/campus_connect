@@ -48,33 +48,29 @@ const AdminDashboard = () => {
   const fetchAdminData = async () => {
     setLoading(true);
     try {
-      // 1. Stats
-      const statsRes = await API.get('/admin/stats');
-      if (statsRes.data.success) {
-        setStats(statsRes.data.stats);
-      }
-
-      // 2. Users
-      const usersRes = await API.get('/admin/users');
-      if (usersRes.data.success) {
-        setUsers(usersRes.data.data);
-      }
-
-      // 3. Events (all status)
-      const eventsRes = await API.get('/events/organizer/my-events?scope=all');
-      if (eventsRes.data.success) {
-        setEvents(eventsRes.data.data);
-      }
-
-      // 4. Registrations
-      const regsRes = await API.get('/registrations/all');
-      if (regsRes.data.success) {
-        setRegistrations(regsRes.data.data);
-      }
+      const [statsRes, usersRes, eventsRes, regsRes] = await Promise.all([
+        API.get('/admin/stats'),
+        API.get('/admin/users'),
+        API.get('/events/organizer/my-events?scope=all'),
+        API.get('/registrations/all'),
+      ]);
+      if (statsRes.data.success) setStats(statsRes.data.stats);
+      if (usersRes.data.success) setUsers(usersRes.data.data);
+      if (eventsRes.data.success) setEvents(eventsRes.data.data);
+      if (regsRes.data.success) setRegistrations(regsRes.data.data);
     } catch (error) {
       console.error('Failed to load organizer panel data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const refreshStats = async () => {
+    try {
+      const statsRes = await API.get('/admin/stats');
+      if (statsRes.data.success) setStats(statsRes.data.stats);
+    } catch (error) {
+      console.error('Failed to refresh stats:', error);
     }
   };
 
@@ -87,7 +83,7 @@ const AdminDashboard = () => {
         setEvents((prev) =>
           prev.map((e) => (e._id === eventId ? { ...e, status } : e))
         );
-        fetchAdminData(); // Refresh stats
+        refreshStats();
       }
     } catch (error) {
       setMsg({ type: 'danger', text: 'Failed to update event status' });
@@ -102,7 +98,7 @@ const AdminDashboard = () => {
       if (res.data.success) {
         setMsg({ type: 'success', text: 'Event deleted successfully.' });
         setEvents((prev) => prev.filter((e) => e._id !== deleteEventId));
-        fetchAdminData();
+        refreshStats();
       }
     } catch (error) {
       setMsg({ type: 'danger', text: 'Failed to delete event.' });
@@ -119,7 +115,7 @@ const AdminDashboard = () => {
       if (res.data.success) {
         setMsg({ type: 'success', text: 'User removed from system.' });
         setUsers((prev) => prev.filter((u) => u._id !== deleteUserId));
-        fetchAdminData();
+        refreshStats();
       }
     } catch (error) {
       setMsg({ type: 'danger', text: error.response?.data?.message || 'Failed to delete user.' });

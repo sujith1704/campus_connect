@@ -1,26 +1,17 @@
-import React, { useState, useEffect, useContext } from 'react';
-import API from '../services/api';
+import React, { useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { DataContext } from '../context/DataContext';
 import { Calendar, Users, PlusCircle, Clock } from 'lucide-react';
 
 const OrganizerControlDesk = () => {
   const { user } = useContext(AuthContext);
-  const [events, setEvents] = useState([]);
+  const { organizerEvents, organizerEventsLoading, fetchOrganizerEvents } = useContext(DataContext);
 
   useEffect(() => {
     fetchOrganizerEvents();
   }, []);
 
-  const fetchOrganizerEvents = async () => {
-    try {
-      const res = await API.get('/events/organizer/my-events');
-      if (res.data.success) {
-        setEvents(res.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching organizer events:', error);
-    }
-  };
+  const events = organizerEvents || [];
 
   // Compute metrics
   const totalEvents = events.length;
@@ -61,7 +52,7 @@ const OrganizerControlDesk = () => {
             <Calendar size={26} />
           </div>
           <div>
-            <div className="stat-value">{totalEvents}</div>
+            <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : totalEvents}</div>
             <div className="stat-label">Total Events Created</div>
           </div>
         </div>
@@ -71,7 +62,7 @@ const OrganizerControlDesk = () => {
             <Users size={26} />
           </div>
           <div>
-            <div className="stat-value">{totalRegistrations}</div>
+            <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : totalRegistrations}</div>
             <div className="stat-label">Total Student Registrations</div>
           </div>
         </div>
@@ -81,7 +72,7 @@ const OrganizerControlDesk = () => {
             <Clock size={26} />
           </div>
           <div>
-            <div className="stat-value">{availableSeats}</div>
+            <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : availableSeats}</div>
             <div className="stat-label">Available Seats Left</div>
           </div>
         </div>
