@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
 import API from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import { Calendar, Users, PlusCircle, Clock } from 'lucide-react';
@@ -50,9 +49,9 @@ const OrganizerControlDesk = () => {
             Logged in as <strong style={{ color: '#ffffff' }}>{user?.name}</strong> • Publish, edit, and track student registrations.
           </p>
         </div>
-        <Link to="/organizer/create-event" className="btn btn-primary btn-lg">
+        <button type="button" className="btn btn-primary btn-lg" onClick={(e) => e.preventDefault()}>
           <PlusCircle size={20} /> Create New Event
-        </Link>
+        </button>
       </div>
 
       {/* Metrics Section */}
