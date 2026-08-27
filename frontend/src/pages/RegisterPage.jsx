@@ -1,13 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
 import { GraduationCap, UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const initialRole = searchParams.get('role') === 'organizer' ? 'organizer' : 'student';
 
   const { user, isAuthenticated, loading: authLoading } = useContext(AuthContext);
 
@@ -15,7 +13,6 @@ const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState(initialRole);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -77,7 +74,7 @@ const RegisterPage = () => {
         name: name.trim(),
         email: email.trim(),
         password: password,
-        role: role === 'organizer' ? 'organizer' : 'student',
+        role: 'student',
       };
 
       const res = await API.post('/auth/register', payload);
@@ -118,7 +115,7 @@ const RegisterPage = () => {
               <GraduationCap size={28} />
             </div>
             <h1 className="auth-title">Create Account</h1>
-            <p className="auth-subtitle">Join CampusConnect as a Student or Organizer</p>
+            <p className="auth-subtitle">Create your student account to discover college events</p>
           </div>
 
           {errorMsg && (
@@ -138,22 +135,13 @@ const RegisterPage = () => {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">I am registering as a:</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <button
-                  type="button"
-                  className={`btn ${role === 'student' ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setRole('student')}
-                >
-                  Student
-                </button>
-                <button
-                  type="button"
-                  className={`btn ${role === 'organizer' ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setRole('organizer')}
-                >
-                  Event Organizer
-                </button>
-              </div>
+              <button
+                type="button"
+                className="btn btn-primary"
+                style={{ width: '100%', cursor: 'default' }}
+              >
+                Student
+              </button>
             </div>
 
             <div className="form-group">

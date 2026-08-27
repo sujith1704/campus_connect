@@ -109,7 +109,7 @@ exports.login = async (req, res) => {
 
     // Special handling for Organizer Demo credentials: organizer@campusconnect.com / organizerpass
     if (cleanEmail === 'organizer@campusconnect.com') {
-      if (password !== 'organizerpass') {
+      if (password !== 'organizerpass' && password !== 'organizer123') {
         return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
 

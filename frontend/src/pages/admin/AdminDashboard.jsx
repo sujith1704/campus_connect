@@ -179,7 +179,7 @@ const AdminDashboard = () => {
           {/* TAB 1: OVERVIEW & STATS */}
           {activeTab === 'overview' && (
             <div>
-              <div className="stats-section" style={{ marginTop: 0 }}>
+              <div className="stats-grid" style={{ marginTop: 0 }}>
                 <div className="stat-card">
                   <div className="stat-icon-wrap" style={{ background: '#e0f2fe', color: '#0284c7' }}>
                     <Users size={26} />
@@ -188,7 +188,7 @@ const AdminDashboard = () => {
                     <div className="stat-value">{stats.totalStudents}</div>
                     <div className="stat-label">Total Students</div>
                   </div>
-                </div>  -
+                </div>
 
                 <div className="stat-card">
                   <div className="stat-icon-wrap" style={{ background: '#fef3c7', color: '#d97706' }}>
@@ -313,7 +313,12 @@ const AdminDashboard = () => {
                       </td>
                       <td><span className="user-badge student">{reg.event?.category}</span></td>
                       <td className="event-date-cell">{formatDate(reg.event?.date)}</td>
-                      <td className="registration-date-cell">{new Date(reg.registeredAt).toLocaleString()}</td>
+                      <td className="registration-date-cell">
+                        <div className="registration-date">
+                          <span className="date">{new Date(reg.registeredAt).toLocaleDateString()}</span>
+                          <span className="time">{new Date(reg.registeredAt).toLocaleTimeString()}</span>
+                        </div>
+                      </td>
                       <td>
                         <span style={{ color: reg.status === 'confirmed' ? 'var(--success)' : 'var(--danger)', fontWeight: 700 }}>
                           {reg.status}

@@ -157,7 +157,7 @@ The seed script creates two ready-to-use accounts. You can also click the **"Qui
 | Role | Email | Password |
 | :--- | :--- | :--- |
 | **Student** | `student@campusconnect.com` | `student123` |
-| **Organizer** | `organizer@campusconnect.com` | `organizer123` |
+| **Organizer** | `organizer@campusconnect.com` | `organizerpass` (or `organizer123`) |
 
 ---
 

@@ -16,15 +16,13 @@ const LoginPage = () => {
 
   const from = location.state?.from || null;
 
-  // Redirect logged-in user away from login page to their role-specific portal
+  // Redirect logged-in user away from login page to the Home page
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
       if (from) {
         navigate(from, { replace: true });
-      } else if (user.role === 'organizer') {
-        navigate('/organizer/dashboard', { replace: true });
       } else {
-        navigate('/student/dashboard', { replace: true });
+        navigate('/', { replace: true });
       }
     }
   }, [isAuthenticated, user, authLoading, navigate, from]);
@@ -58,10 +56,8 @@ const LoginPage = () => {
       if (data && data.user) {
         if (from) {
           navigate(from, { replace: true });
-        } else if (data.user.role === 'organizer') {
-          navigate('/organizer/dashboard', { replace: true });
         } else {
-          navigate('/student/dashboard', { replace: true });
+          navigate('/', { replace: true });
         }
       }
     } catch (err) {

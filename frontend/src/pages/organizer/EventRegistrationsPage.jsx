@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import API from '../../services/api';
-import { Users, ArrowLeft, Mail, Calendar, CheckCircle } from 'lucide-react';
+import { Users, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
 
 const EventRegistrationsPage = () => {
   const { eventId } = useParams();
@@ -70,8 +70,9 @@ const EventRegistrationsPage = () => {
                     </div>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
-                      <Calendar size={14} /> {new Date(reg.registeredAt).toLocaleString()}
+                    <div className="registration-date">
+                      <span className="date">{new Date(reg.registeredAt).toLocaleDateString()}</span>
+                      <span className="time">{new Date(reg.registeredAt).toLocaleTimeString()}</span>
                     </div>
                   </td>
                   <td>

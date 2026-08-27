@@ -21,10 +21,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
-  // If role is restricted and current user role does not match, redirect to their role dashboard
+  // If role is restricted and current user role does not match, redirect to Home
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    if (user?.role === 'organizer') return <Navigate to="/organizer/dashboard" replace />;
-    return <Navigate to="/student/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
