@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import API from '../../services/api';
 import { Users, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
 
 const EventRegistrationsPage = () => {
   const { eventId } = useParams();
+  const location = useLocation();
+  const fromTab = location.state?.fromTab || location.state?.tab || 'present';
+
   const [registrations, setRegistrations] = useState([]);
   const [eventTitle, setEventTitle] = useState('');
   const [loading, setLoading] = useState(true);
@@ -29,7 +32,11 @@ const EventRegistrationsPage = () => {
 
   return (
     <div className="container main-content">
-      <Link to="/organizer/manage-events" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--slate-600)', marginBottom: '1.5rem' }}>
+      <Link
+        to={fromTab === 'past' ? '/organizer/manage-events?tab=past' : '/organizer/manage-events'}
+        state={{ fromTab, tab: fromTab }}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--slate-600)', marginBottom: '1.5rem' }}
+      >
         <ArrowLeft size={18} /> Back to Managed Events
       </Link>
 

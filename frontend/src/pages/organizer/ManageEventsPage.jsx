@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import API from '../../services/api';
 import { DataContext } from '../../context/DataContext';
 import { PlusCircle, Edit3, Trash2, Users, AlertTriangle, X } from 'lucide-react';
@@ -7,12 +7,16 @@ import { formatDate, isPastEvent } from '../../utils/date';
 
 const ManageEventsPage = () => {
   const { organizerEvents, organizerEventsLoading, fetchOrganizerEvents, invalidateOrganizerEvents } = useContext(DataContext);
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const initialTab = location.state?.fromTab || location.state?.tab || searchParams.get('tab') || 'present';
   const [events, setEvents] = useState(organizerEvents || []);
   const [loading, setLoading] = useState(!organizerEvents);
   const [deleteId, setDeleteId] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
-  const [filterTab, setFilterTab] = useState('present');
+  const [filterTab, setFilterTab] = useState(initialTab === 'past' ? 'past' : 'present');
 
   useEffect(() => {
     let cancelled = false;
@@ -52,6 +56,15 @@ const ManageEventsPage = () => {
     }
   }, [msg]);
 
+  const handleTabChange = (tab) => {
+    setFilterTab(tab);
+    if (tab === 'past') {
+      setSearchParams({ tab: 'past' });
+    } else {
+      setSearchParams({});
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteId) return;
     setDeleting(true);
@@ -82,14 +95,14 @@ const ManageEventsPage = () => {
             <button
               type="button"
               className={`btn btn-sm ${filterTab === 'present' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setFilterTab('present')}
+              onClick={() => handleTabChange('present')}
             >
               Present Events
             </button>
             <button
               type="button"
               className={`btn btn-sm ${filterTab === 'past' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setFilterTab('past')}
+              onClick={() => handleTabChange('past')}
             >
               Past Events
             </button>
@@ -150,7 +163,12 @@ const ManageEventsPage = () => {
                     </div>
 
                     <div style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: filterTab === 'present' ? '1fr 1fr 1fr' : '1fr 1fr', gap: '0.4rem' }}>
-                      <Link to={`/organizer/registrations/${event._id}`} className="btn btn-primary btn-sm" title="Attendees">
+                      <Link
+                        to={`/organizer/registrations/${event._id}`}
+                        state={{ fromTab: filterTab }}
+                        className="btn btn-primary btn-sm"
+                        title="Attendees"
+                      >
                         <Users size={14} /> Attendees
                       </Link>
                       {filterTab === 'present' && (
