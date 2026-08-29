@@ -14,6 +14,21 @@ const LoginPage = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState(location.state?.message || '');
 
+  // Auto-dismiss notifications after 3 seconds
+  useEffect(() => {
+    if (errorMsg) {
+      const timer = setTimeout(() => setErrorMsg(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg]);
+
+  useEffect(() => {
+    if (infoMsg) {
+      const timer = setTimeout(() => setInfoMsg(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [infoMsg]);
+
   const from = location.state?.from || null;
 
   // Redirect logged-in user away from login page to the Home page

@@ -24,6 +24,21 @@ const EventDetailsPage = () => {
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
+  // Auto-dismiss notifications after 3 seconds
+  useEffect(() => {
+    if (errorMsg) {
+      const timer = setTimeout(() => setErrorMsg(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg]);
+
+  useEffect(() => {
+    if (successMsg) {
+      const timer = setTimeout(() => setSuccessMsg(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMsg]);
+
   useEffect(() => {
     let isCancelled = false;
 

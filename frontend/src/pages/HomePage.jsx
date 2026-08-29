@@ -14,15 +14,20 @@ const categoriesList = [
   { name: 'Seminar', icon: <Mic size={24} />, desc: 'Keynotes & Higher Ed' },
 ];
 
+// Module-level cache so stats survive component unmount/remount (no flicker on navigation)
+let _cachedStats = null;
+
 const HomePage = () => {
   const { user, isStudent, isOrganizer } = useContext(AuthContext);
-  const [stats, setStats] = useState({
-    eventsHosted: null,
-    activeRegistrations: null,
-    organizers: null,
-    verifiedEvents: 100,
-  });
-  const [statsLoading, setStatsLoading] = useState(true);
+  const [stats, setStats] = useState(
+    _cachedStats || {
+      eventsHosted: null,
+      activeRegistrations: null,
+      organizers: null,
+      verifiedEvents: 100,
+    }
+  );
+  const [statsLoading, setStatsLoading] = useState(!_cachedStats);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,12 +36,14 @@ const HomePage = () => {
         const res = await API.get('/stats');
         if (!cancelled && res.data) {
           const data = res.data.data || res.data;
-          setStats({
+          const newStats = {
             eventsHosted: typeof data.eventsHosted === 'number' ? data.eventsHosted : 0,
             activeRegistrations: typeof data.activeRegistrations === 'number' ? data.activeRegistrations : 0,
             organizers: typeof data.organizers === 'number' ? data.organizers : 0,
             verifiedEvents: 100,
-          });
+          };
+          _cachedStats = newStats;
+          setStats(newStats);
         }
       } catch (error) {
         console.error('Error fetching platform statistics:', error);

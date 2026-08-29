@@ -54,6 +54,16 @@ const MyRegistrationsPage = () => {
     }
   }, [studentRegistrations]);
 
+  // Auto-dismiss notification after 3 seconds
+  useEffect(() => {
+    if (msg.text) {
+      const timer = setTimeout(() => {
+        setMsg({ type: '', text: '' });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [msg]);
+
   // Present: Show only the student's active/current registrations whose date/time is in the future
   const presentRegistrations = registrations.filter((reg) => !isPastEvent(reg.event));
 
@@ -227,7 +237,7 @@ const MyRegistrationsPage = () => {
                             borderRadius: '999px',
                             padding: '0.2rem 0.75rem',
                           }}>
-                            ✓ Status: REGISTERED
+                            ✓ Status: COMPLETED
                           </span>
                         ) : (
                           <span style={{

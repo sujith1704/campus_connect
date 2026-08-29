@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Ticket, Calendar, Clock, MapPin, CheckCircle, X, Copy, Check, Printer, User, ShieldCheck, Sparkles, Building } from 'lucide-react';
-import { formatDate } from '../utils/date';
+import { formatDate, isPastEvent } from '../utils/date';
 
 const TicketPassModal = ({ ticket, user, onClose }) => {
   const [copied, setCopied] = useState(false);
@@ -8,6 +8,7 @@ const TicketPassModal = ({ ticket, user, onClose }) => {
   if (!ticket) return null;
 
   const event = ticket.event || {};
+  const expired = isPastEvent(event);
   const ticketId = `CC-PASS-${ticket._id.slice(-8).toUpperCase()}`;
   const attendeeName = user?.name || ticket.student?.name || 'Registered Attendee';
   const attendeeEmail = user?.email || ticket.student?.email || '';
@@ -151,8 +152,15 @@ const TicketPassModal = ({ ticket, user, onClose }) => {
                   <span>ENTRY GRANTED • ADMIT ONE</span>
                 </div>
                 <div className="ticket-live-indicator">
-                  <span className="live-dot"></span>
-                  <span>ACTIVE PASS</span>
+                  <span
+                    className="live-dot"
+                    style={expired ? {
+                      background: '#ef4444',
+                      boxShadow: '0 0 8px #ef4444',
+                      animation: 'none',
+                    } : undefined}
+                  ></span>
+                  <span>{expired ? 'TICKET IS EXPIRED' : 'ACTIVE PASS'}</span>
                 </div>
               </div>
 

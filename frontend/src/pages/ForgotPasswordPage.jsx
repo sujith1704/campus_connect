@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../services/api';
 import { GraduationCap, Mail, ArrowLeft, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
@@ -8,6 +8,14 @@ const ForgotPasswordPage = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successData, setSuccessData] = useState(null);
+
+  // Auto-dismiss notification after 3 seconds
+  useEffect(() => {
+    if (errorMsg) {
+      const timer = setTimeout(() => setErrorMsg(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

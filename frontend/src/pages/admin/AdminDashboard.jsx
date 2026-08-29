@@ -30,6 +30,14 @@ const AdminDashboard = () => {
   const [deleteUserId, setDeleteUserId] = useState(null);
   const [deleteEventId, setDeleteEventId] = useState(null);
 
+  // Auto-dismiss notification after 3 seconds
+  useEffect(() => {
+    if (msg.text) {
+      const timer = setTimeout(() => setMsg({ type: '', text: '' }), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [msg]);
+
   useEffect(() => {
     fetchAdminData();
   }, []);
