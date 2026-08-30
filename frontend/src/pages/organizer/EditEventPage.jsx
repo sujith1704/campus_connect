@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../services/api';
 import { Edit3, ArrowLeft, AlertCircle, CheckCircle } from 'lucide-react';
+import PageTransition from '../../components/PageTransition';
+import { authCardVariants, alertVariants } from '../../utils/animations';
 
 const categories = ['Technical', 'Cultural', 'Sports', 'Workshop', 'Seminar', 'Gaming', 'Other'];
 
@@ -103,144 +106,176 @@ const EditEventPage = () => {
   }
 
   return (
-    <div className="container main-content">
-      <Link to={returnPath} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--slate-600)', marginBottom: '1.5rem' }}>
-        <ArrowLeft size={18} /> Back to Managed Events
-      </Link>
+    <PageTransition>
+      <div className="container main-content">
+        <Link to={returnPath} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: 'var(--slate-600)', marginBottom: '1.5rem' }}>
+          <ArrowLeft size={18} /> Back to Managed Events
+        </Link>
 
-      <div style={{ maxWidth: '780px', margin: '0 auto' }}>
-        <div className="auth-card">
-          <div className="auth-header" style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
-            <h1 className="auth-title">Edit Event Details</h1>
-            <p className="auth-subtitle">Update schedule, venue, capacity, or description</p>
-          </div>
-
-          {errorMsg && (
-            <div className="alert alert-danger">
-              <AlertCircle size={18} />
-              <span>{errorMsg}</span>
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="alert alert-success">
-              <CheckCircle size={18} />
-              <span>{successMsg}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label">Event Title</label>
-              <input
-                type="text"
-                name="title"
-                className="form-control"
-                value={formData.title}
-                onChange={handleChange}
-                required
-              />
+        <div style={{ maxWidth: '780px', margin: '0 auto' }}>
+          <motion.div
+            className="auth-card"
+            variants={authCardVariants}
+            initial="initial"
+            animate="animate"
+          >
+            <div className="auth-header" style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
+              <h1 className="auth-title">Edit Event Details</h1>
+              <p className="auth-subtitle">Update schedule, venue, capacity, or description</p>
             </div>
 
-            <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label">Event Category</label>
-                <select name="category" className="form-control" value={formData.category} onChange={handleChange}>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <AnimatePresence mode="wait">
+              {errorMsg && (
+                <motion.div
+                  key="error"
+                  className="alert alert-danger"
+                  variants={alertVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  <AlertCircle size={18} />
+                  <span>{errorMsg}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-              <div className="form-group">
-                <label className="form-label">Max Participants Capacity</label>
-                <input
-                  type="number"
-                  name="maxParticipants"
-                  className="form-control"
-                  min="1"
-                  value={formData.maxParticipants}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
+            <AnimatePresence mode="wait">
+              {successMsg && (
+                <motion.div
+                  key="success"
+                  className="alert alert-success"
+                  variants={alertVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  <CheckCircle size={18} />
+                  <span>{successMsg}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <div className="form-grid">
+            <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label className="form-label">Event Date</label>
-                <input
-                  type="date"
-                  name="date"
-                  className="form-control"
-                  value={formData.date}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Event Time</label>
+                <label className="form-label">Event Title</label>
                 <input
                   type="text"
-                  name="time"
+                  name="title"
                   className="form-control"
-                  value={formData.time}
+                  value={formData.title}
                   onChange={handleChange}
                   required
                 />
               </div>
-            </div>
 
-            <div className="form-group">
-              <label className="form-label">Venue Location</label>
-              <input
-                type="text"
-                name="venue"
-                className="form-control"
-                value={formData.venue}
-                onChange={handleChange}
-                required
-              />
-            </div>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label className="form-label">Event Category</label>
+                  <select name="category" className="form-control" value={formData.category} onChange={handleChange}>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <div className="form-group">
-              <label className="form-label">Event Cover Image URL</label>
-              <input
-                type="url"
-                name="image"
-                className="form-control"
-                value={formData.image}
-                onChange={handleChange}
-              />
-            </div>
+                <div className="form-group">
+                  <label className="form-label">Max Participants Capacity</label>
+                  <input
+                    type="number"
+                    name="maxParticipants"
+                    className="form-control"
+                    min="1"
+                    value={formData.maxParticipants}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
 
-            <div className="form-group">
-              <label className="form-label">Complete Event Description</label>
-              <textarea
-                name="description"
-                rows="5"
-                className="form-control"
-                value={formData.description}
-                onChange={handleChange}
-                required
-              ></textarea>
-            </div>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label className="form-label">Event Date</label>
+                  <input
+                    type="date"
+                    name="date"
+                    className="form-control"
+                    value={formData.date}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-              <Link to={returnPath} className="btn btn-secondary" style={{ flex: 1 }}>
-                Cancel
-              </Link>
-              <button type="submit" className="btn btn-primary" style={{ flex: 2 }} disabled={submitting}>
-                <Edit3 size={18} /> {submitting ? 'Saving Changes...' : 'Save Changes'}
-              </button>
-            </div>
-          </form>
+                <div className="form-group">
+                  <label className="form-label">Event Time</label>
+                  <input
+                    type="text"
+                    name="time"
+                    className="form-control"
+                    value={formData.time}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Venue Location</label>
+                <input
+                  type="text"
+                  name="venue"
+                  className="form-control"
+                  value={formData.venue}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Event Cover Image URL</label>
+                <input
+                  type="url"
+                  name="image"
+                  className="form-control"
+                  value={formData.image}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Complete Event Description</label>
+                <textarea
+                  name="description"
+                  rows="5"
+                  className="form-control"
+                  value={formData.description}
+                  onChange={handleChange}
+                  required
+                ></textarea>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                <Link to={returnPath} className="btn btn-secondary" style={{ flex: 1 }}>
+                  Cancel
+                </Link>
+                <motion.button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ flex: 2 }}
+                  disabled={submitting}
+                  whileHover={!submitting ? { scale: 1.02 } : {}}
+                  whileTap={!submitting ? { scale: 0.97 } : {}}
+                >
+                  <Edit3 size={18} /> {submitting ? 'Saving Changes...' : 'Save Changes'}
+                </motion.button>
+              </div>
+            </form>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 };
 

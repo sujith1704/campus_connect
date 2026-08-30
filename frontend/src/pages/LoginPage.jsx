@@ -1,7 +1,31 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
 import { GraduationCap, LogIn, AlertCircle, CheckCircle, KeyRound } from 'lucide-react';
+import PageTransition from '../components/PageTransition';
+import AuthBackground from '../components/AuthBackground';
+import { authCardVariants, alertVariants } from '../utils/animations';
+
+const staggerContainer = {
+  initial: { opacity: 0 },
+  animate: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.07,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const staggerItem = {
+  initial: { opacity: 0, y: 16 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -80,7 +104,9 @@ const LoginPage = () => {
       if (serverMessage) {
         setErrorMsg(serverMessage);
       } else if (err.code === 'ERR_NETWORK' || !err.response) {
-        setErrorMsg('Network Error: Backend API server at http://localhost:5000 is not running. Please start the backend server by running "npm run dev" inside the backend folder.');
+        setErrorMsg(
+          'Network Error: Backend API server at http://localhost:5000 is not running. Please start the backend server by running "npm run dev" inside the backend folder.'
+        );
       } else if (err.response?.status === 503) {
         setErrorMsg('Database is unavailable. Start MongoDB or check the MongoDB connection string in backend/.env.');
       } else if (err.message) {
@@ -94,84 +120,157 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="container main-content">
-      <div className="auth-container">
-        <div className="auth-card">
-          <div className="auth-header">
-            <div className="brand-icon" style={{ margin: '0 auto 1rem', width: '48px', height: '48px' }}>
-              <GraduationCap size={28} />
-            </div>
-            <h1 className="auth-title">Welcome Back</h1>
-            <p className="auth-subtitle">Login to your CampusConnect account</p>
-          </div>
+    <PageTransition>
+      <div className="auth-page-wrapper">
+        <AuthBackground />
 
-          {infoMsg && (
-            <div className="alert alert-success">
-              <CheckCircle size={18} />
-              <span>{infoMsg}</span>
-            </div>
-          )}
+        <div className="container main-content auth-content-layer">
+          <div className="auth-container">
+            <motion.div
+              className="auth-card"
+              variants={authCardVariants}
+              initial="initial"
+              animate="animate"
+            >
+              <motion.div
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+              >
+                {/* Header with Logo */}
+                <motion.div className="auth-header" variants={staggerItem}>
+                  <motion.div
+                    className="brand-icon auth-logo-glow"
+                    style={{ margin: '0 auto 1.25rem', width: '52px', height: '52px' }}
+                    whileHover={{ scale: 1.1, rotate: 6 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  >
+                    <GraduationCap size={30} />
+                  </motion.div>
+                  <h1 className="auth-title">Welcome Back</h1>
+                  <p className="auth-subtitle">Login to your CampusConnect account</p>
+                </motion.div>
 
-          {errorMsg && (
-            <div className="alert alert-danger">
-              <AlertCircle size={18} />
-              <span>{errorMsg}</span>
-            </div>
-          )}
+                {/* Notifications */}
+                <AnimatePresence mode="wait">
+                  {infoMsg && (
+                    <motion.div
+                      key="info"
+                      className="alert alert-success"
+                      variants={alertVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                    >
+                      <CheckCircle size={18} />
+                      <span>{infoMsg}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-          <form onSubmit={handleSubmit} autoComplete="off">
-            <div className="form-group">
-              <label className="form-label">Email Address</label>
-              <input
-                type="email"
-                className="form-control"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="off"
-                required
-              />
-            </div>
+                <AnimatePresence mode="wait">
+                  {errorMsg && (
+                    <motion.div
+                      key="error"
+                      className="alert alert-danger"
+                      variants={alertVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                    >
+                      <AlertCircle size={18} />
+                      <span>{errorMsg}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-            <div className="form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label className="form-label">Password</label>
-                <Link to="/forgot-password" style={{ fontSize: '0.825rem', color: 'var(--primary)', fontWeight: 600 }}>
-                  Forgot Password?
-                </Link>
-              </div>
-              <input
-                type="password"
-                className="form-control"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="off"
-                required
-              />
-            </div>
+                {/* Login Form */}
+                <form onSubmit={handleSubmit} autoComplete="off">
+                  <motion.div className="form-group" variants={staggerItem}>
+                    <label className="form-label">Email Address</label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="off"
+                      required
+                    />
+                  </motion.div>
 
-            <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
-              <LogIn size={18} /> {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </form>
+                  <motion.div className="form-group" variants={staggerItem}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label className="form-label">Password</label>
+                      <Link
+                        to="/forgot-password"
+                        style={{ fontSize: '0.825rem', color: 'var(--primary)', fontWeight: 600 }}
+                      >
+                        Forgot Password?
+                      </Link>
+                    </div>
+                    <input
+                      type="password"
+                      className="form-control"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete="off"
+                      required
+                    />
+                  </motion.div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--slate-600)' }}>
-            <div>
-              <Link to="/forgot-password" style={{ color: 'var(--slate-600)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}>
-                <KeyRound size={15} /> Forgot Password?
-              </Link>
-            </div>
-            <div>
-              Don't have an account?{' '}
-              <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 700 }}>
-                Register
-              </Link>
-            </div>
+                  <motion.div variants={staggerItem}>
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-full btn-lg"
+                      disabled={loading}
+                    >
+                      <LogIn size={18} /> {loading ? 'Signing in...' : 'Sign In'}
+                    </button>
+                  </motion.div>
+                </form>
+
+                {/* Footer Links */}
+                <motion.div
+                  variants={staggerItem}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                    textAlign: 'center',
+                    marginTop: '1.5rem',
+                    fontSize: '0.9rem',
+                    color: 'var(--slate-600)',
+                  }}
+                >
+                  <div>
+                    <Link
+                      to="/forgot-password"
+                      style={{
+                        color: 'var(--slate-600)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      <KeyRound size={15} /> Forgot Password?
+                    </Link>
+                  </div>
+                  <div>
+                    Don't have an account?{' '}
+                    <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 700 }}>
+                      Register
+                    </Link>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 };
 

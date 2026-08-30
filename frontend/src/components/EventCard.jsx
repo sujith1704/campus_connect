@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, Users, ArrowRight, Edit3, Trash2 } from 'lucide-react';
 import { formatDate } from '../utils/date';
+import { cardHover, buttonHoverTap } from '../utils/animations';
 
 const EventCard = ({ event, showAdminControls, showApprovalActions = false, onApprove, onReject, onDelete }) => {
   const { _id, title, category, date, time, venue, maxParticipants, registeredCount, image, status } = event;
@@ -10,7 +12,11 @@ const EventCard = ({ event, showAdminControls, showApprovalActions = false, onAp
   const occupancyPercentage = Math.min(100, Math.round(((registeredCount || 0) / maxParticipants) * 100));
 
   return (
-    <div className="event-card">
+    <motion.div
+      className="event-card"
+      {...cardHover}
+      style={{ willChange: 'transform' }}
+    >
       <div className="event-card-image-wrap">
         <img src={image} alt={title} className="event-card-img" />
         <span className="event-category-badge">{category}</span>
@@ -58,12 +64,12 @@ const EventCard = ({ event, showAdminControls, showApprovalActions = false, onAp
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
               {showApprovalActions && status === 'pending' && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                  <button onClick={() => onApprove(_id)} className="btn btn-primary btn-sm">
+                  <motion.button onClick={() => onApprove(_id)} className="btn btn-primary btn-sm" whileTap={{ scale: 0.96 }}>
                     Approve
-                  </button>
-                  <button onClick={() => onReject(_id)} className="btn btn-secondary btn-sm">
+                  </motion.button>
+                  <motion.button onClick={() => onReject(_id)} className="btn btn-secondary btn-sm" whileTap={{ scale: 0.96 }}>
                     Reject
-                  </button>
+                  </motion.button>
                 </div>
               )}
 
@@ -74,19 +80,21 @@ const EventCard = ({ event, showAdminControls, showApprovalActions = false, onAp
                 <Link to={`/organizer/edit-event/${_id}`} className="btn btn-secondary btn-sm" title="Edit" style={{ width: '100%' }}>
                   <Edit3 size={14} /> Edit
                 </Link>
-                <button onClick={() => onDelete(_id)} className="btn btn-danger btn-sm" title="Delete" style={{ width: '100%' }}>
+                <motion.button onClick={() => onDelete(_id)} className="btn btn-danger btn-sm" title="Delete" style={{ width: '100%' }} whileTap={{ scale: 0.96 }}>
                   <Trash2 size={14} /> Delete
-                </button>
+                </motion.button>
               </div>
             </div>
           ) : (
-            <Link to={`/events/${_id}`} className="btn btn-primary btn-full">
-              View Details <ArrowRight size={16} />
-            </Link>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+              <Link to={`/events/${_id}`} className="btn btn-primary btn-full">
+                View Details <ArrowRight size={16} />
+              </Link>
+            </motion.div>
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

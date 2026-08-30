@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
 import { GraduationCap, LogOut } from 'lucide-react';
 import PortalSidebar from './PortalSidebar';
@@ -21,13 +22,22 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="navbar">
+    <motion.nav
+      className="navbar"
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+    >
       <div className="container navbar-container">
         {/* Brand Logo */}
         <Link to={isAuthenticated ? "/" : "/login"} className="brand-logo">
-          <div className="brand-icon">
+          <motion.div
+            className="brand-icon"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+          >
             <GraduationCap size={24} />
-          </div>
+          </motion.div>
           CampusConnect
         </Link>
 
@@ -104,23 +114,33 @@ const Navbar = () => {
                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user?.name}</span>
               </Link>
 
-              <button onClick={handleLogout} className="btn btn-secondary btn-sm" title="Logout">
+              <motion.button
+                onClick={handleLogout}
+                className="btn btn-secondary btn-sm"
+                title="Logout"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <LogOut size={16} /> Logout
-              </button>
+              </motion.button>
             </div>
           ) : (
             <>
-              <Link to="/login" className="btn btn-outline btn-sm">
-                Login
-              </Link>
-              <Link to="/register" className="btn btn-primary btn-sm">
-                Register
-              </Link>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link to="/login" className="btn btn-outline btn-sm">
+                  Login
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link to="/register" className="btn btn-primary btn-sm">
+                  Register
+                </Link>
+              </motion.div>
             </>
           )}
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 };
 

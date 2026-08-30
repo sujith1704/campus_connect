@@ -1,8 +1,32 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
 import { GraduationCap, UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
+import PageTransition from '../components/PageTransition';
+import AuthBackground from '../components/AuthBackground';
+import { authCardVariants, alertVariants } from '../utils/animations';
+
+const staggerContainer = {
+  initial: { opacity: 0 },
+  animate: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.06,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const staggerItem = {
+  initial: { opacity: 0, y: 16 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -108,7 +132,9 @@ const RegisterPage = () => {
       if (serverMessage) {
         setErrorMsg(serverMessage);
       } else if (err.code === 'ERR_NETWORK' || !err.response) {
-        setErrorMsg('Network Error: Backend API server at http://localhost:5000 is not running. Please start the backend server by running "npm run dev" inside the backend folder.');
+        setErrorMsg(
+          'Network Error: Backend API server at http://localhost:5000 is not running. Please start the backend server by running "npm run dev" inside the backend folder.'
+        );
       } else if (err.response?.status === 503) {
         setErrorMsg('Database is unavailable. Start MongoDB or check the MongoDB connection string in backend/.env.');
       } else if (err.message) {
@@ -122,109 +148,156 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="container main-content">
-      <div className="auth-container">
-        <div className="auth-card">
-          <div className="auth-header">
-            <div className="brand-icon" style={{ margin: '0 auto 1rem', width: '48px', height: '48px' }}>
-              <GraduationCap size={28} />
-            </div>
-            <h1 className="auth-title">Create Account</h1>
-            <p className="auth-subtitle">Join CampusConnect as a Student</p>
-          </div>
+    <PageTransition>
+      <div className="auth-page-wrapper">
+        <AuthBackground />
 
-          {errorMsg && (
-            <div className="alert alert-danger">
-              <AlertCircle size={18} />
-              <span>{errorMsg}</span>
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="alert alert-success">
-              <CheckCircle size={18} />
-              <span>{successMsg}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} autoComplete="off">
-            <div className="form-group">
-              <label className="form-label">I am registering as a:</label>
-              <button
-                type="button"
-                className="btn btn-primary btn-full"
-                style={{ width: '100%', cursor: 'default' }}
+        <div className="container main-content auth-content-layer">
+          <div className="auth-container">
+            <motion.div
+              className="auth-card"
+              variants={authCardVariants}
+              initial="initial"
+              animate="animate"
+            >
+              <motion.div
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
               >
-                Student
-              </button>
-            </div>
+                {/* Header with Logo */}
+                <motion.div className="auth-header" variants={staggerItem}>
+                  <motion.div
+                    className="brand-icon auth-logo-glow"
+                    style={{ margin: '0 auto 1.25rem', width: '52px', height: '52px' }}
+                    whileHover={{ scale: 1.1, rotate: 6 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  >
+                    <GraduationCap size={30} />
+                  </motion.div>
+                  <h1 className="auth-title">Create Account</h1>
+                  <p className="auth-subtitle">Join CampusConnect as a Student</p>
+                </motion.div>
 
-            <div className="form-group">
-              <label className="form-label">Full Name</label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoComplete="off"
-                required
-              />
-            </div>
+                {/* Notifications */}
+                <AnimatePresence mode="wait">
+                  {errorMsg && (
+                    <motion.div
+                      key="error"
+                      className="alert alert-danger"
+                      variants={alertVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                    >
+                      <AlertCircle size={18} />
+                      <span>{errorMsg}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-            <div className="form-group">
-              <label className="form-label">Email Address</label>
-              <input
-                type="email"
-                className="form-control"
-                placeholder="john.doe@college.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="off"
-                required
-              />
-            </div>
+                <AnimatePresence mode="wait">
+                  {successMsg && (
+                    <motion.div
+                      key="success"
+                      className="alert alert-success"
+                      variants={alertVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                    >
+                      <CheckCircle size={18} />
+                      <span>{successMsg}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-            <div className="form-group">
-              <label className="form-label">Password (Min 6 chars)</label>
-              <input
-                type="password"
-                className="form-control"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                required
-              />
-            </div>
+                {/* Register Form */}
+                <form onSubmit={handleSubmit} autoComplete="off">
+                  <motion.div className="form-group" variants={staggerItem}>
+                    <label className="form-label">Full Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Enter your full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      autoComplete="off"
+                      required
+                    />
+                  </motion.div>
 
-            <div className="form-group">
-              <label className="form-label">Confirm Password</label>
-              <input
-                type="password"
-                className="form-control"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                autoComplete="new-password"
-                required
-              />
-            </div>
+                  <motion.div className="form-group" variants={staggerItem}>
+                    <label className="form-label">Email Address</label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      placeholder="Enter your institutional email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="off"
+                      required
+                    />
+                  </motion.div>
 
-            <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
-              <UserPlus size={18} /> {loading ? 'Creating Account...' : 'Register Account'}
-            </button>
-          </form>
+                  <motion.div className="form-group" variants={staggerItem}>
+                    <label className="form-label">Password</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      placeholder="Create a password (min 6 chars)"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete="off"
+                      required
+                    />
+                  </motion.div>
 
-          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--slate-600)' }}>
-            Already have an account?{' '}
-            <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 700 }}>
-              Sign In
-            </Link>
+                  <motion.div className="form-group" variants={staggerItem}>
+                    <label className="form-label">Confirm Password</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      placeholder="Re-enter your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      autoComplete="off"
+                      required
+                    />
+                  </motion.div>
+
+                  <motion.div variants={staggerItem}>
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-full btn-lg"
+                      disabled={loading}
+                    >
+                      <UserPlus size={18} /> {loading ? 'Creating Account...' : 'Register'}
+                    </button>
+                  </motion.div>
+                </form>
+
+                {/* Footer Link */}
+                <motion.div
+                  variants={staggerItem}
+                  style={{
+                    textAlign: 'center',
+                    marginTop: '1.5rem',
+                    fontSize: '0.9rem',
+                    color: 'var(--slate-600)',
+                  }}
+                >
+                  Already have an account?{' '}
+                  <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 700 }}>
+                    Sign In
+                  </Link>
+                </motion.div>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 };
 

@@ -1,7 +1,10 @@
 import React, { useEffect, useContext } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
 import { DataContext } from '../context/DataContext';
 import { Calendar, Users, PlusCircle, Clock } from 'lucide-react';
+import { containerVariants, statCardVariants } from '../utils/animations';
 
 const OrganizerControlDesk = () => {
   const { user } = useContext(AuthContext);
@@ -40,43 +43,51 @@ const OrganizerControlDesk = () => {
             Logged in as <strong style={{ color: '#ffffff' }}>{user?.name}</strong> • Publish, edit, and track student registrations.
           </p>
         </div>
-        <button type="button" className="btn btn-primary btn-lg" onClick={(e) => e.preventDefault()}>
-          <PlusCircle size={20} /> Create New Event
-        </button>
+        <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+          <Link to="/organizer/create-event" className="btn btn-primary btn-lg">
+            <PlusCircle size={20} /> Create New Event
+          </Link>
+        </motion.div>
       </div>
 
       {/* Metrics Section */}
-      <div className="stats-section" style={{ marginTop: 0, marginBottom: '2.5rem' }}>
-        <div className="stat-card">
-          <div className="stat-icon-wrap">
+      <motion.div
+        className="stats-section"
+        style={{ marginTop: 0, marginBottom: '2.5rem' }}
+        variants={containerVariants}
+        initial="initial"
+        animate="animate"
+      >
+        <motion.div className="stat-card coral" variants={statCardVariants}>
+          <div className="stat-icon-wrap coral">
             <Calendar size={26} />
           </div>
           <div>
             <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : totalEvents}</div>
             <div className="stat-label">Total Events Created</div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="stat-card">
-          <div className="stat-icon-wrap" style={{ background: '#ecfdf5', color: '#10b981' }}>
+        <motion.div className="stat-card emerald" variants={statCardVariants}>
+          <div className="stat-icon-wrap emerald">
             <Users size={26} />
           </div>
           <div>
             <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : totalRegistrations}</div>
             <div className="stat-label">Total Student Registrations</div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="stat-card">
-          <div className="stat-icon-wrap" style={{ background: '#fef3c7', color: '#d97706' }}>
+        <motion.div className="stat-card amber" variants={statCardVariants}>
+          <div className="stat-icon-wrap amber">
             <Clock size={26} />
           </div>
           <div>
             <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : availableSeats}</div>
             <div className="stat-label">Available Seats Left</div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

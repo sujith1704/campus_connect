@@ -1,7 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import API from '../services/api';
 import { GraduationCap, KeyRound, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import PageTransition from '../components/PageTransition';
+import AuthBackground from '../components/AuthBackground';
+import { authCardVariants, alertVariants } from '../utils/animations';
+
+const staggerContainer = {
+  initial: { opacity: 0 },
+  animate: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.06,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const staggerItem = {
+  initial: { opacity: 0, y: 16 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
 const ResetPasswordPage = () => {
   const { resetToken } = useParams();
@@ -69,67 +93,126 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <div className="container main-content">
-      <div className="auth-container">
-        <div className="auth-card">
-          <Link to="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--slate-600)', marginBottom: '1.25rem' }}>
-            <ArrowLeft size={16} /> Back to Login
-          </Link>
+    <PageTransition>
+      <div className="auth-page-wrapper">
+        <AuthBackground />
 
-          <div className="auth-header">
-            <div className="brand-icon" style={{ margin: '0 auto 1rem', width: '48px', height: '48px' }}>
-              <GraduationCap size={28} />
-            </div>
-            <h1 className="auth-title">Set New Password</h1>
-            <p className="auth-subtitle">Create a new secure password for your account</p>
+        <div className="container main-content auth-content-layer">
+          <div className="auth-container">
+            <motion.div
+              className="auth-card"
+              variants={authCardVariants}
+              initial="initial"
+              animate="animate"
+            >
+              <motion.div
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+              >
+                <motion.div variants={staggerItem}>
+                  <Link
+                    to="/login"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      color: 'var(--slate-600)',
+                      marginBottom: '1.25rem',
+                    }}
+                  >
+                    <ArrowLeft size={16} /> Back to Login
+                  </Link>
+                </motion.div>
+
+                <motion.div className="auth-header" variants={staggerItem}>
+                  <motion.div
+                    className="brand-icon auth-logo-glow"
+                    style={{ margin: '0 auto 1.25rem', width: '52px', height: '52px' }}
+                    whileHover={{ scale: 1.1, rotate: 6 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  >
+                    <GraduationCap size={30} />
+                  </motion.div>
+                  <h1 className="auth-title">Set New Password</h1>
+                  <p className="auth-subtitle">Create a new secure password for your account</p>
+                </motion.div>
+
+                <AnimatePresence mode="wait">
+                  {errorMsg && (
+                    <motion.div
+                      key="error"
+                      className="alert alert-danger"
+                      variants={alertVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                    >
+                      <AlertCircle size={18} />
+                      <span>{errorMsg}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence mode="wait">
+                  {successMsg && (
+                    <motion.div
+                      key="success"
+                      className="alert alert-success"
+                      variants={alertVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                    >
+                      <CheckCircle size={18} />
+                      <span>{successMsg}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <form onSubmit={handleSubmit}>
+                  <motion.div className="form-group" variants={staggerItem}>
+                    <label className="form-label">New Password (Min 6 chars)</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </motion.div>
+
+                  <motion.div className="form-group" variants={staggerItem}>
+                    <label className="form-label">Confirm New Password</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </motion.div>
+
+                  <motion.div variants={staggerItem}>
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-full btn-lg"
+                      disabled={loading}
+                    >
+                      <KeyRound size={18} /> {loading ? 'Updating Password...' : 'Reset Password'}
+                    </button>
+                  </motion.div>
+                </form>
+              </motion.div>
+            </motion.div>
           </div>
-
-          {errorMsg && (
-            <div className="alert alert-danger">
-              <AlertCircle size={18} />
-              <span>{errorMsg}</span>
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="alert alert-success">
-              <CheckCircle size={18} />
-              <span>{successMsg}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label">New Password (Min 6 chars)</label>
-              <input
-                type="password"
-                className="form-control"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Confirm New Password</label>
-              <input
-                type="password"
-                className="form-control"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
-              <KeyRound size={18} /> {loading ? 'Resetting Password...' : 'Reset Password'}
-            </button>
-          </form>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 };
 
