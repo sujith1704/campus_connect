@@ -215,8 +215,10 @@ const RegisterPage = () => {
                 {/* Register Form */}
                 <form onSubmit={handleSubmit} autoComplete="off">
                   <motion.div className="form-group" variants={staggerItem}>
-                    <label className="form-label">Full Name</label>
+                    <label className="form-label" htmlFor="register-name">Full Name</label>
                     <input
+                      id="register-name"
+                      name="fullName"
                       type="text"
                       className="form-control"
                       placeholder="Enter your full name"
@@ -228,8 +230,10 @@ const RegisterPage = () => {
                   </motion.div>
 
                   <motion.div className="form-group" variants={staggerItem}>
-                    <label className="form-label">Email Address</label>
+                    <label className="form-label" htmlFor="register-email">Email Address</label>
                     <input
+                      id="register-email"
+                      name="registerEmail"
                       type="email"
                       className="form-control"
                       placeholder="Enter your institutional email"
@@ -241,27 +245,31 @@ const RegisterPage = () => {
                   </motion.div>
 
                   <motion.div className="form-group" variants={staggerItem}>
-                    <label className="form-label">Password</label>
+                    <label className="form-label" htmlFor="register-password">Password</label>
                     <input
+                      id="register-password"
+                      name="newPassword"
                       type="password"
                       className="form-control"
                       placeholder="Create a password (min 6 chars)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      autoComplete="off"
+                      autoComplete="new-password"
                       required
                     />
                   </motion.div>
 
                   <motion.div className="form-group" variants={staggerItem}>
-                    <label className="form-label">Confirm Password</label>
+                    <label className="form-label" htmlFor="register-confirm-password">Confirm Password</label>
                     <input
+                      id="register-confirm-password"
+                      name="confirmNewPassword"
                       type="password"
                       className="form-control"
                       placeholder="Re-enter your password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      autoComplete="off"
+                      autoComplete="new-password"
                       required
                     />
                   </motion.div>
