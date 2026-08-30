@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../services/api';
+import { DataContext } from '../../context/DataContext';
 import { Edit3, ArrowLeft, AlertCircle, CheckCircle } from 'lucide-react';
 import PageTransition from '../../components/PageTransition';
 import { authCardVariants, alertVariants } from '../../utils/animations';
@@ -11,6 +12,7 @@ const categories = ['Technical', 'Cultural', 'Sports', 'Workshop', 'Seminar', 'G
 const EditEventPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { updateEventInCache } = useContext(DataContext) || {};
   const returnPath = '/organizer/manage-events';
 
   const [formData, setFormData] = useState({
@@ -84,6 +86,9 @@ const EditEventPage = () => {
     try {
       const res = await API.put(`/events/${id}`, formData);
       if (res.data.success) {
+        if (updateEventInCache && res.data.data) {
+          updateEventInCache(res.data.data);
+        }
         setSuccessMsg('Event updated successfully!');
         setTimeout(() => {
           navigate('/organizer/manage-events');

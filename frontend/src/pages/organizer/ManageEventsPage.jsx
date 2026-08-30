@@ -9,7 +9,7 @@ import PageTransition from '../../components/PageTransition';
 import { containerVariants, cardVariants, cardHover, alertVariants, tabVariants, backdropVariants, modalVariants } from '../../utils/animations';
 
 const ManageEventsPage = () => {
-  const { organizerEvents, organizerEventsLoading, fetchOrganizerEvents, invalidateOrganizerEvents, invalidateDeletedEvents } = useContext(DataContext);
+  const { organizerEvents, fetchOrganizerEvents, removeEventFromCache } = useContext(DataContext);
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -26,8 +26,8 @@ const ManageEventsPage = () => {
     const load = async () => {
       try {
         const data = await fetchOrganizerEvents();
-        if (!cancelled) {
-          setEvents(data || []);
+        if (!cancelled && data) {
+          setEvents(data);
           setLoading(false);
         }
       } catch (error) {
@@ -40,7 +40,7 @@ const ManageEventsPage = () => {
     };
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [fetchOrganizerEvents]);
 
   // Sync from context when it updates (e.g., cache hit from another page)
   useEffect(() => {
@@ -78,7 +78,9 @@ const ManageEventsPage = () => {
       if (res.data.success) {
         setMsg({ type: 'success', text: 'Event and associated registrations deleted successfully.' });
         setEvents((prev) => prev.filter((e) => e._id !== deleteId));
-        invalidateOrganizerEvents();
+        if (removeEventFromCache) {
+          removeEventFromCache(deleteId);
+        }
       }
     } catch (error) {
       setMsg({ type: 'danger', text: error.response?.data?.message || 'Failed to delete event.' });
@@ -210,6 +212,7 @@ const ManageEventsPage = () => {
                               </Link>
                             )}
                             <motion.button
+                              type="button"
                               onClick={() => setDeleteId(event._id)}
                               className="btn btn-danger btn-sm"
                               title="Delete"
@@ -278,7 +281,7 @@ const ManageEventsPage = () => {
                   <h3 className="modal-title" style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <AlertTriangle size={22} /> Delete Event?
                   </h3>
-                  <motion.button onClick={() => setDeleteId(null)} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <motion.button type="button" onClick={() => setDeleteId(null)} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
                     <X size={20} />
                   </motion.button>
                 </div>
@@ -288,10 +291,10 @@ const ManageEventsPage = () => {
                 </p>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                  <motion.button onClick={() => setDeleteId(null)} className="btn btn-secondary" disabled={deleting} whileTap={{ scale: 0.96 }}>
+                  <motion.button type="button" onClick={() => setDeleteId(null)} className="btn btn-secondary" disabled={deleting} whileTap={{ scale: 0.96 }}>
                     Cancel
                   </motion.button>
-                  <motion.button onClick={handleDelete} className="btn btn-danger" disabled={deleting} whileTap={{ scale: 0.96 }}>
+                  <motion.button type="button" onClick={handleDelete} className="btn btn-danger" disabled={deleting} whileTap={{ scale: 0.96 }}>
                     {deleting ? 'Deleting...' : 'Yes, Delete Event'}
                   </motion.button>
                 </div>

@@ -19,8 +19,8 @@ const EventDetailsPage = () => {
     fetchEventDetails,
     studentRegistrations,
     fetchStudentRegistrations,
-    invalidateStudentRegistrations,
-    invalidateEvent,
+    addRegistrationToCache,
+    cancelRegistrationInCache,
   } = useContext(DataContext);
 
   const cachedEvent = eventDetailsCache[id]?.data;
@@ -138,11 +138,8 @@ const EventDetailsPage = () => {
         setRegistrationId(null);
         setShowCancelConfirmation(false);
         setSuccessMsg('Registration cancelled successfully.');
-        if (invalidateStudentRegistrations) {
-          invalidateStudentRegistrations();
-        }
-        if (invalidateEvent) {
-          invalidateEvent(id);
+        if (cancelRegistrationInCache) {
+          cancelRegistrationInCache(registrationId, id);
         }
         setEvent((prev) => ({
           ...prev,
@@ -179,14 +176,12 @@ const EventDetailsPage = () => {
     try {
       const res = await API.post(`/registrations/register/${id}`);
       if (res.data.success) {
+        const newReg = res.data.data || { _id: res.data._id || Date.now().toString(), event: id, status: 'confirmed' };
         setSuccessMsg(res.data.message || 'Successfully registered for this event!');
         setRegistrationStatus('registered');
-        setRegistrationId(res.data.data?._id || null);
-        if (invalidateStudentRegistrations) {
-          invalidateStudentRegistrations();
-        }
-        if (invalidateEvent) {
-          invalidateEvent(id);
+        setRegistrationId(newReg._id);
+        if (addRegistrationToCache) {
+          addRegistrationToCache(newReg);
         }
         // Refresh event data to show updated seats
         setEvent((prev) => ({
@@ -396,6 +391,7 @@ const EventDetailsPage = () => {
                             </Link>
                           </motion.div>
                           <motion.button
+                            type="button"
                             onClick={() => setShowCancelConfirmation(true)}
                             className="btn btn-danger btn-full"
                             whileHover={{ scale: 1.02 }}
@@ -407,7 +403,7 @@ const EventDetailsPage = () => {
                       </div>
                     ) : isFull ? (
                       <div className="event-registration-content">
-                        <button className="btn btn-secondary btn-full btn-lg" disabled>
+                        <button type="button" className="btn btn-secondary btn-full btn-lg" disabled>
                           Registration Full (0 Seats Left)
                         </button>
                       </div>
@@ -417,6 +413,7 @@ const EventDetailsPage = () => {
                           Click below to instantly register and reserve your entry pass.
                         </p>
                         <motion.button
+                          type="button"
                           onClick={handleRegister}
                           disabled={submitting}
                           className="btn btn-primary btn-full btn-lg"
@@ -456,7 +453,7 @@ const EventDetailsPage = () => {
               >
                 <div className="modal-header">
                   <h3 className="modal-title" style={{ color: 'var(--danger)' }}>Cancel Registration?</h3>
-                  <button onClick={() => setShowCancelConfirmation(false)} disabled={cancelling}>
+                  <button type="button" onClick={() => setShowCancelConfirmation(false)} disabled={cancelling}>
                     <span aria-hidden="true">×</span>
                   </button>
                 </div>
@@ -465,6 +462,7 @@ const EventDetailsPage = () => {
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
                   <motion.button
+                    type="button"
                     onClick={() => setShowCancelConfirmation(false)}
                     className="btn btn-secondary"
                     disabled={cancelling}
@@ -473,6 +471,7 @@ const EventDetailsPage = () => {
                     Keep Registration
                   </motion.button>
                   <motion.button
+                    type="button"
                     onClick={handleCancelRegistration}
                     className="btn btn-danger"
                     disabled={cancelling}

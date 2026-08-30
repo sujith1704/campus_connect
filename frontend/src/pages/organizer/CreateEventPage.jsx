@@ -11,7 +11,7 @@ const categories = ['Technical', 'Cultural', 'Sports', 'Workshop', 'Seminar', 'G
 
 const CreateEventPage = () => {
   const navigate = useNavigate();
-  const { invalidateOrganizerEvents } = useContext(DataContext) || {};
+  const { addEventToCache } = useContext(DataContext) || {};
   const returnPath = '/organizer/dashboard';
 
   const [formData, setFormData] = useState({
@@ -65,8 +65,8 @@ const CreateEventPage = () => {
     try {
       const res = await API.post('/events', formData);
       if (res.data.success) {
-        if (invalidateOrganizerEvents) {
-          invalidateOrganizerEvents();
+        if (addEventToCache && res.data.data) {
+          addEventToCache(res.data.data);
         }
         setSuccessMsg('Event created successfully!');
         setTimeout(() => {

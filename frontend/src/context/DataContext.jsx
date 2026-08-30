@@ -26,6 +26,31 @@ export const DataProvider = ({ children }) => {
   const [approvedEventsLoading, setApprovedEventsLoading] = useState(false);
   const [platformStatsLoading, setPlatformStatsLoading] = useState(false);
 
+  // Refs to allow stable callbacks without re-triggering component consumers
+  const organizerEventsRef = useRef(organizerEvents);
+  organizerEventsRef.current = organizerEvents;
+
+  const studentRegistrationsRef = useRef(studentRegistrations);
+  studentRegistrationsRef.current = studentRegistrations;
+
+  const deletedEventsRef = useRef(deletedEvents);
+  deletedEventsRef.current = deletedEvents;
+
+  const approvedEventsRef = useRef(approvedEvents);
+  approvedEventsRef.current = approvedEvents;
+
+  const platformStatsRef = useRef(platformStats);
+  platformStatsRef.current = platformStats;
+
+  const adminDataRef = useRef(adminData);
+  adminDataRef.current = adminData;
+
+  const eventDetailsCacheRef = useRef(eventDetailsCache);
+  eventDetailsCacheRef.current = eventDetailsCache;
+
+  const eventAttendeesCacheRef = useRef(eventAttendeesCache);
+  eventAttendeesCacheRef.current = eventAttendeesCache;
+
   // Prevent concurrent duplicate fetches
   const activePromises = useRef({});
 
@@ -44,16 +69,19 @@ export const DataProvider = ({ children }) => {
     }
   }, [isAuthenticated]);
 
-  // 1. Fetch Organizer Events
+  // 1. Fetch Organizer Events (Stable callback reference)
   const fetchOrganizerEvents = useCallback(async (force = false) => {
     const now = Date.now();
-    if (!force && organizerEvents.data !== null && (now - organizerEvents.fetchedAt) < CACHE_TTL) {
-      return organizerEvents.data;
+    const current = organizerEventsRef.current;
+    if (!force && current.data !== null && (now - current.fetchedAt) < CACHE_TTL) {
+      return current.data;
     }
     if (activePromises.current.organizerEvents) {
       return activePromises.current.organizerEvents;
     }
-    setOrganizerEventsLoading(true);
+    if (current.data === null) {
+      setOrganizerEventsLoading(true);
+    }
     const promise = (async () => {
       try {
         const res = await API.get('/events/organizer/my-events');
@@ -62,10 +90,10 @@ export const DataProvider = ({ children }) => {
           setOrganizerEvents({ data, fetchedAt: Date.now() });
           return data;
         }
-        return organizerEvents.data || [];
+        return current.data || [];
       } catch (error) {
         console.error('Error fetching organizer events:', error);
-        return organizerEvents.data || [];
+        return current.data || [];
       } finally {
         setOrganizerEventsLoading(false);
         delete activePromises.current.organizerEvents;
@@ -73,18 +101,21 @@ export const DataProvider = ({ children }) => {
     })();
     activePromises.current.organizerEvents = promise;
     return promise;
-  }, [organizerEvents]);
+  }, []);
 
-  // 2. Fetch Student Registrations
+  // 2. Fetch Student Registrations (Stable callback reference)
   const fetchStudentRegistrations = useCallback(async (force = false) => {
     const now = Date.now();
-    if (!force && studentRegistrations.data !== null && (now - studentRegistrations.fetchedAt) < CACHE_TTL) {
-      return studentRegistrations.data;
+    const current = studentRegistrationsRef.current;
+    if (!force && current.data !== null && (now - current.fetchedAt) < CACHE_TTL) {
+      return current.data;
     }
     if (activePromises.current.studentRegistrations) {
       return activePromises.current.studentRegistrations;
     }
-    setStudentRegistrationsLoading(true);
+    if (current.data === null) {
+      setStudentRegistrationsLoading(true);
+    }
     const promise = (async () => {
       try {
         const res = await API.get('/registrations/my-registrations');
@@ -93,10 +124,10 @@ export const DataProvider = ({ children }) => {
           setStudentRegistrations({ data, fetchedAt: Date.now() });
           return data;
         }
-        return studentRegistrations.data || [];
+        return current.data || [];
       } catch (error) {
         console.error('Error fetching student registrations:', error);
-        return studentRegistrations.data || [];
+        return current.data || [];
       } finally {
         setStudentRegistrationsLoading(false);
         delete activePromises.current.studentRegistrations;
@@ -104,18 +135,21 @@ export const DataProvider = ({ children }) => {
     })();
     activePromises.current.studentRegistrations = promise;
     return promise;
-  }, [studentRegistrations]);
+  }, []);
 
-  // 3. Fetch Deleted Events
+  // 3. Fetch Deleted Events (Stable callback reference)
   const fetchDeletedEvents = useCallback(async (force = false) => {
     const now = Date.now();
-    if (!force && deletedEvents.data !== null && (now - deletedEvents.fetchedAt) < CACHE_TTL) {
-      return deletedEvents.data;
+    const current = deletedEventsRef.current;
+    if (!force && current.data !== null && (now - current.fetchedAt) < CACHE_TTL) {
+      return current.data;
     }
     if (activePromises.current.deletedEvents) {
       return activePromises.current.deletedEvents;
     }
-    setDeletedEventsLoading(true);
+    if (current.data === null) {
+      setDeletedEventsLoading(true);
+    }
     const promise = (async () => {
       try {
         const res = await API.get('/events/deleted');
@@ -124,10 +158,10 @@ export const DataProvider = ({ children }) => {
           setDeletedEvents({ data, fetchedAt: Date.now() });
           return data;
         }
-        return deletedEvents.data || [];
+        return current.data || [];
       } catch (error) {
         console.error('Error fetching deleted events:', error);
-        return deletedEvents.data || [];
+        return current.data || [];
       } finally {
         setDeletedEventsLoading(false);
         delete activePromises.current.deletedEvents;
@@ -135,18 +169,21 @@ export const DataProvider = ({ children }) => {
     })();
     activePromises.current.deletedEvents = promise;
     return promise;
-  }, [deletedEvents]);
+  }, []);
 
-  // 4. Fetch Approved Events (used in EventsPage, Past events tab, etc.)
+  // 4. Fetch Approved Events (Stable callback reference)
   const fetchApprovedEvents = useCallback(async (force = false) => {
     const now = Date.now();
-    if (!force && approvedEvents.data !== null && (now - approvedEvents.fetchedAt) < CACHE_TTL) {
-      return approvedEvents.data;
+    const current = approvedEventsRef.current;
+    if (!force && current.data !== null && (now - current.fetchedAt) < CACHE_TTL) {
+      return current.data;
     }
     if (activePromises.current.approvedEvents) {
       return activePromises.current.approvedEvents;
     }
-    setApprovedEventsLoading(true);
+    if (current.data === null) {
+      setApprovedEventsLoading(true);
+    }
     const promise = (async () => {
       try {
         const res = await API.get('/events?status=approved');
@@ -155,10 +192,10 @@ export const DataProvider = ({ children }) => {
           setApprovedEvents({ data, fetchedAt: Date.now() });
           return data;
         }
-        return approvedEvents.data || [];
+        return current.data || [];
       } catch (error) {
         console.error('Error fetching approved events:', error);
-        return approvedEvents.data || [];
+        return current.data || [];
       } finally {
         setApprovedEventsLoading(false);
         delete activePromises.current.approvedEvents;
@@ -166,18 +203,21 @@ export const DataProvider = ({ children }) => {
     })();
     activePromises.current.approvedEvents = promise;
     return promise;
-  }, [approvedEvents]);
+  }, []);
 
-  // 5. Fetch Platform Stats (used in HomePage)
+  // 5. Fetch Platform Stats (Stable callback reference)
   const fetchPlatformStats = useCallback(async (force = false) => {
     const now = Date.now();
-    if (!force && platformStats.data !== null && (now - platformStats.fetchedAt) < CACHE_TTL) {
-      return platformStats.data;
+    const current = platformStatsRef.current;
+    if (!force && current.data !== null && (now - current.fetchedAt) < CACHE_TTL) {
+      return current.data;
     }
     if (activePromises.current.platformStats) {
       return activePromises.current.platformStats;
     }
-    setPlatformStatsLoading(true);
+    if (current.data === null) {
+      setPlatformStatsLoading(true);
+    }
     const promise = (async () => {
       try {
         const res = await API.get('/stats');
@@ -192,10 +232,10 @@ export const DataProvider = ({ children }) => {
           setPlatformStats({ data: formatted, fetchedAt: Date.now() });
           return formatted;
         }
-        return platformStats.data;
+        return current.data;
       } catch (error) {
         console.error('Error fetching stats:', error);
-        return platformStats.data;
+        return current.data;
       } finally {
         setPlatformStatsLoading(false);
         delete activePromises.current.platformStats;
@@ -203,12 +243,12 @@ export const DataProvider = ({ children }) => {
     })();
     activePromises.current.platformStats = promise;
     return promise;
-  }, [platformStats]);
+  }, []);
 
-  // 6. Fetch Event Details by ID
+  // 6. Fetch Event Details by ID (Stable callback reference)
   const fetchEventDetails = useCallback(async (eventId, force = false) => {
     const now = Date.now();
-    const cached = eventDetailsCache[eventId];
+    const cached = eventDetailsCacheRef.current[eventId];
     if (!force && cached && (now - cached.fetchedAt) < CACHE_TTL) {
       return cached.data;
     }
@@ -237,12 +277,12 @@ export const DataProvider = ({ children }) => {
     })();
     activePromises.current[key] = promise;
     return promise;
-  }, [eventDetailsCache]);
+  }, []);
 
-  // 7. Fetch Event Attendees by Event ID (Organizer registrations page)
+  // 7. Fetch Event Attendees by Event ID (Stable callback reference)
   const fetchEventAttendees = useCallback(async (eventId, force = false) => {
     const now = Date.now();
-    const cached = eventAttendeesCache[eventId];
+    const cached = eventAttendeesCacheRef.current[eventId];
     if (!force && cached && (now - cached.fetchedAt) < CACHE_TTL) {
       return cached;
     }
@@ -275,13 +315,14 @@ export const DataProvider = ({ children }) => {
     })();
     activePromises.current[key] = promise;
     return promise;
-  }, [eventAttendeesCache]);
+  }, []);
 
-  // 8. Fetch Admin / Organizer Panel Data
+  // 8. Fetch Admin Data (Stable callback reference)
   const fetchAdminData = useCallback(async (force = false) => {
     const now = Date.now();
-    if (!force && adminData.data !== null && (now - adminData.fetchedAt) < CACHE_TTL) {
-      return adminData.data;
+    const current = adminDataRef.current;
+    if (!force && current.data !== null && (now - current.fetchedAt) < CACHE_TTL) {
+      return current.data;
     }
     if (activePromises.current.adminData) {
       return activePromises.current.adminData;
@@ -304,46 +345,212 @@ export const DataProvider = ({ children }) => {
         return data;
       } catch (error) {
         console.error('Error fetching admin data:', error);
-        return adminData.data || null;
+        return current.data || null;
       } finally {
         delete activePromises.current.adminData;
       }
     })();
     activePromises.current.adminData = promise;
     return promise;
-  }, [adminData]);
-
-  // Invalidation helpers
-  const invalidateOrganizerEvents = useCallback(() => {
-    setOrganizerEvents({ data: null, fetchedAt: 0 });
-    setApprovedEvents({ data: null, fetchedAt: 0 });
-    setAdminData({ data: null, fetchedAt: 0 });
   }, []);
 
-  const invalidateStudentRegistrations = useCallback(() => {
-    setStudentRegistrations({ data: null, fetchedAt: 0 });
-    setAdminData({ data: null, fetchedAt: 0 });
+  // =========================================================================
+  // GRANULAR CACHE MUTATION HELPERS (Smooth in-place updates, NO full-page flashes)
+  // =========================================================================
+
+  // Add newly created event to cache
+  const addEventToCache = useCallback((newEvent) => {
+    if (!newEvent || !newEvent._id) return;
+    setOrganizerEvents((prev) => ({
+      data: prev.data ? [newEvent, ...prev.data.filter((e) => e._id !== newEvent._id)] : [newEvent],
+      fetchedAt: Date.now(),
+    }));
+    if (newEvent.status === 'approved') {
+      setApprovedEvents((prev) => ({
+        data: prev.data ? [newEvent, ...prev.data.filter((e) => e._id !== newEvent._id)] : [newEvent],
+        fetchedAt: Date.now(),
+      }));
+    }
+    setEventDetailsCache((prev) => ({
+      ...prev,
+      [newEvent._id]: { data: newEvent, fetchedAt: Date.now() },
+    }));
   }, []);
 
-  const invalidateDeletedEvents = useCallback(() => {
-    setDeletedEvents({ data: null, fetchedAt: 0 });
-    setApprovedEvents({ data: null, fetchedAt: 0 });
-    setOrganizerEvents({ data: null, fetchedAt: 0 });
+  // Update existing event in cache
+  const updateEventInCache = useCallback((updatedEvent) => {
+    if (!updatedEvent || !updatedEvent._id) return;
+    setOrganizerEvents((prev) => ({
+      data: prev.data ? prev.data.map((e) => (e._id === updatedEvent._id ? { ...e, ...updatedEvent } : e)) : null,
+      fetchedAt: prev.fetchedAt || Date.now(),
+    }));
+    setApprovedEvents((prev) => ({
+      data: prev.data ? prev.data.map((e) => (e._id === updatedEvent._id ? { ...e, ...updatedEvent } : e)) : null,
+      fetchedAt: prev.fetchedAt || Date.now(),
+    }));
+    setEventDetailsCache((prev) => ({
+      ...prev,
+      [updatedEvent._id]: {
+        data: prev[updatedEvent._id]?.data ? { ...prev[updatedEvent._id].data, ...updatedEvent } : updatedEvent,
+        fetchedAt: Date.now(),
+      },
+    }));
   }, []);
 
-  const invalidateEvent = useCallback((eventId) => {
+  // Delete event (move to deletedEvents in cache)
+  const removeEventFromCache = useCallback((eventId, deletedEventObj) => {
+    if (!eventId) return;
+    let target = deletedEventObj;
+    setOrganizerEvents((prev) => {
+      if (prev.data) {
+        if (!target) target = prev.data.find((e) => e._id === eventId);
+        return { data: prev.data.filter((e) => e._id !== eventId), fetchedAt: Date.now() };
+      }
+      return prev;
+    });
+    setApprovedEvents((prev) => ({
+      data: prev.data ? prev.data.filter((e) => e._id !== eventId) : null,
+      fetchedAt: Date.now(),
+    }));
+    if (target) {
+      const markedDeleted = { ...target, isDeleted: true, deletedAt: new Date().toISOString() };
+      setDeletedEvents((prev) => ({
+        data: prev.data ? [markedDeleted, ...prev.data.filter((e) => e._id !== eventId)] : [markedDeleted],
+        fetchedAt: Date.now(),
+      }));
+      setEventDetailsCache((prev) => ({
+        ...prev,
+        [eventId]: { data: markedDeleted, fetchedAt: Date.now() },
+      }));
+    }
+  }, []);
+
+  // Restore deleted event
+  const restoreEventInCache = useCallback((eventId, restoredEvent) => {
+    if (!eventId) return;
+    setDeletedEvents((prev) => ({
+      data: prev.data ? prev.data.filter((e) => e._id !== eventId) : [],
+      fetchedAt: Date.now(),
+    }));
+    if (restoredEvent) {
+      const activeObj = { ...restoredEvent, isDeleted: false };
+      setOrganizerEvents((prev) => ({
+        data: prev.data ? [activeObj, ...prev.data.filter((e) => e._id !== eventId)] : [activeObj],
+        fetchedAt: Date.now(),
+      }));
+      if (activeObj.status === 'approved') {
+        setApprovedEvents((prev) => ({
+          data: prev.data ? [activeObj, ...prev.data.filter((e) => e._id !== eventId)] : [activeObj],
+          fetchedAt: Date.now(),
+        }));
+      }
+      setEventDetailsCache((prev) => ({
+        ...prev,
+        [eventId]: { data: activeObj, fetchedAt: Date.now() },
+      }));
+    }
+  }, []);
+
+  // Permanently purge deleted event
+  const purgeEventFromCache = useCallback((eventId) => {
+    if (!eventId) return;
+    setDeletedEvents((prev) => ({
+      data: prev.data ? prev.data.filter((e) => e._id !== eventId) : [],
+      fetchedAt: Date.now(),
+    }));
     setEventDetailsCache((prev) => {
       const next = { ...prev };
       delete next[eventId];
       return next;
     });
-    setEventAttendeesCache((prev) => {
-      const next = { ...prev };
-      delete next[eventId];
-      return next;
+  }, []);
+
+  // Add new student registration to cache
+  const addRegistrationToCache = useCallback((newRegistration) => {
+    if (!newRegistration) return;
+    setStudentRegistrations((prev) => ({
+      data: prev.data ? [newRegistration, ...prev.data.filter((r) => r._id !== newRegistration._id)] : [newRegistration],
+      fetchedAt: Date.now(),
+    }));
+    const eventId = newRegistration.event?._id || newRegistration.event;
+    if (eventId) {
+      setEventDetailsCache((prev) => {
+        if (prev[eventId]?.data) {
+          return {
+            ...prev,
+            [eventId]: {
+              data: {
+                ...prev[eventId].data,
+                registeredCount: (prev[eventId].data.registeredCount || 0) + 1,
+              },
+              fetchedAt: Date.now(),
+            },
+          };
+        }
+        return prev;
+      });
+      setApprovedEvents((prev) => ({
+        data: prev.data ? prev.data.map((e) => e._id === eventId ? { ...e, registeredCount: (e.registeredCount || 0) + 1 } : e) : null,
+        fetchedAt: prev.fetchedAt || Date.now(),
+      }));
+    }
+  }, []);
+
+  // Cancel student registration in cache
+  const cancelRegistrationInCache = useCallback((registrationId, eventId) => {
+    setStudentRegistrations((prev) => {
+      if (!prev.data) return prev;
+      return {
+        data: prev.data.map((r) => r._id === registrationId ? { ...r, status: 'cancelled' } : r),
+        fetchedAt: Date.now(),
+      };
     });
-    setApprovedEvents({ data: null, fetchedAt: 0 });
-    setOrganizerEvents({ data: null, fetchedAt: 0 });
+    if (eventId) {
+      setEventDetailsCache((prev) => {
+        if (prev[eventId]?.data) {
+          return {
+            ...prev,
+            [eventId]: {
+              data: {
+                ...prev[eventId].data,
+                registeredCount: Math.max(0, (prev[eventId].data.registeredCount || 0) - 1),
+              },
+              fetchedAt: Date.now(),
+            },
+          };
+        }
+        return prev;
+      });
+      setApprovedEvents((prev) => ({
+        data: prev.data ? prev.data.map((e) => e._id === eventId ? { ...e, registeredCount: Math.max(0, (e.registeredCount || 0) - 1) } : e) : null,
+        fetchedAt: prev.fetchedAt || Date.now(),
+      }));
+    }
+  }, []);
+
+  // Soft invalidation helpers (expire timestamp without clearing data array)
+  const invalidateOrganizerEvents = useCallback(() => {
+    setOrganizerEvents((prev) => ({ data: prev.data, fetchedAt: 0 }));
+    setApprovedEvents((prev) => ({ data: prev.data, fetchedAt: 0 }));
+    setAdminData((prev) => ({ data: prev.data, fetchedAt: 0 }));
+  }, []);
+
+  const invalidateStudentRegistrations = useCallback(() => {
+    setStudentRegistrations((prev) => ({ data: prev.data, fetchedAt: 0 }));
+  }, []);
+
+  const invalidateDeletedEvents = useCallback(() => {
+    setDeletedEvents((prev) => ({ data: prev.data, fetchedAt: 0 }));
+  }, []);
+
+  const invalidateEvent = useCallback((eventId) => {
+    if (!eventId) return;
+    setEventDetailsCache((prev) => {
+      if (prev[eventId]) {
+        return { ...prev, [eventId]: { data: prev[eventId].data, fetchedAt: 0 } };
+      }
+      return prev;
+    });
   }, []);
 
   return (
@@ -354,12 +561,19 @@ export const DataProvider = ({ children }) => {
         organizerEventsLoading,
         fetchOrganizerEvents,
         invalidateOrganizerEvents,
+        addEventToCache,
+        updateEventInCache,
+        removeEventFromCache,
+        restoreEventInCache,
+        purgeEventFromCache,
 
         // Student registrations
         studentRegistrations: studentRegistrations.data,
         studentRegistrationsLoading,
         fetchStudentRegistrations,
         invalidateStudentRegistrations,
+        addRegistrationToCache,
+        cancelRegistrationInCache,
 
         // Deleted events
         deletedEvents: deletedEvents.data,
