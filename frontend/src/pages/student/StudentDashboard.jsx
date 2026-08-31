@@ -58,10 +58,10 @@ const StudentDashboard = () => {
       <div className="container main-content">
         {/* Welcome Banner */}
         <div className="dashboard-banner">
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem', color: '#ffffff' }}>
+          <h1 className="dashboard-banner-title">
             Student Portal 🎟️
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>
+          <p className="dashboard-banner-subtitle">
             Discover college events, manage registrations, and check your official ticket passes.
           </p>
         </div>
@@ -109,7 +109,7 @@ const StudentDashboard = () => {
             <p>Loading your dashboard...</p>
           </div>
         ) : activeRegistrations.length > 0 ? (
-          <div className="table-responsive">
+          <div className="table-responsive dashboard-table-wrap">
             <table className="custom-table">
               <thead>
                 <tr>
@@ -123,32 +123,37 @@ const StudentDashboard = () => {
               </thead>
               <motion.tbody variants={containerVariants} initial="initial" animate="animate">
                 {activeRegistrations.slice(0, 5).map((reg) => (
-                  <motion.tr key={reg._id} variants={cardVariants}>
-                    <td>
+                  <motion.tr key={reg._id} variants={cardVariants} className="dashboard-reg-row">
+                    <td className="dashboard-col-title">
                       <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{reg.event?.title}</div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>
                         Org: {reg.event?.organizer?.name || 'College'}
                       </div>
                     </td>
-                    <td>
+                    <td className="dashboard-col-category">
                       <span className="user-badge student">{reg.event?.category}</span>
                     </td>
-                    <td className="event-date-cell" style={{ whiteSpace: 'nowrap' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ whiteSpace: 'nowrap' }}>📅 {formatDate(reg.event?.date)}</span>
-                        <span style={{ color: 'var(--slate-500)', whiteSpace: 'nowrap' }}>⏰ {reg.event?.time}</span>
+                    <td className="event-date-cell dashboard-col-date">
+                      <div style={{ display: 'flex', flexDirection: 'column', fontSize: '0.85rem' }}>
+                        <span>📅 {formatDate(reg.event?.date)}</span>
+                        <span style={{ color: 'var(--slate-500)' }}>⏰ {reg.event?.time}</span>
                       </div>
                     </td>
-                    <td>{reg.event?.venue}</td>
-                    <td>
+                    <td className="dashboard-col-venue">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem' }}>
+                        <span>📍</span>
+                        <span>{reg.event?.venue}</span>
+                      </div>
+                    </td>
+                    <td className="dashboard-col-status">
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--success)', fontWeight: 700, fontSize: '0.85rem' }}>
                         <CheckCircle size={14} /> Confirmed
                       </span>
                     </td>
-                    <td>
+                    <td className="dashboard-col-action">
                       <motion.button
                         onClick={() => setSelectedTicket(reg)}
-                        className="btn btn-secondary btn-sm"
+                        className="btn btn-secondary btn-sm dashboard-pass-btn"
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}

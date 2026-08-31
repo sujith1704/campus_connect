@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
@@ -60,6 +60,20 @@ const PortalSidebar = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth > 900 : true
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth > 900);
+      if (window.innerWidth > 900) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const studentLinks = [
     { label: 'Home', path: '/', icon: Home },
@@ -99,7 +113,7 @@ const PortalSidebar = () => {
   const isProfileActive = location.pathname === profilePath;
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
 
-  const motionState = isHovered ? 'expanded' : 'collapsed';
+  const motionState = isDesktop ? (isHovered ? 'expanded' : 'collapsed') : undefined;
 
   return (
     <>
@@ -122,16 +136,16 @@ const PortalSidebar = () => {
         />
       )}
 
-      {/* Hover-Expandable Vertical Sidebar */}
+      {/* Vertical Sidebar */}
       <motion.aside
         className={`portal-sidebar ${isStudent ? 'student-sidebar' : 'organizer-sidebar'} ${
           isOpen ? 'open' : ''
-        } ${isHovered ? 'hover-expanded' : ''}`}
-        initial="collapsed"
-        animate={motionState}
-        variants={sidebarVariants}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        } ${isHovered && isDesktop ? 'hover-expanded' : ''}`}
+        initial={isDesktop ? 'collapsed' : false}
+        animate={isDesktop ? motionState : false}
+        variants={isDesktop ? sidebarVariants : undefined}
+        onMouseEnter={isDesktop ? () => setIsHovered(true) : undefined}
+        onMouseLeave={isDesktop ? () => setIsHovered(false) : undefined}
         aria-label={`${isStudent ? 'Student' : 'Organizer'} Portal Navigation`}
       >
         {/* Top Branding Section */}
@@ -144,15 +158,15 @@ const PortalSidebar = () => {
           >
             <motion.div
               className="portal-sidebar-logo-icon"
-              variants={iconMotionVariants}
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.94 }}
+              variants={isDesktop ? iconMotionVariants : undefined}
+              whileHover={isDesktop ? { scale: 1.08 } : undefined}
+              whileTap={isDesktop ? { scale: 0.94 } : undefined}
             >
               <GraduationCap size={22} />
             </motion.div>
             <motion.div
               className="portal-sidebar-brand-text-wrap"
-              variants={labelMotionVariants}
+              variants={isDesktop ? labelMotionVariants : undefined}
             >
               <span className="portal-sidebar-brand-title">CampusConnect</span>
               <span className="portal-sidebar-portal-tag">
@@ -175,17 +189,17 @@ const PortalSidebar = () => {
                   to={path}
                   onClick={closeSidebar}
                   className={`portal-sidebar-link ${active ? 'active' : ''}`}
-                  title={!isHovered ? label : undefined}
+                  title={isDesktop && !isHovered ? label : undefined}
                 >
                   <motion.div
                     className="portal-sidebar-icon-wrap"
-                    variants={iconMotionVariants}
+                    variants={isDesktop ? iconMotionVariants : undefined}
                   >
                     <Icon size={19} />
                   </motion.div>
                   <motion.span
                     className="portal-sidebar-link-label"
-                    variants={labelMotionVariants}
+                    variants={isDesktop ? labelMotionVariants : undefined}
                   >
                     {label}
                   </motion.span>
@@ -205,17 +219,17 @@ const PortalSidebar = () => {
             to={profilePath}
             className={`portal-sidebar-user-link ${isProfileActive ? 'active' : ''}`}
             onClick={closeSidebar}
-            title={!isHovered ? `Profile (${user?.name || 'User'})` : undefined}
+            title={isDesktop && !isHovered ? `Profile (${user?.name || 'User'})` : undefined}
           >
             <motion.div
               className={`portal-sidebar-avatar ${user?.role || 'student'}`}
-              variants={iconMotionVariants}
+              variants={isDesktop ? iconMotionVariants : undefined}
             >
               {userInitial}
             </motion.div>
             <motion.div
               className="portal-sidebar-user-info"
-              variants={labelMotionVariants}
+              variants={isDesktop ? labelMotionVariants : undefined}
             >
               <strong className="portal-sidebar-user-name">{user?.name || 'User'}</strong>
               <span className={`portal-sidebar-role-badge ${user?.role || 'student'}`}>
@@ -229,18 +243,18 @@ const PortalSidebar = () => {
           <button
             onClick={handleLogout}
             className="portal-sidebar-logout-btn"
-            title={!isHovered ? 'Logout' : undefined}
+            title={isDesktop && !isHovered ? 'Logout' : undefined}
             type="button"
           >
             <motion.div
               className="portal-sidebar-icon-wrap logout-icon-wrap"
-              variants={iconMotionVariants}
+              variants={isDesktop ? iconMotionVariants : undefined}
             >
               <LogOut size={19} />
             </motion.div>
             <motion.span
               className="portal-sidebar-link-label logout-text"
-              variants={labelMotionVariants}
+              variants={isDesktop ? labelMotionVariants : undefined}
             >
               Logout
             </motion.span>

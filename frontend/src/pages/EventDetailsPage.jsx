@@ -7,13 +7,15 @@ import { DataContext } from '../context/DataContext';
 import { Calendar, Clock, MapPin, Users, CheckCircle, AlertTriangle, ArrowLeft, Ticket } from 'lucide-react';
 import { formatDate } from '../utils/date';
 import PageTransition from '../components/PageTransition';
+import RegistrationSuccessModal from '../components/RegistrationSuccessModal';
+import TicketPassModal from '../components/TicketPassModal';
 import { alertVariants, backdropVariants, modalVariants } from '../utils/animations';
 
 const EventDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isStudent, isOrganizer } = useContext(AuthContext);
+  const { user, isAuthenticated, isStudent, isOrganizer } = useContext(AuthContext);
   const {
     eventDetailsCache,
     fetchEventDetails,
@@ -29,6 +31,9 @@ const EventDetailsPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [latestRegistration, setLatestRegistration] = useState(null);
+  const [showTicketModal, setShowTicketModal] = useState(false);
 
   // Determine initial registration status from cached registrations if available
   const getInitialRegStatus = () => {
@@ -176,10 +181,12 @@ const EventDetailsPage = () => {
     try {
       const res = await API.post(`/registrations/register/${id}`);
       if (res.data.success) {
-        const newReg = res.data.data || { _id: res.data._id || Date.now().toString(), event: id, status: 'confirmed' };
+        const newReg = res.data.data || { _id: res.data._id || Date.now().toString(), event: event, status: 'confirmed' };
         setSuccessMsg(res.data.message || 'Successfully registered for this event!');
         setRegistrationStatus('registered');
         setRegistrationId(newReg._id);
+        setLatestRegistration(newReg);
+        setShowSuccessModal(true);
         if (addRegistrationToCache) {
           addRegistrationToCache(newReg);
         }
@@ -484,6 +491,28 @@ const EventDetailsPage = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Celebration Success Modal */}
+        {showSuccessModal && (
+          <RegistrationSuccessModal
+            event={event}
+            registration={latestRegistration}
+            onViewPass={() => {
+              setShowSuccessModal(false);
+              setShowTicketModal(true);
+            }}
+            onClose={() => setShowSuccessModal(false)}
+          />
+        )}
+
+        {/* Official Ticket Pass Modal */}
+        {showTicketModal && (
+          <TicketPassModal
+            ticket={latestRegistration || { _id: registrationId || id, event }}
+            user={user}
+            onClose={() => setShowTicketModal(false)}
+          />
+        )}
       </div>
     </PageTransition>
   );
