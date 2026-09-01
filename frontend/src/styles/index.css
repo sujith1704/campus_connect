@@ -3326,6 +3326,14 @@ button.btn:active:not(:disabled) {
 
   .hero-title {
     font-size: 2.25rem;
+    text-align: center;
+  }
+
+  .particle-text-mobile {
+    display: block;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .hero-subtitle {

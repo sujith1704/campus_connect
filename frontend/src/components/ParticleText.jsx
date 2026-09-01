@@ -237,6 +237,14 @@ const ParticleText = ({ children, className = '', style = {} }) => {
     );
   }
 
+  if (isMobile) {
+    return (
+      <span className={`particle-text-mobile ${className}`} style={style}>
+        {children}
+      </span>
+    );
+  }
+
   return (
     <div
       ref={containerRef}

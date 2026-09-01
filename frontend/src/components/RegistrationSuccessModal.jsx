@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { GraduationCap, CheckCircle2, Ticket, Calendar, Clock, MapPin, X, Sparkles } from 'lucide-react';
 import { formatDate } from '../utils/date';
 
@@ -21,6 +22,7 @@ import { formatDate } from '../utils/date';
  */
 const ConfettiCanvas = () => {
   const canvasRef = useRef(null);
+  const [isFinished, setIsFinished] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -48,6 +50,8 @@ const ConfettiCanvas = () => {
     const isMobile = width < 600;
 
     const shapes = ['rect', 'square', 'streamer', 'oval', 'dot'];
+    const DURATION = 3000;
+    const FADE_START = 2700;
 
     // ── Wide-area uniform emitter ─────────────────────────────────────────
     // Particles spawn uniformly across 10%–90% of screen width so the
@@ -58,16 +62,16 @@ const ConfettiCanvas = () => {
     const particles = [];
 
     for (let i = 0; i < totalParticles; i++) {
-      // Uniform horizontal position across 70% of screen (15%→85%)
-      const x = width * (0.15 + Math.random() * 0.70);
-      // Spawn just above the top edge, with slight vertical scatter
-      const y = -10 - Math.random() * 60;
+      // Spread emitters across the upper viewport with enough overlap to read as one burst.
+      const x = width * (0.08 + Math.random() * 0.84);
+      const y = -10 - Math.random() * 70;
 
-      // Gentle downward initial velocity — no horizontal burst canon angle
-      // Small random vx gives each piece its own initial lean left/right
-      const speed = 0.882 + Math.random() * 2.205;  // +5% over previous values
+      // Wider independent horizontal burst gives each emission area a roughly 9 cm spread.
+      const speed = 2.4 + Math.random() * 6;
       const vx = (Math.random() - 0.5) * speed;
-      const vy = 0.551 + Math.random() * 1.323; // +5% over previous values
+      const targetFallDistance = height * (1.2 + Math.random() * 0.15) + 80;
+      const baseFallSpeed = targetFallDistance / ((DURATION - 300) / 1000 * 60);
+      const vy = baseFallSpeed * (0.78 + Math.random() * 0.44);
 
       const shape = shapes[Math.floor(Math.random() * shapes.length)];
       const size = shape === 'streamer'
@@ -83,19 +87,23 @@ const ConfettiCanvas = () => {
         y,
         vx,
         vy,
-        // Very gentle gravity — key to slow elegant float
-        gravity: 0.04 + Math.random() * 0.05,
-        // Air-drag reduces speed each frame (0.97–0.99 → slow decay)
-        drag: 0.975 + Math.random() * 0.012,
-        // Lateral oscillation for papery waft
-        waveAmp: 0.3 + Math.random() * 0.6,
-        waveFreq: 0.015 + Math.random() * 0.025,
+        // Small per-piece gravity and air resistance keep speeds independent.
+        gravity: 0.008 + Math.random() * 0.018,
+        drag: 0.985 + Math.random() * 0.012,
+        verticalDrag: 0.9992 + Math.random() * 0.0006,
+        // Independent smooth lateral waft prevents parallel trajectories.
+        waveAmp: 0.45 + Math.random() * 1.35,
+        waveFreq: 0.012 + Math.random() * 0.026,
         wavePhase: Math.random() * Math.PI * 2,
+        driftAmp: 0.25 + Math.random() * 0.75,
+        driftFreq: 0.006 + Math.random() * 0.012,
+        driftPhase: Math.random() * Math.PI * 2,
+        driftDirection: Math.random() < 0.5 ? -1 : 1,
         w: size.w,
         h: size.h,
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
         rotation: Math.random() * 360,
-        rotSpeed: (Math.random() - 0.5) * 4,
+        rotSpeed: (Math.random() - 0.5) * (2.5 + Math.random() * 6),
         tiltAngle: Math.random() * Math.PI * 2,
         tiltSpeed: 0.02 + Math.random() * 0.04,
         shape,
@@ -116,13 +124,11 @@ const ConfettiCanvas = () => {
     // ── Animation loop ────────────────────────────────────────────────────
     let rafId;
     const startTime = Date.now();
-    const DURATION = 3000;
-    const FADE_START = 2700;
-
     const render = () => {
       const elapsed = Date.now() - startTime;
       if (elapsed > DURATION) {
         ctx.clearRect(0, 0, width, height);
+        setIsFinished(true);
         return;
       }
 
@@ -136,15 +142,15 @@ const ConfettiCanvas = () => {
       particles.forEach((p) => {
         if (elapsed < p.spawnDelay) return;
 
-        // Apply air drag each frame (bleeds burst velocity → slow float)
+        // Keep horizontal motion gentle while preserving viewport-relative fall speed.
         p.vx *= p.drag;
-        p.vy *= p.drag;
-        // Gravity accumulates (but very gently)
+        p.vy *= p.verticalDrag;
         p.vy += p.gravity;
         // Sinusoidal lateral waft
         const wave = Math.sin(p.wavePhase + elapsed * p.waveFreq) * p.waveAmp;
+        const drift = Math.sin(p.driftPhase + elapsed * p.driftFreq) * p.driftAmp * p.driftDirection;
 
-        p.x += p.vx + wave;
+        p.x += p.vx + wave + drift;
         p.y += p.vy;
         p.rotation += p.rotSpeed;
         p.tiltAngle += p.tiltSpeed;
@@ -153,9 +159,9 @@ const ConfettiCanvas = () => {
         if (p.x < -p.w) p.x = -p.w;
         if (p.x > width + p.w) p.x = width + p.w;
 
-        // Per-particle bottom fade: start dissolving when past 75% of screen height
-        const bottomFade = p.y > height * 0.75
-          ? Math.max(0, 1 - (p.y - height * 0.75) / (height * 0.25))
+        // Fade only near and just below the viewport bottom.
+        const bottomFade = p.y > height * 0.88
+          ? Math.max(0, 1 - (p.y - height * 0.88) / (height * 0.22))
           : 1;
 
         ctx.save();
@@ -223,7 +229,9 @@ const ConfettiCanvas = () => {
     };
   }, []);
 
-  return (
+  if (isFinished) return null;
+
+  return createPortal(
     <canvas
       ref={canvasRef}
       style={{
@@ -235,7 +243,8 @@ const ConfettiCanvas = () => {
         zIndex: 1070,
         overflow: 'hidden',
       }}
-    />
+    />,
+    document.body
   );
 };
 
