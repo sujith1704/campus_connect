@@ -6,6 +6,7 @@ import API from '../services/api';
 import { GraduationCap, UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import AuthBackground from '../components/AuthBackground';
+import LoginMascot from '../components/LoginMascot';
 import { authCardVariants, alertVariants } from '../utils/animations';
 
 const staggerContainer = {
@@ -40,6 +41,7 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [mascotFocus, setMascotFocus] = useState(null);
 
   // Auto-dismiss notifications after 3 seconds
   useEffect(() => {
@@ -154,6 +156,7 @@ const RegisterPage = () => {
 
         <div className="container main-content auth-content-layer">
           <div className="auth-container">
+            <LoginMascot focusTarget={mascotFocus} />
             <motion.div
               className="auth-card"
               variants={authCardVariants}
@@ -254,6 +257,10 @@ const RegisterPage = () => {
                       placeholder="Create a password (min 6 chars)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setMascotFocus('password')}
+                      onBlur={(event) => {
+                        if (event.relatedTarget?.type !== 'password') setMascotFocus(null);
+                      }}
                       autoComplete="new-password"
                       required
                     />
@@ -269,6 +276,10 @@ const RegisterPage = () => {
                       placeholder="Re-enter your password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
+                      onFocus={() => setMascotFocus('password')}
+                      onBlur={(event) => {
+                        if (event.relatedTarget?.type !== 'password') setMascotFocus(null);
+                      }}
                       autoComplete="new-password"
                       required
                     />

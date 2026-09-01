@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AuthContext } from './context/AuthContext';
@@ -7,27 +7,27 @@ import { DataProvider } from './context/DataContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 
-import HomePage from './pages/HomePage';
-import EventsPage from './pages/EventsPage';
-import EventDetailsPage from './pages/EventDetailsPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
+const HomePage = lazy(() => import('./pages/HomePage'));
+const EventsPage = lazy(() => import('./pages/EventsPage'));
+const EventDetailsPage = lazy(() => import('./pages/EventDetailsPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 
-import StudentDashboard from './pages/student/StudentDashboard';
-import MyRegistrationsPage from './pages/student/MyRegistrationsPage';
-import StudentDeletedEventsPage from './pages/student/DeletedEventsPage';
-import ProfilePage from './pages/student/ProfilePage';
+const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'));
+const MyRegistrationsPage = lazy(() => import('./pages/student/MyRegistrationsPage'));
+const StudentDeletedEventsPage = lazy(() => import('./pages/student/DeletedEventsPage'));
+const ProfilePage = lazy(() => import('./pages/student/ProfilePage'));
 
-import OrganizerDashboard from './pages/organizer/OrganizerDashboard';
-import CreateEventPage from './pages/organizer/CreateEventPage';
-import EditEventPage from './pages/organizer/EditEventPage';
-import ManageEventsPage from './pages/organizer/ManageEventsPage';
-import DeletedEventsPage from './pages/organizer/DeletedEventsPage';
-import EventRegistrationsPage from './pages/organizer/EventRegistrationsPage';
+const OrganizerDashboard = lazy(() => import('./pages/organizer/OrganizerDashboard'));
+const CreateEventPage = lazy(() => import('./pages/organizer/CreateEventPage'));
+const EditEventPage = lazy(() => import('./pages/organizer/EditEventPage'));
+const ManageEventsPage = lazy(() => import('./pages/organizer/ManageEventsPage'));
+const DeletedEventsPage = lazy(() => import('./pages/organizer/DeletedEventsPage'));
+const EventRegistrationsPage = lazy(() => import('./pages/organizer/EventRegistrationsPage'));
 
-import OrganizerPanel from './pages/admin/AdminDashboard';
+const OrganizerPanel = lazy(() => import('./pages/admin/AdminDashboard'));
 
 function AppContent() {
   const { isAuthenticated, isStudent, isOrganizer } = useContext(AuthContext);
@@ -37,6 +37,7 @@ function AppContent() {
     <Router>
       <Navbar />
       <div className={hasPortalSidebar ? 'portal-main' : ''} style={{ flex: 1 }}>
+        <Suspense fallback={null}>
           <Routes>
             {/* Public Auth Routes */}
             <Route path="/login" element={<LoginPage />} />
@@ -168,6 +169,7 @@ function AppContent() {
             {/* Catch-all route: Redirect to /login if unauthenticated or unknown path */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
+        </Suspense>
       </div>
     </Router>
   );

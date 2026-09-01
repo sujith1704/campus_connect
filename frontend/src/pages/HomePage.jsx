@@ -5,6 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import { DataContext } from '../context/DataContext';
 import OrganizerControlDesk from '../components/OrganizerControlDesk';
 import ParticleText from '../components/ParticleText';
+import TextType from '../components/TextType';
 import { Sparkles, Calendar, Users, Award, ShieldCheck, ArrowRight, Code, Music, Trophy, BookOpen, Gamepad2, Mic } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { containerVariants, statCardVariants, cardVariants, cardHover } from '../utils/animations';
@@ -103,7 +104,7 @@ const CategoryCard = ({ cat }) => (
 );
 
 const HomePage = () => {
-  const { user, isOrganizer } = useContext(AuthContext);
+  const { user, isOrganizer, authSessionId } = useContext(AuthContext);
   const { platformStats, fetchPlatformStats } = useContext(DataContext);
   const [stats, setStats] = useState({
     eventsHosted: null,
@@ -201,7 +202,17 @@ const HomePage = () => {
             </h2>
 
             <p className="hero-subtitle">
-              Welcome to <strong>CampusConnect</strong> – the all-in-one college event management platform. Discover technical hackathons, cultural festivals, sports tournaments, and workshops hosted by your college clubs and departments.
+              <TextType
+                text="Welcome to CampusConnect – the all-in-one college event management platform. Discover technical hackathons, cultural festivals, sports tournaments, and workshops hosted by your college clubs and departments."
+                typingSpeed={30}
+                initialDelay={250}
+                loop={false}
+                showCursor={true}
+                hideCursorWhileTyping={false}
+                className="text-type-inline"
+                cursorClassName="text-type-cursor"
+                sessionKey={authSessionId}
+              />
             </p>
             <div className="hero-actions">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>

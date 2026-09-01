@@ -5,6 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import { GraduationCap, LogIn, AlertCircle, CheckCircle, KeyRound } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import AuthBackground from '../components/AuthBackground';
+import LoginMascot from '../components/LoginMascot';
 import { authCardVariants, alertVariants } from '../utils/animations';
 
 const staggerContainer = {
@@ -37,6 +38,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState(location.state?.message || '');
+  const [mascotFocus, setMascotFocus] = useState(null);
 
   // Auto-dismiss notifications after 3 seconds
   useEffect(() => {
@@ -126,6 +128,7 @@ const LoginPage = () => {
 
         <div className="container main-content auth-content-layer">
           <div className="auth-container">
+            <LoginMascot focusTarget={mascotFocus} />
             <motion.div
               className="auth-card"
               variants={authCardVariants}
@@ -194,6 +197,7 @@ const LoginPage = () => {
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => setMascotFocus('email')}
                       autoComplete="off"
                       required
                     />
@@ -215,6 +219,10 @@ const LoginPage = () => {
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setMascotFocus('password')}
+                      onBlur={(event) => {
+                        if (event.relatedTarget?.type !== 'password') setMascotFocus(null);
+                      }}
                       autoComplete="off"
                       required
                     />

@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('campusconnect_token') || null);
   const [loading, setLoading] = useState(false); // Don't block initial render
   const [isInitialized, setIsInitialized] = useState(false);
+  const [authSessionId, setAuthSessionId] = useState(0);
 
   useEffect(() => {
     // Non-blocking auth verification - runs after initial render
@@ -37,6 +38,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('campusconnect_token', res.data.token);
       setToken(res.data.token);
       setUser(res.data.user);
+      setAuthSessionId((currentId) => currentId + 1);
       return res.data;
     }
   };
@@ -47,6 +49,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('campusconnect_token', res.data.token);
       setToken(res.data.token);
       setUser(res.data.user);
+      setAuthSessionId((currentId) => currentId + 1);
       return res.data;
     }
   };
@@ -64,6 +67,7 @@ export const AuthProvider = ({ children }) => {
         token,
         loading,
         isInitialized,
+        authSessionId,
         login,
         register,
         logout,
