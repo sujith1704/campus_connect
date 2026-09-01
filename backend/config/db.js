@@ -12,6 +12,8 @@ const connectDB = async () => {
       mongoUri,
       {
         serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of hanging
+        socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+        family: 4, // Use IPv4, skip trying IPv6
       }
     );
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
 import { DataContext } from '../context/DataContext';
 import OrganizerControlDesk from '../components/OrganizerControlDesk';
+import ParticleText from '../components/ParticleText';
 import { Sparkles, Calendar, Users, Award, ShieldCheck, ArrowRight, Code, Music, Trophy, BookOpen, Gamepad2, Mic } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { containerVariants, statCardVariants, cardVariants, cardHover } from '../utils/animations';
@@ -104,36 +105,42 @@ const CategoryCard = ({ cat }) => (
 const HomePage = () => {
   const { user, isOrganizer } = useContext(AuthContext);
   const { platformStats, fetchPlatformStats } = useContext(DataContext);
-  const [stats, setStats] = useState(
-    platformStats || {
-      eventsHosted: null,
-      activeRegistrations: null,
-      organizers: null,
-      verifiedEvents: 100,
-    }
-  );
-  const [statsLoading, setStatsLoading] = useState(!platformStats);
+  const [stats, setStats] = useState({
+    eventsHosted: null,
+    activeRegistrations: null,
+    organizers: null,
+    verifiedEvents: 100,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    const loadStats = async () => {
-      try {
-        const data = await fetchPlatformStats();
-        if (!cancelled && data) {
-          setStats(data);
-          setStatsLoading(false);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error('Error fetching platform statistics:', error);
-          setStatsLoading(false);
-        }
-      }
-    };
+    
+    // Defer stats loading to after initial render for better performance
+    const timer = setTimeout(() => {
+      if (!cancelled) {
+        const loadStats = async () => {
+          try {
+            const data = await fetchPlatformStats();
+            if (!cancelled && data) {
+              setStats(data);
+              setStatsLoading(false);
+            }
+          } catch (error) {
+            if (!cancelled) {
+              console.error('Error fetching platform statistics:', error);
+              setStatsLoading(false);
+            }
+          }
+        };
 
-    loadStats();
+        loadStats();
+      }
+    }, 100); // Small delay to allow page to render first
+
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [fetchPlatformStats]);
 
@@ -190,7 +197,7 @@ const HomePage = () => {
               <Sparkles size={16} /> Campus Event Portal 2026
             </div>
             <h2 className="hero-title">
-              Welcome back, {user?.name}! 🎓
+              <ParticleText>Welcome back, sujith! 🎓</ParticleText>
             </h2>
 
             <p className="hero-subtitle">

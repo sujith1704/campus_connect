@@ -147,7 +147,7 @@ const LoginPage = () => {
                   >
                     <GraduationCap size={30} />
                   </motion.div>
-                  <h1 className="auth-title">Welcome Back</h1>
+                  <h1 className="auth-title">Sign In</h1>
                   <p className="auth-subtitle">Login to your CampusConnect account</p>
                 </motion.div>
 

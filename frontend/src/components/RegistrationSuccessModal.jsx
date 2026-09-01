@@ -28,12 +28,12 @@ const ConfettiCanvas = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let width  = (canvas.width  = window.innerWidth);
+    let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
     const handleResize = () => {
       if (!canvas) return;
-      width  = canvas.width  = window.innerWidth;
+      width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     };
     window.addEventListener('resize', handleResize);
@@ -66,17 +66,17 @@ const ConfettiCanvas = () => {
       // Gentle downward initial velocity — no horizontal burst canon angle
       // Small random vx gives each piece its own initial lean left/right
       const speed = 0.882 + Math.random() * 2.205;  // +5% over previous values
-      const vx    = (Math.random() - 0.5) * speed;
-      const vy    = 0.551 + Math.random() * 1.323; // +5% over previous values
+      const vx = (Math.random() - 0.5) * speed;
+      const vy = 0.551 + Math.random() * 1.323; // +5% over previous values
 
       const shape = shapes[Math.floor(Math.random() * shapes.length)];
-      const size  = shape === 'streamer'
-        ? { w: 1.5 + Math.random() * 2,  h: 11 + Math.random() * 16 }
+      const size = shape === 'streamer'
+        ? { w: 1.5 + Math.random() * 2, h: 11 + Math.random() * 16 }
         : shape === 'dot'
-        ? { w: 3   + Math.random() * 3.5, h: 3  + Math.random() * 3.5 }
-        : shape === 'square'
-        ? (() => { const s = 4 + Math.random() * 7; return { w: s, h: s }; })()
-        : { w: 5 + Math.random() * 10, h: 3 + Math.random() * 5 };
+          ? { w: 3 + Math.random() * 3.5, h: 3 + Math.random() * 3.5 }
+          : shape === 'square'
+            ? (() => { const s = 4 + Math.random() * 7; return { w: s, h: s }; })()
+            : { w: 5 + Math.random() * 10, h: 3 + Math.random() * 5 };
 
       particles.push({
         x,
@@ -88,16 +88,16 @@ const ConfettiCanvas = () => {
         // Air-drag reduces speed each frame (0.97–0.99 → slow decay)
         drag: 0.975 + Math.random() * 0.012,
         // Lateral oscillation for papery waft
-        waveAmp:   0.3 + Math.random() * 0.6,
-        waveFreq:  0.015 + Math.random() * 0.025,
+        waveAmp: 0.3 + Math.random() * 0.6,
+        waveFreq: 0.015 + Math.random() * 0.025,
         wavePhase: Math.random() * Math.PI * 2,
         w: size.w,
         h: size.h,
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        rotation:   Math.random() * 360,
-        rotSpeed:   (Math.random() - 0.5) * 4,
-        tiltAngle:  Math.random() * Math.PI * 2,
-        tiltSpeed:  0.02 + Math.random() * 0.04,
+        rotation: Math.random() * 360,
+        rotSpeed: (Math.random() - 0.5) * 4,
+        tiltAngle: Math.random() * Math.PI * 2,
+        tiltSpeed: 0.02 + Math.random() * 0.04,
         shape,
         // Stagger spawn over first 300ms so it feels like a natural cascade
         spawnDelay: Math.random() * 300,
@@ -107,16 +107,16 @@ const ConfettiCanvas = () => {
 
     // ── Emoji ─────────────────────────────────────────────────────────────
     const emoji = {
-      x:    width  * 0.5,
-      y:    height * 0.22,
+      x: width * 0.5,
+      y: height * 0.22,
       size: isMobile ? 38 : 50,
       scale: 0,
     };
 
     // ── Animation loop ────────────────────────────────────────────────────
     let rafId;
-    const startTime  = Date.now();
-    const DURATION   = 3000;
+    const startTime = Date.now();
+    const DURATION = 3000;
     const FADE_START = 2700;
 
     const render = () => {
@@ -146,11 +146,11 @@ const ConfettiCanvas = () => {
 
         p.x += p.vx + wave;
         p.y += p.vy;
-        p.rotation  += p.rotSpeed;
+        p.rotation += p.rotSpeed;
         p.tiltAngle += p.tiltSpeed;
 
         // Soft horizontal clamp — no scroll
-        if (p.x < -p.w)        p.x = -p.w;
+        if (p.x < -p.w) p.x = -p.w;
         if (p.x > width + p.w) p.x = width + p.w;
 
         // Per-particle bottom fade: start dissolving when past 75% of screen height
@@ -203,12 +203,12 @@ const ConfettiCanvas = () => {
       const emojiAlpha = elapsed > FADE_START ? globalAlpha : 1;
 
       ctx.save();
-      ctx.globalAlpha  = emojiAlpha;
+      ctx.globalAlpha = emojiAlpha;
       ctx.translate(emoji.x, emoji.y);
       ctx.scale(emoji.scale, emoji.scale);
-      ctx.font          = `${emoji.size}px serif`;
-      ctx.textAlign     = 'center';
-      ctx.textBaseline  = 'middle';
+      ctx.font = `${emoji.size}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       ctx.fillText('🎉', 0, 0);
       ctx.restore();
 

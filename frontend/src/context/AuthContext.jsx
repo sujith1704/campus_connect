@@ -6,10 +6,12 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('campusconnect_token') || null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Don't block initial render
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    // Non-blocking auth verification - runs after initial render
+    const verifyAuth = async () => {
       if (token) {
         try {
           const res = await API.get('/auth/me');
@@ -22,13 +24,11 @@ export const AuthProvider = ({ children }) => {
           setToken(null);
           setUser(null);
         }
-      } else {
-        setUser(null);
       }
-      setLoading(false);
+      setIsInitialized(true);
     };
 
-    fetchUser();
+    verifyAuth();
   }, [token]);
 
   const login = async (email, password) => {
@@ -63,6 +63,7 @@ export const AuthProvider = ({ children }) => {
         user,
         token,
         loading,
+        isInitialized,
         login,
         register,
         logout,
