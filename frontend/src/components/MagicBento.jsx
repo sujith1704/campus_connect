@@ -125,7 +125,7 @@ export const MagicBentoCard = forwardRef(({
       {/* Illuminating Border Layer */}
       <div className="magic-bento-border" aria-hidden="true" />
       {/* Card Content */}
-      <div className="magic-bento-content" style={{ position: 'relative', zIndex: 3, width: '100%', height: '100%' }}>
+      <div className="magic-bento-content" style={{ position: 'relative', zIndex: 3, width: '100%' }}>
         {children}
       </div>
     </MotionComponent>

@@ -1,11 +1,10 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
 import { GraduationCap, LogIn, AlertCircle, CheckCircle, KeyRound } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import AuthBackground from '../components/AuthBackground';
-import LoginMascot from '../components/LoginMascot';
 import { authCardVariants, alertVariants } from '../utils/animations';
 
 const staggerContainer = {
@@ -13,20 +12,28 @@ const staggerContainer = {
   animate: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.07,
-      delayChildren: 0.1,
+      staggerChildren: 0.05,
+      delayChildren: 0,
     },
   },
 };
 
 const staggerItem = {
-  initial: { opacity: 0, y: 16 },
+  initial: { opacity: 0, y: 10 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
   },
 };
+
+// Lazy-load the mascot only on non-touch devices (it's purely decorative)
+const LoginMascotLazy = React.lazy(() => import('../components/LoginMascot'));
+// Feature-detect hover/pointer support once at module level
+const hasFinePointer =
+  typeof window !== 'undefined'
+    ? window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    : false;
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -39,6 +46,19 @@ const LoginPage = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState(location.state?.message || '');
   const [mascotFocus, setMascotFocus] = useState(null);
+  // Mount mascot after first paint — it's decorative and should not block UI
+  const [showMascot, setShowMascot] = useState(false);
+
+  useEffect(() => {
+    // Only load the mascot on devices with fine pointer (desktop/laptop)
+    // Touch devices get it hidden via CSS already, so avoid the overhead entirely
+    if (!hasFinePointer) return;
+    let raf1 = requestAnimationFrame(() => {
+      let raf2 = requestAnimationFrame(() => setShowMascot(true));
+      return () => cancelAnimationFrame(raf2);
+    });
+    return () => cancelAnimationFrame(raf1);
+  }, []);
 
   // Auto-dismiss notifications after 3 seconds
   useEffect(() => {
@@ -128,7 +148,11 @@ const LoginPage = () => {
 
         <div className="container main-content auth-content-layer">
           <div className="auth-container">
-            <LoginMascot focusTarget={mascotFocus} />
+            {showMascot && (
+              <React.Suspense fallback={null}>
+                <LoginMascotLazy focusTarget={mascotFocus} />
+              </React.Suspense>
+            )}
             <motion.div
               className="auth-card"
               variants={authCardVariants}
