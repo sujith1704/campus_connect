@@ -9,6 +9,7 @@ import TextType from '../components/TextType';
 import { Sparkles, Calendar, Users, Award, ShieldCheck, ArrowRight, Code, Music, Trophy, BookOpen, Gamepad2, Mic } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { containerVariants, statCardVariants, cardVariants, cardHover } from '../utils/animations';
+import { MagicBentoCard, MagicBentoGrid } from '../components/MagicBento';
 
 const categoriesList = [
   {
@@ -20,7 +21,7 @@ const categoriesList = [
     iconColor: '#818cf8',
     iconBorder: 'rgba(99, 102, 241, 0.35)',
     iconGlow: '0 0 16px rgba(99, 102, 241, 0.35)',
-    accentGlow: 'rgba(99, 102, 241, 0.1)',
+    accentGlow: 'rgba(99, 102, 241, 0.22)',
   },
   {
     name: 'Cultural',
@@ -31,7 +32,7 @@ const categoriesList = [
     iconColor: '#f472b6',
     iconBorder: 'rgba(236, 72, 153, 0.35)',
     iconGlow: '0 0 16px rgba(236, 72, 153, 0.35)',
-    accentGlow: 'rgba(236, 72, 153, 0.1)',
+    accentGlow: 'rgba(236, 72, 153, 0.22)',
   },
   {
     name: 'Sports',
@@ -42,7 +43,7 @@ const categoriesList = [
     iconColor: '#fbbf24',
     iconBorder: 'rgba(245, 158, 11, 0.35)',
     iconGlow: '0 0 16px rgba(245, 158, 11, 0.35)',
-    accentGlow: 'rgba(245, 158, 11, 0.1)',
+    accentGlow: 'rgba(245, 158, 11, 0.22)',
   },
   {
     name: 'Workshop',
@@ -53,7 +54,7 @@ const categoriesList = [
     iconColor: '#34d399',
     iconBorder: 'rgba(16, 185, 129, 0.35)',
     iconGlow: '0 0 16px rgba(16, 185, 129, 0.35)',
-    accentGlow: 'rgba(16, 185, 129, 0.1)',
+    accentGlow: 'rgba(16, 185, 129, 0.22)',
   },
   {
     name: 'Gaming',
@@ -64,7 +65,7 @@ const categoriesList = [
     iconColor: '#c084fc',
     iconBorder: 'rgba(168, 85, 247, 0.35)',
     iconGlow: '0 0 16px rgba(168, 85, 247, 0.35)',
-    accentGlow: 'rgba(168, 85, 247, 0.1)',
+    accentGlow: 'rgba(168, 85, 247, 0.22)',
   },
   {
     name: 'Seminar',
@@ -75,15 +76,16 @@ const categoriesList = [
     iconColor: '#f87171',
     iconBorder: 'rgba(240, 93, 77, 0.35)',
     iconGlow: '0 0 16px rgba(240, 93, 77, 0.35)',
-    accentGlow: 'rgba(240, 93, 77, 0.1)',
+    accentGlow: 'rgba(240, 93, 77, 0.22)',
   },
 ];
 
-// Reusable premium category card
+// Reusable premium category card with Magic Bento spotlight
 const CategoryCard = ({ cat }) => (
-  <Link
-    to={`/events?category=${cat.name}`}
+  <MagicBentoCard
     className="category-card"
+    glowColor={cat.accentGlow}
+    glowSecondary="rgba(56, 189, 248, 0.1)"
     style={{
       '--cat-accent-bar': cat.accentBar,
       '--cat-icon-bg': cat.iconBg,
@@ -91,16 +93,32 @@ const CategoryCard = ({ cat }) => (
       '--cat-icon-border': cat.iconBorder,
       '--cat-icon-glow': cat.iconGlow,
       '--cat-accent-glow': cat.accentGlow,
+      padding: 0,
+      display: 'flex',
     }}
   >
-    <div className="category-icon-wrap">
-      <div className="category-icon">{cat.icon}</div>
-    </div>
-    <div className="category-text">
-      <div className="category-name">{cat.name}</div>
-      <div className="category-desc">{cat.desc}</div>
-    </div>
-  </Link>
+    <Link
+      to={`/events?category=${cat.name}`}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        width: '100%',
+        height: '100%',
+        padding: '1.25rem 1.5rem',
+        textDecoration: 'none',
+        color: 'inherit',
+        gap: '1rem',
+      }}
+    >
+      <div className="category-icon-wrap">
+        <div className="category-icon">{cat.icon}</div>
+      </div>
+      <div className="category-text">
+        <div className="category-name">{cat.name}</div>
+        <div className="category-desc">{cat.desc}</div>
+      </div>
+    </Link>
+  </MagicBentoCard>
 );
 
 const HomePage = () => {
@@ -232,8 +250,13 @@ const HomePage = () => {
             initial="initial"
             animate="animate"
           >
-            <motion.div className="stat-card" variants={statCardVariants}>
-              <div className="stat-icon-wrap">
+            <MagicBentoCard
+              className="stat-card"
+              variants={statCardVariants}
+              glowColor="rgba(240, 93, 77, 0.2)"
+              glowSecondary="rgba(249, 115, 22, 0.1)"
+            >
+              <div className="stat-icon-wrap coral">
                 <Calendar size={28} />
               </div>
               <div>
@@ -242,10 +265,15 @@ const HomePage = () => {
                 </div>
                 <div className="stat-label">College Events Hosted</div>
               </div>
-            </motion.div>
+            </MagicBentoCard>
 
-            <motion.div className="stat-card" variants={statCardVariants}>
-              <div className="stat-icon-wrap">
+            <MagicBentoCard
+              className="stat-card"
+              variants={statCardVariants}
+              glowColor="rgba(56, 189, 248, 0.2)"
+              glowSecondary="rgba(99, 102, 241, 0.1)"
+            >
+              <div className="stat-icon-wrap sky">
                 <Users size={28} />
               </div>
               <div>
@@ -254,10 +282,15 @@ const HomePage = () => {
                 </div>
                 <div className="stat-label">Active Student Registrations</div>
               </div>
-            </motion.div>
+            </MagicBentoCard>
 
-            <motion.div className="stat-card" variants={statCardVariants}>
-              <div className="stat-icon-wrap">
+            <MagicBentoCard
+              className="stat-card"
+              variants={statCardVariants}
+              glowColor="rgba(168, 85, 247, 0.2)"
+              glowSecondary="rgba(236, 72, 153, 0.1)"
+            >
+              <div className="stat-icon-wrap purple">
                 <Award size={28} />
               </div>
               <div>
@@ -266,17 +299,22 @@ const HomePage = () => {
                 </div>
                 <div className="stat-label">Clubs & Organizers</div>
               </div>
-            </motion.div>
+            </MagicBentoCard>
 
-            <motion.div className="stat-card" variants={statCardVariants}>
-              <div className="stat-icon-wrap">
+            <MagicBentoCard
+              className="stat-card"
+              variants={statCardVariants}
+              glowColor="rgba(16, 185, 129, 0.2)"
+              glowSecondary="rgba(6, 182, 212, 0.1)"
+            >
+              <div className="stat-icon-wrap emerald">
                 <ShieldCheck size={28} />
               </div>
               <div>
                 <div className="stat-value">100%</div>
                 <div className="stat-label">Verified College Events</div>
               </div>
-            </motion.div>
+            </MagicBentoCard>
           </motion.div>
         </section>
 

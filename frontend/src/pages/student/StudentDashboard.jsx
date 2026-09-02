@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import API from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
 import { Ticket, Calendar, Clock, MapPin, ArrowRight, CheckCircle } from 'lucide-react';
+import MagicBentoCard from '../../components/MagicBento';
+import { containerVariants, statCardVariants } from '../../utils/animations';
+import { motion } from 'framer-motion';
 
 const StudentDashboard = () => {
   const { user } = useContext(AuthContext);
@@ -33,37 +36,57 @@ const StudentDashboard = () => {
   return (
     <div className="container main-content">
       {/* Welcome Banner */}
-      <div className="dashboard-banner">
+      <MagicBentoCard
+        className="dashboard-banner"
+        glowColor="rgba(56, 189, 248, 0.18)"
+        glowSecondary="rgba(168, 85, 247, 0.12)"
+      >
         <h1 className="dashboard-banner-title">
           Student Portal 🎟️
         </h1>
         <p className="dashboard-banner-subtitle">
           Discover college events, manage registrations, and check your official ticket passes.
         </p>
-      </div>
+      </MagicBentoCard>
 
       {/* Metrics Counter Cards */}
-      <div className="stats-section" style={{ marginTop: 0, marginBottom: '2.5rem' }}>
-        <div className="stat-card">
-          <div className="stat-icon-wrap">
+      <motion.div
+        className="stats-section"
+        style={{ marginTop: 0, marginBottom: '2.5rem' }}
+        variants={containerVariants}
+        initial="initial"
+        animate="animate"
+      >
+        <MagicBentoCard
+          className="stat-card coral"
+          variants={statCardVariants}
+          glowColor="rgba(240, 93, 77, 0.22)"
+          glowSecondary="rgba(249, 115, 22, 0.12)"
+        >
+          <div className="stat-icon-wrap coral">
             <Ticket size={26} />
           </div>
           <div>
             <div className="stat-value">{activeRegistrations.length}</div>
             <div className="stat-label">Total Registered Events</div>
           </div>
-        </div>
+        </MagicBentoCard>
 
-        <div className="stat-card">
-          <div className="stat-icon-wrap" style={{ background: '#ecfdf5', color: '#10b981' }}>
+        <MagicBentoCard
+          className="stat-card emerald"
+          variants={statCardVariants}
+          glowColor="rgba(16, 185, 129, 0.22)"
+          glowSecondary="rgba(6, 182, 212, 0.12)"
+        >
+          <div className="stat-icon-wrap emerald">
             <Calendar size={26} />
           </div>
           <div>
             <div className="stat-value">{activeRegistrations.length}</div>
             <div className="stat-label">Upcoming Attending Events</div>
           </div>
-        </div>
-      </div>
+        </MagicBentoCard>
+      </motion.div>
 
       {/* Recent Registrations Table/Cards */}
       <div className="section-header">

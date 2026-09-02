@@ -22,7 +22,6 @@ const EditEventPage = () => {
     date: '',
     time: '',
     venue: '',
-    maxParticipants: '',
     image: '',
   });
 
@@ -62,7 +61,6 @@ const EditEventPage = () => {
           date: ev.date || '',
           time: ev.time || '',
           venue: ev.venue || '',
-          maxParticipants: ev.maxParticipants || '',
           image: ev.image || '',
         });
       }
@@ -126,7 +124,7 @@ const EditEventPage = () => {
           >
             <div className="auth-header" style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
               <h1 className="auth-title">Edit Event Details</h1>
-              <p className="auth-subtitle">Update schedule, venue, capacity, or description</p>
+              <p className="auth-subtitle">Update schedule, venue, date, or description</p>
             </div>
 
             <AnimatePresence mode="wait">
@@ -174,30 +172,15 @@ const EditEventPage = () => {
                 />
               </div>
 
-              <div className="form-grid">
-                <div className="form-group">
-                  <label className="form-label">Event Category</label>
-                  <select name="category" className="form-control" value={formData.category} onChange={handleChange}>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Max Participants Capacity</label>
-                  <input
-                    type="number"
-                    name="maxParticipants"
-                    className="form-control"
-                    min="1"
-                    value={formData.maxParticipants}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label className="form-label">Event Category</label>
+                <select name="category" className="form-control" value={formData.category} onChange={handleChange}>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-grid">

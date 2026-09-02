@@ -73,7 +73,7 @@ exports.createEvent = async (req, res) => {
   try {
     const { title, description, category, date, time, venue, maxParticipants, image } = req.body;
 
-    if (!title || !description || !date || !time || !venue || !maxParticipants) {
+    if (!title || !description || !date || !time || !venue) {
       return res.status(400).json({ success: false, message: 'Please provide all required fields' });
     }
 
@@ -87,7 +87,7 @@ exports.createEvent = async (req, res) => {
       date,
       time,
       venue,
-      maxParticipants: Number(maxParticipants),
+      maxParticipants: maxParticipants ? Number(maxParticipants) : 1000,
       image: image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80',
       organizer: req.user._id,
       status: initialStatus,

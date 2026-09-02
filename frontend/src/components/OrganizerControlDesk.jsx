@@ -5,6 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import { DataContext } from '../context/DataContext';
 import { Calendar, Users, PlusCircle, Clock } from 'lucide-react';
 import { containerVariants, statCardVariants } from '../utils/animations';
+import MagicBentoCard from './MagicBento';
 
 const OrganizerControlDesk = () => {
   const { user } = useContext(AuthContext);
@@ -19,14 +20,14 @@ const OrganizerControlDesk = () => {
   // Compute metrics
   const totalEvents = events.length;
   const totalRegistrations = events.reduce((acc, curr) => acc + (curr.registeredCount || 0), 0);
-  const totalCapacity = events.reduce((acc, curr) => acc + (curr.maxParticipants || 0), 0);
-  const availableSeats = Math.max(0, totalCapacity - totalRegistrations);
 
   return (
     <div>
       {/* Header Banner */}
-      <div
+      <MagicBentoCard
         className="dashboard-banner"
+        glowColor="rgba(240, 93, 77, 0.18)"
+        glowSecondary="rgba(56, 189, 248, 0.12)"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -48,7 +49,7 @@ const OrganizerControlDesk = () => {
             <PlusCircle size={20} /> Create New Event
           </Link>
         </motion.div>
-      </div>
+      </MagicBentoCard>
 
       {/* Metrics Section */}
       <motion.div
@@ -58,7 +59,12 @@ const OrganizerControlDesk = () => {
         initial="initial"
         animate="animate"
       >
-        <motion.div className="stat-card coral" variants={statCardVariants}>
+        <MagicBentoCard
+          className="stat-card coral"
+          variants={statCardVariants}
+          glowColor="rgba(240, 93, 77, 0.22)"
+          glowSecondary="rgba(249, 115, 22, 0.12)"
+        >
           <div className="stat-icon-wrap coral">
             <Calendar size={26} />
           </div>
@@ -66,9 +72,14 @@ const OrganizerControlDesk = () => {
             <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : totalEvents}</div>
             <div className="stat-label">Total Events Created</div>
           </div>
-        </motion.div>
+        </MagicBentoCard>
 
-        <motion.div className="stat-card emerald" variants={statCardVariants}>
+        <MagicBentoCard
+          className="stat-card emerald"
+          variants={statCardVariants}
+          glowColor="rgba(16, 185, 129, 0.22)"
+          glowSecondary="rgba(6, 182, 212, 0.12)"
+        >
           <div className="stat-icon-wrap emerald">
             <Users size={26} />
           </div>
@@ -76,17 +87,7 @@ const OrganizerControlDesk = () => {
             <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : totalRegistrations}</div>
             <div className="stat-label">Total Student Registrations</div>
           </div>
-        </motion.div>
-
-        <motion.div className="stat-card amber" variants={statCardVariants}>
-          <div className="stat-icon-wrap amber">
-            <Clock size={26} />
-          </div>
-          <div>
-            <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : availableSeats}</div>
-            <div className="stat-label">Available Seats Left</div>
-          </div>
-        </motion.div>
+        </MagicBentoCard>
       </motion.div>
     </div>
   );

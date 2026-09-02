@@ -6,6 +6,7 @@ import { DataContext } from '../../context/DataContext';
 import { PlusCircle, Edit3, Trash2, Users, AlertTriangle, X } from 'lucide-react';
 import { formatDate, isPastEvent } from '../../utils/date';
 import PageTransition from '../../components/PageTransition';
+import MagicBentoCard from '../../components/MagicBento';
 import { containerVariants, cardVariants, cardHover, alertVariants, tabVariants, backdropVariants, modalVariants } from '../../utils/animations';
 
 const ManageEventsPage = () => {
@@ -96,7 +97,7 @@ const ManageEventsPage = () => {
         <div className="section-header">
           <div>
             <h1 className="section-title">Manage My Events</h1>
-            <p className="section-subtitle" style={{ marginBottom: '0.6rem' }}>Edit details, track seat occupancy, and manage attendees</p>
+            <p className="section-subtitle" style={{ marginBottom: '0.6rem' }}>Edit details, track registrations, and manage attendees</p>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <motion.button
                 type="button"
@@ -162,15 +163,13 @@ const ManageEventsPage = () => {
                   exit="exit"
                 >
                   {filteredEvents.map((event) => {
-                    const availableSeats = Math.max(0, event.maxParticipants - (event.registeredCount || 0));
-                    const occupancyPercent = Math.round(((event.registeredCount || 0) / event.maxParticipants) * 100);
-
                     return (
-                      <motion.div
+                      <MagicBentoCard
                         key={event._id}
                         className="event-card"
                         variants={cardVariants}
-                        {...cardHover}
+                        glowColor="rgba(56, 189, 248, 0.22)"
+                        glowSecondary="rgba(168, 85, 247, 0.14)"
                       >
                         <div className="event-card-image-wrap">
                           <img src={event.image} alt={event.title} className="event-card-img" />
@@ -187,42 +186,39 @@ const ManageEventsPage = () => {
                             <div>📍 <strong>Venue:</strong> {event.venue}</div>
                           </div>
 
-                          <div className="seat-progress-container">
-                            <div className="seat-label">
-                              <span>Occupied Seats</span>
-                              <span>{event.registeredCount || 0}/{event.maxParticipants} ({occupancyPercent}%)</span>
-                            </div>
-                            <div className="progress-bar-bg">
-                              <div className="progress-bar-fill" style={{ width: `${occupancyPercent}%` }}></div>
-                            </div>
-                          </div>
-
-                          <div style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: filterTab === 'present' ? '1fr 1fr 1fr' : '1fr 1fr', gap: '0.4rem' }}>
+                          <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'grid', gridTemplateColumns: filterTab === 'present' ? '1fr 1fr 1fr' : '1fr 1fr', gap: '0.45rem' }}>
                             <Link
                               to={`/organizer/registrations/${event._id}`}
                               state={{ fromTab: filterTab }}
-                              className="btn btn-primary btn-sm"
+                              className="btn btn-primary btn-sm event-action-btn"
                               title="Attendees"
                             >
-                              <Users size={14} /> Attendees
+                              <Users size={14} style={{ flexShrink: 0 }} />
+                              <span>Attendees</span>
                             </Link>
                             {filterTab === 'present' && (
-                              <Link to={`/organizer/edit-event/${event._id}`} className="btn btn-secondary btn-sm" title="Edit">
-                                <Edit3 size={14} /> Edit
+                              <Link
+                                to={`/organizer/edit-event/${event._id}`}
+                                className="btn btn-secondary btn-sm event-action-btn"
+                                title="Edit"
+                              >
+                                <Edit3 size={14} style={{ flexShrink: 0 }} />
+                                <span>Edit</span>
                               </Link>
                             )}
                             <motion.button
                               type="button"
                               onClick={() => setDeleteId(event._id)}
-                              className="btn btn-danger btn-sm"
+                              className="btn btn-danger btn-sm event-action-btn"
                               title="Delete"
                               whileTap={{ scale: 0.95 }}
                             >
-                              <Trash2 size={14} /> Delete
+                              <Trash2 size={14} style={{ flexShrink: 0 }} />
+                              <span>Delete</span>
                             </motion.button>
                           </div>
                         </div>
-                      </motion.div>
+                      </MagicBentoCard>
                     );
                   })}
                 </motion.div>

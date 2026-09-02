@@ -9,6 +9,7 @@ import { formatDate } from '../utils/date';
 import PageTransition from '../components/PageTransition';
 import RegistrationSuccessModal from '../components/RegistrationSuccessModal';
 import TicketPassModal from '../components/TicketPassModal';
+import MagicBentoCard from '../components/MagicBento';
 import { alertVariants, backdropVariants, modalVariants } from '../utils/animations';
 
 const EventDetailsPage = () => {
@@ -239,8 +240,7 @@ const EventDetailsPage = () => {
     );
   }
 
-  const availableSeats = Math.max(0, event.maxParticipants - (event.registeredCount || 0));
-  const isFull = availableSeats === 0;
+  const isFull = event.maxParticipants && (event.registeredCount || 0) >= event.maxParticipants;
   const showDeletedNotice = !!event.isDeleted;
   const showRegistrationCard = !showDeletedNotice && (!isAuthenticated || isStudent);
 
@@ -265,7 +265,11 @@ const EventDetailsPage = () => {
 
             {/* Quick Meta Grid */}
             <div className="event-details-meta">
-              <div className="event-details-meta-item">
+              <MagicBentoCard
+                className="event-details-meta-item"
+                glowColor="rgba(56, 189, 248, 0.2)"
+                glowSecondary="rgba(99, 102, 241, 0.1)"
+              >
                 <div className="event-details-icon-wrap">
                   <Calendar size={22} className="event-details-icon" />
                 </div>
@@ -273,9 +277,13 @@ const EventDetailsPage = () => {
                   <div className="event-details-label">DATE</div>
                   <div className="event-details-value">{formatDate(event.date)}</div>
                 </div>
-              </div>
+              </MagicBentoCard>
 
-              <div className="event-details-meta-item">
+              <MagicBentoCard
+                className="event-details-meta-item"
+                glowColor="rgba(240, 93, 77, 0.2)"
+                glowSecondary="rgba(249, 115, 22, 0.1)"
+              >
                 <div className="event-details-icon-wrap">
                   <Clock size={22} className="event-details-icon" />
                 </div>
@@ -283,9 +291,13 @@ const EventDetailsPage = () => {
                   <div className="event-details-label">TIME</div>
                   <div className="event-details-value">{event.time}</div>
                 </div>
-              </div>
+              </MagicBentoCard>
 
-              <div className="event-details-meta-item">
+              <MagicBentoCard
+                className="event-details-meta-item"
+                glowColor="rgba(16, 185, 129, 0.2)"
+                glowSecondary="rgba(6, 182, 212, 0.1)"
+              >
                 <div className="event-details-icon-wrap">
                   <MapPin size={22} className="event-details-icon" />
                 </div>
@@ -293,19 +305,7 @@ const EventDetailsPage = () => {
                   <div className="event-details-label">VENUE</div>
                   <div className="event-details-value">{event.venue}</div>
                 </div>
-              </div>
-
-              <div className="event-details-meta-item">
-                <div className="event-details-icon-wrap">
-                  <Users size={22} className="event-details-icon" />
-                </div>
-                <div>
-                  <div className="event-details-label">SEATS CAPACITY</div>
-                  <div className="event-details-value" style={{ color: isFull ? 'var(--danger)' : '#ffffff' }}>
-                    {availableSeats} / {event.maxParticipants} Seats Left
-                  </div>
-                </div>
-              </div>
+              </MagicBentoCard>
             </div>
 
             {/* Main Layout Grid */}
@@ -411,7 +411,7 @@ const EventDetailsPage = () => {
                     ) : isFull ? (
                       <div className="event-registration-content">
                         <button type="button" className="btn btn-secondary btn-full btn-lg" disabled>
-                          Registration Full (0 Seats Left)
+                          Registration Full
                         </button>
                       </div>
                     ) : (

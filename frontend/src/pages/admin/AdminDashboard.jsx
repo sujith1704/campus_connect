@@ -7,6 +7,8 @@ import EventCard from '../../components/EventCard';
 import { Shield, Users, Calendar, Ticket, Trash2, AlertTriangle, X } from 'lucide-react';
 import { formatDate } from '../../utils/date';
 import PageTransition from '../../components/PageTransition';
+import AnimatedList from '../../components/AnimatedList';
+import MagicBentoCard from '../../components/MagicBento';
 import { containerVariants, cardVariants, statCardVariants, alertVariants, backdropVariants, modalVariants } from '../../utils/animations';
 
 const AdminDashboard = () => {
@@ -228,7 +230,12 @@ const AdminDashboard = () => {
                 exit={{ opacity: 0 }}
               >
                 <div className="stats-grid" style={{ marginTop: 0 }}>
-                  <motion.div className="stat-card sky" variants={statCardVariants}>
+                  <MagicBentoCard
+                    className="stat-card sky"
+                    variants={statCardVariants}
+                    glowColor="rgba(56, 189, 248, 0.22)"
+                    glowSecondary="rgba(99, 102, 241, 0.12)"
+                  >
                     <div className="stat-icon-wrap sky">
                       <Users size={26} />
                     </div>
@@ -236,9 +243,14 @@ const AdminDashboard = () => {
                       <div className="stat-value">{stats.totalStudents}</div>
                       <div className="stat-label">Total Students</div>
                     </div>
-                  </motion.div>
+                  </MagicBentoCard>
 
-                  <motion.div className="stat-card amber" variants={statCardVariants}>
+                  <MagicBentoCard
+                    className="stat-card amber"
+                    variants={statCardVariants}
+                    glowColor="rgba(245, 158, 11, 0.22)"
+                    glowSecondary="rgba(249, 115, 22, 0.12)"
+                  >
                     <div className="stat-icon-wrap amber">
                       <Users size={26} />
                     </div>
@@ -246,9 +258,14 @@ const AdminDashboard = () => {
                       <div className="stat-value">{stats.totalOrganizers}</div>
                       <div className="stat-label">Total Organizers</div>
                     </div>
-                  </motion.div>
+                  </MagicBentoCard>
 
-                  <motion.div className="stat-card indigo" variants={statCardVariants}>
+                  <MagicBentoCard
+                    className="stat-card indigo"
+                    variants={statCardVariants}
+                    glowColor="rgba(99, 102, 241, 0.22)"
+                    glowSecondary="rgba(168, 85, 247, 0.12)"
+                  >
                     <div className="stat-icon-wrap indigo">
                       <Calendar size={26} />
                     </div>
@@ -256,9 +273,14 @@ const AdminDashboard = () => {
                       <div className="stat-value">{stats.totalEvents}</div>
                       <div className="stat-label">Total Platform Events</div>
                     </div>
-                  </motion.div>
+                  </MagicBentoCard>
 
-                  <motion.div className="stat-card emerald" variants={statCardVariants}>
+                  <MagicBentoCard
+                    className="stat-card emerald"
+                    variants={statCardVariants}
+                    glowColor="rgba(16, 185, 129, 0.22)"
+                    glowSecondary="rgba(6, 182, 212, 0.12)"
+                  >
                     <div className="stat-icon-wrap emerald">
                       <Ticket size={26} />
                     </div>
@@ -266,7 +288,7 @@ const AdminDashboard = () => {
                       <div className="stat-value">{stats.totalRegistrations}</div>
                       <div className="stat-label">Total Registrations</div>
                     </div>
-                  </motion.div>
+                  </MagicBentoCard>
                 </div>
 
                 {/* Pending Approvals Section */}
@@ -311,7 +333,7 @@ const AdminDashboard = () => {
                 animate="animate"
                 exit={{ opacity: 0 }}
               >
-                <table className="custom-table">
+                <table className="custom-table animated-user-table">
                   <thead>
                     <tr>
                       <th>User Name</th>
@@ -321,13 +343,14 @@ const AdminDashboard = () => {
                       <th>Actions</th>
                     </tr>
                   </thead>
-                  <motion.tbody
-                    variants={containerVariants}
-                    initial="initial"
-                    animate="animate"
-                  >
-                    {users.map((u) => (
-                      <motion.tr key={u._id} variants={cardVariants}>
+                  <AnimatedList
+                    as="tbody"
+                    itemAs="tr"
+                    items={users}
+                    keyExtractor={(u) => u._id}
+                    itemClassName="animated-user-row"
+                    renderItem={(u) => (
+                      <>
                         <td><strong style={{ fontSize: '0.95rem' }}>{u.name}</strong></td>
                         <td>{u.email}</td>
                         <td>
@@ -346,9 +369,9 @@ const AdminDashboard = () => {
                             </motion.button>
                           </div>
                         </td>
-                      </motion.tr>
-                    ))}
-                  </motion.tbody>
+                      </>
+                    )}
+                  />
                 </table>
               </motion.div>
             )}
@@ -363,7 +386,7 @@ const AdminDashboard = () => {
                 animate="animate"
                 exit={{ opacity: 0 }}
               >
-                <table className="custom-table">
+                <table className="custom-table animated-registration-table">
                   <thead>
                     <tr>
                       <th>Student</th>
@@ -374,13 +397,14 @@ const AdminDashboard = () => {
                       <th>Status</th>
                     </tr>
                   </thead>
-                  <motion.tbody
-                    variants={containerVariants}
-                    initial="initial"
-                    animate="animate"
-                  >
-                    {registrations.map((reg) => (
-                      <motion.tr key={reg._id} variants={cardVariants}>
+                  <AnimatedList
+                    as="tbody"
+                    itemAs="tr"
+                    items={registrations}
+                    keyExtractor={(reg) => reg._id}
+                    itemClassName="animated-registration-row"
+                    renderItem={(reg) => (
+                      <>
                         <td>
                           <div style={{ fontWeight: 700 }}>{reg.student?.name || 'Student'}</div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>{reg.student?.email}</div>
@@ -401,9 +425,9 @@ const AdminDashboard = () => {
                             {reg.status}
                           </span>
                         </td>
-                      </motion.tr>
-                    ))}
-                  </motion.tbody>
+                      </>
+                    )}
+                  />
                 </table>
               </motion.div>
             )}

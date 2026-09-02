@@ -35,8 +35,7 @@ const eventSchema = new mongoose.Schema({
   },
   maxParticipants: {
     type: Number,
-    required: [true, 'Please specify maximum participants capacity'],
-    min: [1, 'Maximum participants must be at least 1'],
+    default: 1000,
   },
   registeredCount: {
     type: Number,

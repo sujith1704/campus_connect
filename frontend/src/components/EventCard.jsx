@@ -4,17 +4,16 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, Users, ArrowRight, Edit3, Trash2 } from 'lucide-react';
 import { formatDate } from '../utils/date';
 import { cardHover, buttonHoverTap } from '../utils/animations';
+import MagicBentoCard from './MagicBento';
 
 const EventCard = ({ event, showAdminControls, showApprovalActions = false, onApprove, onReject, onDelete }) => {
-  const { _id, title, category, date, time, venue, maxParticipants, registeredCount, image, status } = event;
-
-  const availableSeats = Math.max(0, maxParticipants - (registeredCount || 0));
-  const occupancyPercentage = Math.min(100, Math.round(((registeredCount || 0) / maxParticipants) * 100));
+  const { _id, title, category, date, time, venue, image, status } = event;
 
   return (
-    <motion.div
+    <MagicBentoCard
       className="event-card"
-      {...cardHover}
+      glowColor="rgba(56, 189, 248, 0.22)"
+      glowSecondary="rgba(168, 85, 247, 0.14)"
       style={{ willChange: 'transform' }}
     >
       <div className="event-card-image-wrap">
@@ -43,22 +42,6 @@ const EventCard = ({ event, showAdminControls, showApprovalActions = false, onAp
           </div>
         </div>
 
-        {/* Seat Availability Bar */}
-        <div className="seat-progress-container">
-          <div className="seat-label">
-            <span>Seats Filled</span>
-            <span style={{ color: availableSeats === 0 ? '#ef4444' : 'var(--text-muted)', fontWeight: 700 }}>
-              {availableSeats === 0 ? 'FULL' : `${availableSeats} seats left`} ({registeredCount || 0}/{maxParticipants})
-            </span>
-          </div>
-          <div className="progress-bar-bg">
-            <div
-              className={`progress-bar-fill ${availableSeats === 0 ? 'full' : ''}`}
-              style={{ width: `${occupancyPercentage}%` }}
-            ></div>
-          </div>
-        </div>
-
         <div className="event-card-footer">
           {showAdminControls ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
@@ -73,15 +56,18 @@ const EventCard = ({ event, showAdminControls, showApprovalActions = false, onAp
                 </div>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
-                <Link to={`/organizer/registrations/${_id}`} className="btn btn-primary btn-sm" title="Attendance" style={{ width: '100%' }}>
-                  <Users size={14} /> Attendance
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.45rem' }}>
+                <Link to={`/organizer/registrations/${_id}`} className="btn btn-primary btn-sm event-action-btn" title="Attendance" style={{ width: '100%' }}>
+                  <Users size={14} style={{ flexShrink: 0 }} />
+                  <span>Attendees</span>
                 </Link>
-                <Link to={`/organizer/edit-event/${_id}`} className="btn btn-secondary btn-sm" title="Edit" style={{ width: '100%' }}>
-                  <Edit3 size={14} /> Edit
+                <Link to={`/organizer/edit-event/${_id}`} className="btn btn-secondary btn-sm event-action-btn" title="Edit" style={{ width: '100%' }}>
+                  <Edit3 size={14} style={{ flexShrink: 0 }} />
+                  <span>Edit</span>
                 </Link>
-                <motion.button onClick={() => onDelete(_id)} className="btn btn-danger btn-sm" title="Delete" style={{ width: '100%' }} whileTap={{ scale: 0.96 }}>
-                  <Trash2 size={14} /> Delete
+                <motion.button onClick={() => onDelete(_id)} className="btn btn-danger btn-sm event-action-btn" title="Delete" style={{ width: '100%' }} whileTap={{ scale: 0.96 }}>
+                  <Trash2 size={14} style={{ flexShrink: 0 }} />
+                  <span>Delete</span>
                 </motion.button>
               </div>
             </div>
@@ -94,7 +80,7 @@ const EventCard = ({ event, showAdminControls, showApprovalActions = false, onAp
           )}
         </div>
       </div>
-    </motion.div>
+    </MagicBentoCard>
   );
 };
 

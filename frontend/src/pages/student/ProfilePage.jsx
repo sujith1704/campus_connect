@@ -5,6 +5,7 @@ import { User, Mail, Shield, Calendar, GraduationCap } from 'lucide-react';
 import { formatDate } from '../../utils/date';
 import PageTransition from '../../components/PageTransition';
 import { authCardVariants, containerVariants, cardVariants } from '../../utils/animations';
+import MagicBentoCard from '../../components/MagicBento';
 
 const ProfilePage = () => {
   const { user } = useContext(AuthContext);
@@ -13,11 +14,13 @@ const ProfilePage = () => {
     <PageTransition>
       <div className="container main-content">
         <div className="auth-container" style={{ maxWidth: '600px' }}>
-          <motion.div
+          <MagicBentoCard
             className="auth-card"
             variants={authCardVariants}
             initial="initial"
             animate="animate"
+            glowColor="rgba(56, 189, 248, 0.2)"
+            glowSecondary="rgba(168, 85, 247, 0.12)"
           >
             <div className="auth-header">
               <motion.div
@@ -46,9 +49,11 @@ const ProfilePage = () => {
               initial="initial"
               animate="animate"
             >
-              <motion.div
+              <MagicBentoCard
                 variants={cardVariants}
                 className="profile-info-card coral"
+                glowColor="rgba(240, 93, 77, 0.22)"
+                glowSecondary="rgba(249, 115, 22, 0.1)"
               >
                 <div className="profile-info-icon-wrap coral">
                   <Mail size={22} />
@@ -57,11 +62,13 @@ const ProfilePage = () => {
                   <span className="profile-info-label">EMAIL ADDRESS</span>
                   <strong className="profile-info-value">{user?.email}</strong>
                 </div>
-              </motion.div>
+              </MagicBentoCard>
 
-              <motion.div
+              <MagicBentoCard
                 variants={cardVariants}
                 className="profile-info-card sky"
+                glowColor="rgba(56, 189, 248, 0.22)"
+                glowSecondary="rgba(99, 102, 241, 0.1)"
               >
                 <div className="profile-info-icon-wrap sky">
                   <Shield size={22} />
@@ -70,11 +77,13 @@ const ProfilePage = () => {
                   <span className="profile-info-label">USER ROLE</span>
                   <strong className="profile-info-value" style={{ textTransform: 'capitalize' }}>{user?.role}</strong>
                 </div>
-              </motion.div>
+              </MagicBentoCard>
 
-              <motion.div
+              <MagicBentoCard
                 variants={cardVariants}
                 className="profile-info-card purple"
+                glowColor="rgba(168, 85, 247, 0.22)"
+                glowSecondary="rgba(236, 72, 153, 0.1)"
               >
                 <div className="profile-info-icon-wrap purple">
                   <Calendar size={22} />
@@ -85,9 +94,9 @@ const ProfilePage = () => {
                     {user?.createdAt ? formatDate(user.createdAt) : 'Active Member'}
                   </strong>
                 </div>
-              </motion.div>
+              </MagicBentoCard>
             </motion.div>
-          </motion.div>
+          </MagicBentoCard>
         </div>
       </div>
     </PageTransition>

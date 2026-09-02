@@ -8,7 +8,7 @@ const ParticleText = ({ children, className = '', style = {} }) => {
   const mousePos = useRef({ x: -9999, y: -9999 });
   const [isReduced, setIsReduced] = useState(false);
   const [isMobile, setIsMobile] = useState(
-    typeof window !== 'undefined' ? window.innerWidth <= 900 : false
+    typeof window !== 'undefined' ? window.innerWidth <= 768 : false
   );
 
   // Check for prefers-reduced-motion
@@ -23,7 +23,7 @@ const ParticleText = ({ children, className = '', style = {} }) => {
   // Check for mobile/desktop
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 900);
+      setIsMobile(window.innerWidth <= 768);
       setupCanvas();
     };
     window.addEventListener('resize', handleResize);

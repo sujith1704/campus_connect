@@ -21,7 +21,6 @@ const CreateEventPage = () => {
     date: '',
     time: '',
     venue: '',
-    maxParticipants: '',
     image: '',
   });
 
@@ -53,9 +52,9 @@ const CreateEventPage = () => {
     setErrorMsg('');
     setSuccessMsg('');
 
-    const { title, description, category, date, time, venue, maxParticipants } = formData;
+    const { title, description, category, date, time, venue } = formData;
 
-    if (!title || !description || !date || !time || !venue || !maxParticipants) {
+    if (!title || !description || !date || !time || !venue) {
       setErrorMsg('Please fill in all required fields.');
       return;
     }
@@ -141,31 +140,15 @@ const CreateEventPage = () => {
                 />
               </div>
 
-              <div className="form-grid">
-                <div className="form-group">
-                  <label className="form-label">Event Category *</label>
-                  <select name="category" className="form-control" value={formData.category} onChange={handleChange}>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Max Participants Capacity *</label>
-                  <input
-                    type="number"
-                    name="maxParticipants"
-                    className="form-control"
-                    placeholder="e.g. 100"
-                    min="1"
-                    value={formData.maxParticipants}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label className="form-label">Event Category *</label>
+                <select name="category" className="form-control" value={formData.category} onChange={handleChange}>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-grid">

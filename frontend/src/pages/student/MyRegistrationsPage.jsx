@@ -8,6 +8,7 @@ import { Ticket, Calendar, Clock, MapPin, CheckCircle, X } from 'lucide-react';
 import { formatDate, isPastEvent } from '../../utils/date';
 import TicketPassModal from '../../components/TicketPassModal';
 import PageTransition from '../../components/PageTransition';
+import MagicBentoCard from '../../components/MagicBento';
 import { containerVariants, cardVariants, alertVariants, tabVariants } from '../../utils/animations';
 
 // Session cache to prevent reloading and flickering on tab switches or route revisits
@@ -173,7 +174,14 @@ const MyRegistrationsPage = () => {
                           : reg.status;
 
                     return (
-                      <motion.div key={reg._id} className="event-card" style={{ opacity: isCancelled || isDeleted ? 0.7 : 1 }} variants={cardVariants}>
+                      <MagicBentoCard
+                        key={reg._id}
+                        className="event-card"
+                        style={{ opacity: isCancelled || isDeleted ? 0.7 : 1 }}
+                        variants={cardVariants}
+                        glowColor="rgba(56, 189, 248, 0.22)"
+                        glowSecondary="rgba(168, 85, 247, 0.12)"
+                      >
                         <div className="event-card-image-wrap">
                           <img src={event?.image} alt={event?.title} className="event-card-img" />
                           <span className="event-category-badge">{event?.category}</span>
@@ -223,7 +231,7 @@ const MyRegistrationsPage = () => {
                             )}
                           </div>
                         </div>
-                      </motion.div>
+                      </MagicBentoCard>
                     );
                   })}
                 </motion.div>
@@ -263,7 +271,14 @@ const MyRegistrationsPage = () => {
                     const isUserRegistered = !!reg;
 
                     return (
-                      <motion.div key={event._id} className="event-card" style={{ opacity: isUserRegistered ? 1 : 0.85 }} variants={cardVariants}>
+                      <MagicBentoCard
+                        key={event._id}
+                        className="event-card"
+                        style={{ opacity: isUserRegistered ? 1 : 0.85 }}
+                        variants={cardVariants}
+                        glowColor="rgba(168, 85, 247, 0.22)"
+                        glowSecondary="rgba(56, 189, 248, 0.12)"
+                      >
                         <div className="event-card-image-wrap">
                           <img src={event.image} alt={event.title} className="event-card-img" />
                           <span className="event-category-badge">{event.category}</span>
@@ -335,7 +350,7 @@ const MyRegistrationsPage = () => {
                             )}
                           </div>
                         </div>
-                      </motion.div>
+                      </MagicBentoCard>
                     );
                   })}
                 </motion.div>

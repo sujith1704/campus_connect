@@ -643,17 +643,21 @@ textarea {
     left: -130%;
     opacity: 0;
   }
+
   8% {
     opacity: 1;
   }
+
   60% {
     opacity: 1;
     left: 160%;
   }
+
   75% {
     left: 175%;
     opacity: 0;
   }
+
   100% {
     left: 175%;
     opacity: 0;
@@ -679,14 +683,12 @@ button.btn::after,
   left: -130%;
   width: 55%;
   height: 220%;
-  background: linear-gradient(
-    115deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.02) 25%,
-    rgba(255, 255, 255, 0.22) 50%,
-    rgba(255, 255, 255, 0.02) 75%,
-    transparent 100%
-  );
+  background: linear-gradient(115deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.02) 25%,
+      rgba(255, 255, 255, 0.22) 50%,
+      rgba(255, 255, 255, 0.02) 75%,
+      transparent 100%);
   transform: rotate(20deg);
   pointer-events: none;
   opacity: 0;
@@ -824,6 +826,25 @@ button.btn:active:not(:disabled) {
   width: 100%;
 }
 
+.event-action-btn {
+  padding: 0.45rem 0.45rem !important;
+  gap: 0.35rem !important;
+  font-size: 0.78rem !important;
+  letter-spacing: -0.01em;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+}
+
+.event-action-btn svg {
+  flex-shrink: 0 !important;
+  width: 14px !important;
+  height: 14px !important;
+  display: inline-block !important;
+}
+
 /* ==========================================================================
    HERO BANNER (FUTURISTIC EVENT PASS HERO)
    ========================================================================== */
@@ -908,8 +929,16 @@ button.btn:active:not(:disabled) {
 }
 
 @keyframes text-type-cursor-blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .hero-actions {
@@ -1158,7 +1187,7 @@ button.btn:active:not(:disabled) {
 
 .event-details-meta {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 2.5rem;
 }
@@ -1191,12 +1220,15 @@ button.btn:active:not(:disabled) {
 .event-details-meta-item:nth-child(1)::before {
   background: linear-gradient(180deg, #6366f1, #38bdf8);
 }
+
 .event-details-meta-item:nth-child(2)::before {
   background: linear-gradient(180deg, #ec4899, #f43f5e);
 }
+
 .event-details-meta-item:nth-child(3)::before {
   background: linear-gradient(180deg, #f59e0b, #f97316);
 }
+
 .event-details-meta-item:nth-child(4)::before {
   background: linear-gradient(180deg, #10b981, #06b6d4);
 }
@@ -1650,15 +1682,19 @@ button.btn:active:not(:disabled) {
 .stat-card.emerald::before {
   background: linear-gradient(180deg, #10b981, #06b6d4);
 }
+
 .stat-card.amber::before {
   background: linear-gradient(180deg, #f59e0b, #f97316);
 }
+
 .stat-card.sky::before {
   background: linear-gradient(180deg, #38bdf8, #6366f1);
 }
+
 .stat-card.indigo::before {
   background: linear-gradient(180deg, #6366f1, #a855f7);
 }
+
 .stat-card.purple::before {
   background: linear-gradient(180deg, #a855f7, #ec4899);
 }
@@ -1680,15 +1716,19 @@ button.btn:active:not(:disabled) {
 .stat-card.emerald::after {
   background: rgba(16, 185, 129, 0.08);
 }
+
 .stat-card.amber::after {
   background: rgba(245, 158, 11, 0.08);
 }
+
 .stat-card.sky::after {
   background: rgba(56, 189, 248, 0.08);
 }
+
 .stat-card.indigo::after {
   background: rgba(99, 102, 241, 0.08);
 }
+
 .stat-card.purple::after {
   background: rgba(168, 85, 247, 0.08);
 }
@@ -1810,9 +1850,11 @@ button.btn:active:not(:disabled) {
 .profile-info-card.coral::before {
   background: linear-gradient(180deg, #f05d4d, #ea580c);
 }
+
 .profile-info-card.sky::before {
   background: linear-gradient(180deg, #38bdf8, #6366f1);
 }
+
 .profile-info-card.purple::before {
   background: linear-gradient(180deg, #a855f7, #ec4899);
 }
@@ -1833,6 +1875,7 @@ button.btn:active:not(:disabled) {
 .profile-info-card.sky::after {
   background: rgba(56, 189, 248, 0.08);
 }
+
 .profile-info-card.purple::after {
   background: rgba(168, 85, 247, 0.08);
 }
@@ -2072,8 +2115,13 @@ button.btn:active:not(:disabled) {
   transition: transform 0.35s ease, opacity 0.35s ease;
 }
 
-.login-mascot-eye:first-child { left: 22px; }
-.login-mascot-eye:nth-child(2) { right: 22px; }
+.login-mascot-eye:first-child {
+  left: 22px;
+}
+
+.login-mascot-eye:nth-child(2) {
+  right: 22px;
+}
 
 .login-mascot-eye span {
   position: absolute;
@@ -2208,13 +2256,29 @@ button.btn:active:not(:disabled) {
 }
 
 @keyframes login-mascot-idle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 @keyframes login-mascot-blink {
-  0%, 44%, 48%, 100% { transform: scaleY(1); }
-  46% { transform: scaleY(0.12); }
+
+  0%,
+  44%,
+  48%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  46% {
+    transform: scaleY(0.12);
+  }
 }
 
 .auth-card {
@@ -2311,6 +2375,54 @@ button.btn:active:not(:disabled) {
 }
 
 
+
+/* ==========================================================================
+   REACT BITS MAGIC BENTO INTERACTION SYSTEM
+   ========================================================================== */
+.magic-bento-card {
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.28s ease, box-shadow 0.28s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.magic-bento-spotlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: var(--bento-opacity, 0);
+  transition: opacity 0.35s ease;
+  background: radial-gradient(var(--bento-radius, 320px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      var(--bento-glow, rgba(56, 189, 248, 0.18)) 0%,
+      var(--bento-glow-secondary, rgba(168, 85, 247, 0.08)) 45%,
+      transparent 80%);
+  z-index: 1;
+}
+
+.magic-bento-border {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  padding: 1px;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: var(--bento-opacity, 0);
+  transition: opacity 0.35s ease;
+  background: radial-gradient(260px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      var(--bento-glow, rgba(56, 189, 248, 0.6)) 0%,
+      var(--bento-glow-secondary, rgba(168, 85, 247, 0.4)) 50%,
+      transparent 80%);
+  z-index: 2;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .magic-bento-card:hover {
+    box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.65), 0 0 24px rgba(99, 102, 241, 0.2);
+  }
+}
 
 /* ==========================================================================
    TABLES (SLEEK DARK THEME EVENT & STUDENT TABLES)
@@ -2566,10 +2678,12 @@ button.btn:active:not(:disabled) {
     transform: scale(0.85);
     opacity: 0.8;
   }
+
   50% {
     transform: scale(1.2);
     opacity: 0.3;
   }
+
   100% {
     transform: scale(0.85);
     opacity: 0.8;
@@ -3604,6 +3718,37 @@ button.btn:active:not(:disabled) {
   }
 }
 
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.25rem;
+    text-align: center;
+    color: #ffffff !important;
+  }
+
+  .hero-title span,
+  .hero-title .particle-text-mobile,
+  .particle-text-mobile {
+    display: block;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    color: #ffffff !important;
+    background: none !important;
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+  }
+
+  .auth-container {
+    margin: 1.5rem auto 3rem;
+    gap: 0;
+  }
+
+  .login-mascot {
+    display: none !important;
+  }
+}
+
 @media (max-width: 640px) {
   .container {
     padding-left: 1rem;
@@ -3625,30 +3770,6 @@ button.btn:active:not(:disabled) {
   .hero {
     border-radius: 16px;
     padding: 3rem 1.5rem 3.5rem;
-  }
-
-  .login-mascot {
-    width: 145px;
-    height: 150px;
-    flex-basis: 150px;
-    transform: scale(0.68);
-  }
-
-  .hero-title {
-    font-size: 2.25rem;
-    text-align: center;
-  }
-
-  .particle-text-mobile {
-    display: block;
-    max-width: 100%;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    color: #ffffff;
-    background: none;
-    -webkit-text-fill-color: #ffffff;
-    -webkit-background-clip: initial;
-    background-clip: initial;
   }
 
   .hero-subtitle {
@@ -3832,7 +3953,9 @@ button.btn:active:not(:disabled) {
     width: 100%;
   }
 
-  .custom-table tr.dashboard-reg-row {
+  .custom-table tr.dashboard-reg-row,
+  .custom-table tr.animated-user-row,
+  .custom-table tr.animated-registration-row {
     display: flex;
     flex-direction: column;
     background: linear-gradient(145deg, rgba(20, 28, 51, 0.9) 0%, rgba(13, 19, 36, 0.98) 100%);
@@ -3845,7 +3968,9 @@ button.btn:active:not(:disabled) {
     box-sizing: border-box;
   }
 
-  .custom-table tr.dashboard-reg-row td {
+  .custom-table tr.dashboard-reg-row td,
+  .custom-table tr.animated-user-row td,
+  .custom-table tr.animated-registration-row td {
     padding: 0;
     border: none;
     width: 100%;
@@ -3856,7 +3981,7 @@ button.btn:active:not(:disabled) {
     margin-bottom: 0.2rem;
   }
 
-  .dashboard-col-title > div:first-child {
+  .dashboard-col-title>div:first-child {
     font-size: 1.05rem !important;
     color: #ffffff;
     line-height: 1.35;
