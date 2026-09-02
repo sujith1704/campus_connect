@@ -1541,28 +1541,10 @@ button.btn:active:not(:disabled) {
   border-radius: 0 0 0 0;
 }
 
-/* Subtle background glow circle decoration */
-.category-card::after {
-  content: '';
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  background: var(--cat-accent-glow, rgba(240, 93, 77, 0.08));
-  pointer-events: none;
-  transition: transform 0.3s ease;
-}
-
 .category-card:hover {
   transform: translateY(-3px);
   border-color: rgba(255, 255, 255, 0.22);
   box-shadow: 0 15px 38px rgba(0, 0, 0, 0.55);
-}
-
-.category-card:hover::after {
-  transform: scale(1.3);
 }
 
 .category-icon-wrap {
@@ -1699,48 +1681,10 @@ button.btn:active:not(:disabled) {
   background: linear-gradient(180deg, #a855f7, #ec4899);
 }
 
-/* Background ambient glow circle */
-.stat-card::after {
-  content: '';
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: rgba(240, 93, 77, 0.08);
-  pointer-events: none;
-  transition: transform 0.3s ease;
-}
-
-.stat-card.emerald::after {
-  background: rgba(16, 185, 129, 0.08);
-}
-
-.stat-card.amber::after {
-  background: rgba(245, 158, 11, 0.08);
-}
-
-.stat-card.sky::after {
-  background: rgba(56, 189, 248, 0.08);
-}
-
-.stat-card.indigo::after {
-  background: rgba(99, 102, 241, 0.08);
-}
-
-.stat-card.purple::after {
-  background: rgba(168, 85, 247, 0.08);
-}
-
 .stat-card:hover {
   transform: translateY(-3px);
   border-color: rgba(255, 255, 255, 0.22);
   box-shadow: 0 15px 38px rgba(0, 0, 0, 0.6);
-}
-
-.stat-card:hover::after {
-  transform: scale(1.3);
 }
 
 .stat-icon-wrap {
@@ -1859,35 +1803,10 @@ button.btn:active:not(:disabled) {
   background: linear-gradient(180deg, #a855f7, #ec4899);
 }
 
-.profile-info-card::after {
-  content: '';
-  position: absolute;
-  top: -30px;
-  right: -30px;
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  background: rgba(240, 93, 77, 0.08);
-  pointer-events: none;
-  transition: transform 0.3s ease;
-}
-
-.profile-info-card.sky::after {
-  background: rgba(56, 189, 248, 0.08);
-}
-
-.profile-info-card.purple::after {
-  background: rgba(168, 85, 247, 0.08);
-}
-
 .profile-info-card:hover {
   transform: translateY(-2px);
   border-color: rgba(255, 255, 255, 0.22);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
-}
-
-.profile-info-card:hover::after {
-  transform: scale(1.3);
 }
 
 .profile-info-icon-wrap {
