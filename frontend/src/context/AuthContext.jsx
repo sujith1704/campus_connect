@@ -43,6 +43,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async (googleAuthData) => {
+    const res = await API.post('/auth/google', googleAuthData);
+    if (res.data.success) {
+      localStorage.setItem('campusconnect_token', res.data.token);
+      setToken(res.data.token);
+      setUser(res.data.user);
+      setAuthSessionId((currentId) => currentId + 1);
+      return res.data;
+    }
+  };
+
   const register = async (userData) => {
     const res = await API.post('/auth/register', userData);
     if (res.data.success) {
@@ -70,6 +81,7 @@ export const AuthProvider = ({ children }) => {
         authSessionId,
         login,
         register,
+        loginWithGoogle,
         logout,
         isAuthenticated: !!user,
         isStudent: user?.role === 'student',

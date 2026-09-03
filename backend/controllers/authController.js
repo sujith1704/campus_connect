@@ -286,3 +286,142 @@ exports.resetPassword = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message || 'Failed to reset password' });
   }
 };
+
+// @desc    Authenticate with Google Identity Services (OAuth2/OIDC)
+// @route   POST /api/auth/google
+// @access  Public
+exports.googleAuth = async (req, res) => {
+  try {
+    const { credential, access_token } = req.body;
+
+    if (!credential && !access_token) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google authentication credential or access token is required.',
+      });
+    }
+
+    let payload = null;
+
+    // 1. Verify Google credential (ID token) or access token
+    if (credential) {
+      try {
+        const verifyRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+        if (verifyRes.ok) {
+          payload = await verifyRes.json();
+        } else {
+          // Attempt verification with google-auth-library if available
+          const { OAuth2Client } = require('google-auth-library');
+          const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+          const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+          });
+          payload = ticket.getPayload();
+        }
+      } catch (tokenErr) {
+        console.error('Google ID token verification failed:', tokenErr.message);
+        return res.status(401).json({
+          success: false,
+          message: 'Google authentication failed: Invalid or expired ID token.',
+        });
+      }
+    } else if (access_token) {
+      try {
+        const userinfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${access_token}` },
+        });
+        if (!userinfoRes.ok) {
+          throw new Error('Userinfo fetch failed');
+        }
+        payload = await userinfoRes.json();
+      } catch (accErr) {
+        console.error('Google access token verification failed:', accErr.message);
+        return res.status(401).json({
+          success: false,
+          message: 'Google authentication failed: Invalid or expired access token.',
+        });
+      }
+    }
+
+    if (!payload || !payload.email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Unable to retrieve verified email from Google identity.',
+      });
+    }
+
+    const cleanEmail = payload.email.toLowerCase().trim();
+    const googleId = payload.sub;
+    const name = payload.name || cleanEmail.split('@')[0];
+    const avatar = payload.picture || null;
+
+    // 2. Look up user by Google ID or registered email in MongoDB
+    let user = await User.findOne({
+      $or: [{ googleId }, { email: cleanEmail }],
+    });
+
+    // 3. Handle account authorization according to existing CampusConnect role system
+    if (!user) {
+      // Check if auto-registration for student accounts is enabled via environment variable
+      if (process.env.ALLOW_GOOGLE_AUTO_REGISTER === 'true') {
+        user = await User.create({
+          name,
+          email: cleanEmail,
+          googleId,
+          avatar,
+          role: 'student', // strictly student role, never organizer
+        });
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: `No CampusConnect account found for ${cleanEmail}. Please sign in with an authorized campus account or contact your administrator.`,
+        });
+      }
+    } else {
+      // Link Google ID and avatar if not already set
+      let needsSave = false;
+      if (!user.googleId && googleId) {
+        user.googleId = googleId;
+        needsSave = true;
+      }
+      if (!user.avatar && avatar) {
+        user.avatar = avatar;
+        needsSave = true;
+      }
+      if (needsSave) {
+        await user.save({ validateBeforeSave: false });
+      }
+    }
+
+    // 4. Role Authorization check
+    if (user.role === 'admin') {
+      return res.status(401).json({
+        success: false,
+        message: 'Admin accounts are no longer supported.',
+      });
+    }
+
+    // 5. Issue standard CampusConnect JWT token
+    const token = generateToken(user._id);
+
+    return res.json({
+      success: true,
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error('Google Auth Controller Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Server error during Google authentication.',
+    });
+  }
+};
