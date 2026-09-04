@@ -68,7 +68,7 @@ const OrganizerControlDesk = () => {
           <div className="stat-icon-wrap coral">
             <Calendar size={26} />
           </div>
-          <div>
+          <div className="stat-text">
             <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : totalEvents}</div>
             <div className="stat-label">Total Events Created</div>
           </div>
@@ -83,7 +83,7 @@ const OrganizerControlDesk = () => {
           <div className="stat-icon-wrap emerald">
             <Users size={26} />
           </div>
-          <div>
+          <div className="stat-text">
             <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : totalRegistrations}</div>
             <div className="stat-label">Total Student Registrations</div>
           </div>

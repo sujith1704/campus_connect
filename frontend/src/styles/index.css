@@ -1688,19 +1688,22 @@ button.btn:active:not(:disabled) {
 
 .stat-card {
   background: linear-gradient(145deg, rgba(20, 28, 51, 0.88) 0%, rgba(13, 19, 36, 0.96) 100%);
-  padding: 24px;
+  padding: 24px 16px;
   border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: var(--shadow-md);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
   transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.28s ease, box-shadow 0.28s ease;
   position: relative;
   overflow: hidden;
   min-width: 0;
   width: 100%;
-  height: 150px;
+  min-height: 150px;
   box-sizing: border-box;
   flex: 1;
 }
@@ -1719,8 +1722,7 @@ button.btn:active:not(:disabled) {
   }
 
   .stat-card {
-    height: auto;
-    min-height: 100px;
+    min-height: 120px;
     padding: 1.25rem 1rem;
   }
 }
@@ -1730,29 +1732,30 @@ button.btn:active:not(:disabled) {
   position: absolute;
   top: 0;
   left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, #f05d4d, #38bdf8);
+  right: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #f05d4d, #38bdf8);
 }
 
 .stat-card.emerald::before {
-  background: linear-gradient(180deg, #10b981, #06b6d4);
+  background: linear-gradient(90deg, #10b981, #06b6d4);
 }
 
 .stat-card.amber::before {
-  background: linear-gradient(180deg, #f59e0b, #f97316);
+  background: linear-gradient(90deg, #f59e0b, #f97316);
 }
 
 .stat-card.sky::before {
-  background: linear-gradient(180deg, #38bdf8, #6366f1);
+  background: linear-gradient(90deg, #38bdf8, #6366f1);
 }
 
 .stat-card.indigo::before {
-  background: linear-gradient(180deg, #6366f1, #a855f7);
+  background: linear-gradient(90deg, #6366f1, #a855f7);
 }
 
 .stat-card.purple::before {
-  background: linear-gradient(180deg, #a855f7, #ec4899);
+  background: linear-gradient(90deg, #a855f7, #ec4899);
 }
 
 .stat-card:hover {
@@ -1774,6 +1777,7 @@ button.btn:active:not(:disabled) {
   box-shadow: 0 0 16px rgba(240, 93, 77, 0.3);
   transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   flex-shrink: 0;
+  margin: 0 auto;
 }
 
 .stat-card:hover .stat-icon-wrap {
@@ -1815,12 +1819,22 @@ button.btn:active:not(:disabled) {
   box-shadow: 0 0 16px rgba(168, 85, 247, 0.3);
 }
 
+.stat-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
 .stat-value {
   font-size: 2rem;
   font-weight: 800;
   line-height: 1.1;
   color: #ffffff;
   letter-spacing: -0.02em;
+  text-align: center;
+  width: 100%;
 }
 
 .stat-label {
@@ -1828,6 +1842,8 @@ button.btn:active:not(:disabled) {
   color: var(--text-muted);
   font-weight: 600;
   margin-top: 0.2rem;
+  text-align: center;
+  width: 100%;
 }
 
 /* ==========================================================================
@@ -1848,8 +1864,11 @@ button.btn:active:not(:disabled) {
   border: 1px solid rgba(255, 255, 255, 0.11);
   box-shadow: var(--shadow-sm);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.15rem;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
   position: relative;
   overflow: hidden;
   transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.28s ease, box-shadow 0.28s ease;
@@ -1860,21 +1879,30 @@ button.btn:active:not(:disabled) {
   position: absolute;
   top: 0;
   left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, #f05d4d, #38bdf8);
+  right: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #f05d4d, #38bdf8);
 }
 
 .profile-info-card.coral::before {
-  background: linear-gradient(180deg, #f05d4d, #ea580c);
+  background: linear-gradient(90deg, #f05d4d, #ea580c);
 }
 
 .profile-info-card.sky::before {
-  background: linear-gradient(180deg, #38bdf8, #6366f1);
+  background: linear-gradient(90deg, #38bdf8, #6366f1);
 }
 
 .profile-info-card.purple::before {
-  background: linear-gradient(180deg, #a855f7, #ec4899);
+  background: linear-gradient(90deg, #a855f7, #ec4899);
+}
+
+.profile-info-card.emerald::before {
+  background: linear-gradient(90deg, #10b981, #06b6d4);
+}
+
+.profile-info-card.indigo::before {
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
 }
 
 .profile-info-card:hover {
@@ -1896,6 +1924,7 @@ button.btn:active:not(:disabled) {
   justify-content: center;
   box-shadow: 0 0 16px rgba(240, 93, 77, 0.3);
   transition: transform 0.28s ease;
+  margin: 0 auto;
 }
 
 .profile-info-card:hover .profile-info-icon-wrap {
@@ -1923,6 +1952,29 @@ button.btn:active:not(:disabled) {
   box-shadow: 0 0 16px rgba(168, 85, 247, 0.3);
 }
 
+.profile-info-icon-wrap.emerald {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+}
+
+.profile-info-icon-wrap.indigo {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.3);
+}
+
+.profile-info-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+}
+
 .profile-info-label {
   font-size: 0.72rem;
   color: var(--text-subtle);
@@ -1930,12 +1982,18 @@ button.btn:active:not(:disabled) {
   font-weight: 800;
   letter-spacing: 0.05em;
   margin-bottom: 0.15rem;
+  text-align: center;
+  width: 100%;
 }
 
 .profile-info-value {
   font-size: 1rem;
   color: #ffffff;
   font-weight: 700;
+  text-align: center;
+  display: block;
+  word-break: break-word;
+  width: 100%;
 }
 
 /* ==========================================================================

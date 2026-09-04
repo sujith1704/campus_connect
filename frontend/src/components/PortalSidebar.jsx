@@ -138,9 +138,8 @@ const PortalSidebar = () => {
 
       {/* Vertical Sidebar */}
       <motion.aside
-        className={`portal-sidebar ${isStudent ? 'student-sidebar' : 'organizer-sidebar'} ${
-          isOpen ? 'open' : ''
-        } ${isHovered && isDesktop ? 'hover-expanded' : ''}`}
+        className={`portal-sidebar ${isStudent ? 'student-sidebar' : 'organizer-sidebar'} ${isOpen ? 'open' : ''
+          } ${isHovered && isDesktop ? 'hover-expanded' : ''}`}
         initial={isDesktop ? 'collapsed' : false}
         animate={isDesktop ? motionState : false}
         variants={isDesktop ? sidebarVariants : undefined}

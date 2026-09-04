@@ -66,7 +66,7 @@ const StudentDashboard = () => {
           <div className="stat-icon-wrap coral">
             <Ticket size={26} />
           </div>
-          <div>
+          <div className="stat-text">
             <div className="stat-value">{activeRegistrations.length}</div>
             <div className="stat-label">Total Registered Events</div>
           </div>
@@ -81,7 +81,7 @@ const StudentDashboard = () => {
           <div className="stat-icon-wrap emerald">
             <Calendar size={26} />
           </div>
-          <div>
+          <div className="stat-text">
             <div className="stat-value">{activeRegistrations.length}</div>
             <div className="stat-label">Upcoming Attending Events</div>
           </div>

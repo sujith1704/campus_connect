@@ -51,6 +51,21 @@ const ProfilePage = () => {
             >
               <MagicBentoCard
                 variants={cardVariants}
+                className="profile-info-card emerald"
+                glowColor="rgba(16, 185, 129, 0.22)"
+                glowSecondary="rgba(6, 182, 212, 0.1)"
+              >
+                <div className="profile-info-icon-wrap emerald">
+                  <User size={22} />
+                </div>
+                <div className="profile-info-text">
+                  <span className="profile-info-label">FULL NAME</span>
+                  <strong className="profile-info-value">{user?.name || 'User'}</strong>
+                </div>
+              </MagicBentoCard>
+
+              <MagicBentoCard
+                variants={cardVariants}
                 className="profile-info-card coral"
                 glowColor="rgba(240, 93, 77, 0.22)"
                 glowSecondary="rgba(249, 115, 22, 0.1)"
@@ -58,7 +73,7 @@ const ProfilePage = () => {
                 <div className="profile-info-icon-wrap coral">
                   <Mail size={22} />
                 </div>
-                <div>
+                <div className="profile-info-text">
                   <span className="profile-info-label">EMAIL ADDRESS</span>
                   <strong className="profile-info-value">{user?.email}</strong>
                 </div>
@@ -73,7 +88,7 @@ const ProfilePage = () => {
                 <div className="profile-info-icon-wrap sky">
                   <Shield size={22} />
                 </div>
-                <div>
+                <div className="profile-info-text">
                   <span className="profile-info-label">USER ROLE</span>
                   <strong className="profile-info-value" style={{ textTransform: 'capitalize' }}>{user?.role}</strong>
                 </div>
@@ -88,7 +103,7 @@ const ProfilePage = () => {
                 <div className="profile-info-icon-wrap purple">
                   <Calendar size={22} />
                 </div>
-                <div>
+                <div className="profile-info-text">
                   <span className="profile-info-label">MEMBER SINCE</span>
                   <strong className="profile-info-value">
                     {user?.createdAt ? formatDate(user.createdAt) : 'Active Member'}
