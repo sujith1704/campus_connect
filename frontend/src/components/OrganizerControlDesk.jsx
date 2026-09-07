@@ -44,11 +44,7 @@ const OrganizerControlDesk = () => {
             Logged in as <strong style={{ color: '#ffffff' }}>{user?.name}</strong> • Publish, edit, and track student registrations.
           </p>
         </div>
-        <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-          <Link to="/organizer/create-event" className="btn btn-primary btn-lg">
-            <PlusCircle size={20} /> Create New Event
-          </Link>
-        </motion.div>
+
       </MagicBentoCard>
 
       {/* Metrics Section */}

@@ -4484,3 +4484,735 @@ button.btn:active:not(:disabled) {
     padding: 1rem 0.85rem;
   }
 }
+
+/* ==========================================================================
+   CampusConnect Professional 3D Login Split Layout
+   ========================================================================== */
+.auth-split-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  gap: clamp(1.75rem, 3.5vw, 3.25rem);
+  min-height: calc(100vh - 130px);
+  padding: 1rem 0;
+}
+
+/* Left Side Visual Section - Premium Studio Stage */
+.auth-split-visual {
+  flex: 1 1 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: 24px;
+  background: 
+    /* Ambient cyan & indigo backlights */
+    radial-gradient(ellipse 70% 45% at 50% 36%, rgba(56, 189, 248, 0.18) 0%, rgba(99, 102, 241, 0.1) 48%, transparent 75%),
+    radial-gradient(ellipse 55% 35% at 50% 88%, rgba(240, 93, 77, 0.1) 0%, transparent 65%),
+    /* Deep obsidian studio gradient base */
+    linear-gradient(180deg, #0a0f1d 0%, #050811 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  overflow: hidden;
+  height: 500px;
+  max-height: 500px;
+  box-sizing: border-box;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 0 35px -8px rgba(56, 189, 248, 0.16),
+    0 24px 65px -15px rgba(0, 0, 0, 0.75);
+}
+
+/* Layer 1: Overhead Volumetric Spotlight Projector Beam */
+.auth-stage-spotlight {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 480px;
+  height: 380px;
+  background: conic-gradient(
+    from 180deg at 50% 0%,
+    transparent 162deg,
+    rgba(56, 189, 248, 0.05) 173deg,
+    rgba(125, 211, 252, 0.13) 180deg,
+    rgba(56, 189, 248, 0.05) 187deg,
+    transparent 198deg
+  );
+  filter: blur(14px);
+  pointer-events: none;
+  z-index: 0;
+  animation: spotlightBreathe 6s ease-in-out infinite alternate;
+}
+
+@keyframes spotlightBreathe {
+  0% {
+    opacity: 0.7;
+    transform: translateX(-50%) scaleX(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1.06);
+  }
+}
+
+/* Layer 2: Animated Nebula / Aurora Glow in Background */
+.auth-stage-ambient-glow {
+  position: absolute;
+  inset: -25%;
+  background: 
+    radial-gradient(ellipse 65% 55% at 50% 38%, rgba(56, 189, 248, 0.18) 0%, rgba(99, 102, 241, 0.11) 42%, transparent 70%),
+    radial-gradient(ellipse 50% 45% at 50% 88%, rgba(240, 93, 77, 0.1) 0%, transparent 62%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(14px);
+  animation: stageAuraBreathe 7s ease-in-out infinite alternate;
+}
+
+@keyframes stageAuraBreathe {
+  0% {
+    transform: scale(0.92) translate(0, 0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.08) translate(1.5%, -1%);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.96) translate(-1%, 1.5%);
+    opacity: 0.8;
+  }
+}
+
+/* Layer 3: Animated Tech Dot Grid Matrix Drift */
+.auth-stage-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse at 50% 50%, black 45%, transparent 92%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, black 45%, transparent 92%);
+  animation: techGridFlow 24s linear infinite;
+}
+
+@keyframes techGridFlow {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 22px 44px;
+  }
+}
+
+/* Layer 4: Isometric 3D Perspective Floor Grid */
+.auth-stage-floor-grid {
+  position: absolute;
+  bottom: -15px;
+  left: 0;
+  right: 0;
+  height: 145px;
+  background-image: 
+    linear-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
+  background-size: 26px 26px;
+  transform: perspective(280px) rotateX(68deg);
+  transform-origin: bottom center;
+  mask-image: radial-gradient(ellipse at 50% 100%, black 40%, transparent 92%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 100%, black 40%, transparent 92%);
+  pointer-events: none;
+  z-index: 0;
+  animation: floorGridPulse 6s ease-in-out infinite alternate;
+}
+
+@keyframes floorGridPulse {
+  0% { opacity: 0.6; }
+  100% { opacity: 0.95; }
+}
+
+/* Layer 5: High-Tech Holographic Scanner Sweep Beam */
+.auth-stage-scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 90px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(56, 189, 248, 0.02) 40%,
+    rgba(56, 189, 248, 0.1) 85%,
+    rgba(56, 189, 248, 0.28) 100%
+  );
+  border-bottom: 1.5px solid rgba(56, 189, 248, 0.45);
+  box-shadow: 0 4px 18px rgba(56, 189, 248, 0.2);
+  pointer-events: none;
+  z-index: 1;
+  animation: stageScanSweep 7.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  opacity: 0;
+}
+
+@keyframes stageScanSweep {
+  0% {
+    top: -90px;
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.85;
+  }
+  96% {
+    opacity: 0.1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* Layer 6: Animated Luminous Border Beam (Rotating Specular Frame) */
+.auth-stage-border-beam {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  pointer-events: none;
+  z-index: 2;
+  border: 1.5px solid transparent;
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: destination-out;
+  overflow: hidden;
+}
+
+.auth-stage-border-beam::after {
+  content: '';
+  position: absolute;
+  inset: -60%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 280deg,
+    rgba(56, 189, 248, 0.7) 325deg,
+    rgba(99, 102, 241, 0.85) 350deg,
+    rgba(240, 93, 77, 0.8) 360deg
+  );
+  animation: borderBeamSpin 10s linear infinite;
+}
+
+@keyframes borderBeamSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Stage Pedestal Outer Glow Ring beneath the robots - Animated Breathing */
+.auth-split-visual::before {
+  content: '';
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 82%;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.22) 0%, rgba(99, 102, 241, 0.1) 45%, transparent 75%);
+  border: 1px solid rgba(56, 189, 248, 0.26);
+  box-shadow: 
+    0 0 38px rgba(56, 189, 248, 0.2),
+    inset 0 0 24px rgba(99, 102, 241, 0.15);
+  pointer-events: none;
+  z-index: 0;
+  animation: pedestalOuterPulse 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes pedestalOuterPulse {
+  0% {
+    transform: translateX(-50%) scale(0.96);
+    box-shadow: 
+      0 0 24px rgba(56, 189, 248, 0.14),
+      inset 0 0 16px rgba(99, 102, 241, 0.1);
+    border-color: rgba(56, 189, 248, 0.22);
+  }
+  100% {
+    transform: translateX(-50%) scale(1.03);
+    box-shadow: 
+      0 0 48px rgba(56, 189, 248, 0.32),
+      inset 0 0 30px rgba(99, 102, 241, 0.24);
+    border-color: rgba(56, 189, 248, 0.44);
+  }
+}
+
+/* Stage Pedestal Inner Dashed Accent Ring - 3D Holographic Spinning Ring */
+.auth-split-visual::after {
+  content: '';
+  position: absolute;
+  bottom: 6%;
+  left: 50%;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.18);
+  pointer-events: none;
+  z-index: 0;
+  transform: translateX(-50%) perspective(450px) rotateX(72deg) rotateZ(0deg);
+  animation: pedestalHoloSpin 22s linear infinite;
+}
+
+@keyframes pedestalHoloSpin {
+  0% {
+    transform: translateX(-50%) perspective(450px) rotateX(72deg) rotateZ(0deg);
+  }
+  100% {
+    transform: translateX(-50%) perspective(450px) rotateX(72deg) rotateZ(360deg);
+  }
+}
+
+/* Top Telemetry HUD Bar */
+.auth-stage-hud-top {
+  position: absolute;
+  top: 1.1rem;
+  left: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.hud-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.75);
+  letter-spacing: 0.08em;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.22rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hud-metric-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: hudDotPulse 2s infinite ease-in-out;
+}
+
+@keyframes hudDotPulse {
+  0%, 100% { opacity: 0.7; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.25); box-shadow: 0 0 9px #10b981; }
+}
+
+.hud-metric-right {
+  color: rgba(56, 189, 248, 0.85);
+}
+
+/* Top Subtle Stage Pill */
+.auth-stage-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  z-index: 2;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  user-select: none;
+}
+
+.stage-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  animation: pulse-dot 2.5s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.6; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 12px #38bdf8; }
+}
+
+/* Bottom Telemetry HUD Bar */
+.auth-stage-hud-bottom {
+  position: absolute;
+  bottom: 0.85rem;
+  left: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: rgba(148, 163, 184, 0.45);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.hud-footer-code {
+  color: rgba(56, 189, 248, 0.6);
+}
+
+.hud-footer-status {
+  text-transform: uppercase;
+}
+
+.auth-robot-canvas-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Corner Crosshairs for a polished engineering/studio aesthetic with subtle luminescence */
+.auth-robot-canvas-wrapper::before,
+.auth-robot-canvas-wrapper::after {
+  content: '+';
+  position: absolute;
+  font-family: monospace;
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.3);
+  pointer-events: none;
+  z-index: 1;
+  animation: crosshairBreathe 5s ease-in-out infinite alternate;
+}
+
+@keyframes crosshairBreathe {
+  0%, 100% {
+    opacity: 0.3;
+    color: rgba(148, 163, 184, 0.3);
+  }
+  50% {
+    opacity: 0.8;
+    color: #38bdf8;
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+  }
+}
+
+.auth-robot-canvas-wrapper::before {
+  top: 10px;
+  left: 10px;
+}
+
+.auth-robot-canvas-wrapper::after {
+  top: 10px;
+  right: 10px;
+}
+
+.three-login-canvas-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  display: block;
+  cursor: grab;
+  z-index: 1;
+}
+
+.three-login-canvas-container:active {
+  cursor: grabbing;
+}
+
+.three-login-canvas-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  outline: none;
+}
+
+/* Right Side Login Card */
+.auth-split-form {
+  flex: 0 1 440px;
+  width: 100%;
+  max-width: 440px;
+}
+
+.auth-card.auth-card-refined {
+  width: 100% !important;
+  box-sizing: border-box;
+  margin: 0;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.55);
+  padding: 2.25rem 2rem;
+}
+
+.auth-card.auth-card-refined::before {
+  content: '';
+  display: block;
+  height: 3px;
+  position: absolute;
+  inset: 0 0 auto;
+  background: linear-gradient(90deg, #f05d4d 0%, #38bdf8 50%, #818cf8 100%);
+  border-radius: 20px 20px 0 0;
+}
+
+/* Google Sign-in Button */
+.btn-google-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.72rem 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.btn-google-login:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.24);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.26);
+}
+
+.btn-google-login:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-google-login:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Clean Divider */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.15rem 0;
+  color: #64748b;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.auth-divider span {
+  padding: 0 0.85rem;
+}
+
+/* Form Inputs with Leading Icons and Trailing Password Toggle */
+.input-icon-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.input-leading-icon {
+  position: absolute;
+  left: 0.95rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.form-control.form-control-with-icon {
+  padding-left: 2.75rem !important;
+}
+
+.form-control.form-control-with-trailing {
+  padding-right: 2.75rem !important;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.65rem;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.password-toggle-btn:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.password-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.45rem;
+}
+
+.password-header-row .form-label {
+  margin-bottom: 0;
+}
+
+.forgot-password-link {
+  font-size: 0.82rem;
+  color: #f05d4d;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.forgot-password-link:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+}
+
+.auth-submit-btn {
+  background: linear-gradient(135deg, #f05d4d 0%, #ea580c 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(240, 93, 77, 0.32) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+  transition: all 0.2s ease !important;
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(240, 93, 77, 0.42) !important;
+}
+
+.auth-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.auth-footer-nav {
+  text-align: center;
+  margin-top: 1.35rem;
+  font-size: 0.88rem;
+  color: #94a3b8;
+}
+
+.auth-register-link {
+  color: #f05d4d;
+  font-weight: 700;
+  margin-left: 0.25rem;
+  text-decoration: none;
+}
+
+.auth-register-link:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 900px) {
+  .auth-split-container {
+    gap: 1.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .auth-robot-canvas-wrapper {
+    height: 320px;
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-split-container {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0.5rem auto 2rem;
+    min-height: calc(100vh - 120px);
+    width: 100%;
+  }
+
+  /* Robot animation hidden on mobile */
+  .auth-split-visual {
+    display: none !important;
+  }
+
+  .auth-split-form {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: 440px !important;
+  }
+
+  .auth-card.auth-card-refined {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 2rem 1.5rem !important;
+    overflow: clip !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .auth-card.auth-card-refined {
+    padding: 1.65rem 1.15rem !important;
+    border-radius: 16px;
+  }
+
+  .auth-title {
+    font-size: 1.6rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .auth-card.auth-card-refined {
+    padding: 1.4rem 0.95rem !important;
+  }
+
+  .password-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .auth-card.auth-card-refined {
+    padding: 1.25rem 0.85rem !important;
+  }
+}

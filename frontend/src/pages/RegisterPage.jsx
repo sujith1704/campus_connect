@@ -3,10 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
-import { GraduationCap, UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
+import { GraduationCap, UserPlus, AlertCircle, CheckCircle, User, Mail, Lock, Eye, EyeOff, Sparkles } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import AuthBackground from '../components/AuthBackground';
-import LoginMascot from '../components/LoginMascot';
+import ThreeLoginExperience from '../components/ThreeLoginExperience';
 import { authCardVariants, alertVariants } from '../utils/animations';
 
 const staggerContainer = {
@@ -21,11 +21,11 @@ const staggerContainer = {
 };
 
 const staggerItem = {
-  initial: { opacity: 0, y: 10 },
+  initial: { opacity: 0, y: 8 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
   },
 };
 
@@ -38,6 +38,8 @@ const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -155,164 +157,227 @@ const RegisterPage = () => {
         <AuthBackground />
 
         <div className="container main-content auth-content-layer">
-          <div className="auth-container">
-            <LoginMascot focusTarget={mascotFocus} />
-            <motion.div
-              className="auth-card"
-              variants={authCardVariants}
-              initial="initial"
-              animate="animate"
-            >
+          <div className="auth-split-container">
+            {/* LEFT: Clean 3D Robot Mascot */}
+            <div className="auth-split-visual">
+              {/* Multi-layered luxury studio background */}
+              <div className="auth-stage-spotlight" />
+              <div className="auth-stage-ambient-glow" />
+              <div className="auth-stage-grid" />
+              <div className="auth-stage-floor-grid" />
+              <div className="auth-stage-scanline" />
+              <div className="auth-stage-border-beam" />
+
+              {/* HUD Telemetry Header */}
+              <div className="auth-stage-hud-top">
+                <div className="hud-metric">
+                  <span className="hud-metric-dot" />
+                  <span>AI_LAB // ACTIVE</span>
+                </div>
+                <div className="auth-stage-pill">
+                  <span className="stage-pill-dot" />
+                  <span>Interactive Campus Trio</span>
+                </div>
+                <div className="hud-metric hud-metric-right">
+                  <span>SYNC // 60FPS</span>
+                </div>
+              </div>
+
+              {/* 3D Interactive Mascot Canvas */}
+              <div className="auth-robot-canvas-wrapper">
+                <ThreeLoginExperience focusTarget={mascotFocus} />
+              </div>
+
+              {/* HUD Telemetry Footer */}
+              <div className="auth-stage-hud-bottom">
+                <span className="hud-footer-code">SYS_ID #CC-MASCOT-03</span>
+                <span className="hud-footer-status">CampusConnect Robotics Lab</span>
+              </div>
+            </div>
+
+            {/* RIGHT: Register Card */}
+            <div className="auth-split-form">
               <motion.div
-                variants={staggerContainer}
+                className="auth-card auth-card-refined"
+                variants={authCardVariants}
                 initial="initial"
                 animate="animate"
               >
-                {/* Header with Logo */}
-                <motion.div className="auth-header" variants={staggerItem}>
-                  <motion.div
-                    className="brand-icon auth-logo-glow"
-                    style={{ margin: '0 auto 1.25rem', width: '52px', height: '52px' }}
-                    whileHover={{ scale: 1.1, rotate: 6 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  >
-                    <GraduationCap size={30} />
-                  </motion.div>
-                  <h1 className="auth-title">Create Account</h1>
-                  <p className="auth-subtitle">Join CampusConnect as a Student</p>
-                </motion.div>
-
-                {/* Notifications */}
-                <AnimatePresence mode="wait">
-                  {errorMsg && (
-                    <motion.div
-                      key="error"
-                      className="alert alert-danger"
-                      variants={alertVariants}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                    >
-                      <AlertCircle size={18} />
-                      <span>{errorMsg}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <AnimatePresence mode="wait">
-                  {successMsg && (
-                    <motion.div
-                      key="success"
-                      className="alert alert-success"
-                      variants={alertVariants}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                    >
-                      <CheckCircle size={18} />
-                      <span>{successMsg}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Register Form */}
-                <form onSubmit={handleSubmit} autoComplete="off">
-                  <motion.div className="form-group" variants={staggerItem}>
-                    <label className="form-label" htmlFor="register-name">Full Name</label>
-                    <input
-                      id="register-name"
-                      name="fullName"
-                      type="text"
-                      className="form-control"
-                      placeholder="Enter your full name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      autoComplete="off"
-                      required
-                    />
-                  </motion.div>
-
-                  <motion.div className="form-group" variants={staggerItem}>
-                    <label className="form-label" htmlFor="register-email">Email Address</label>
-                    <input
-                      id="register-email"
-                      name="registerEmail"
-                      type="email"
-                      className="form-control"
-                      placeholder="Enter your institutional email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      autoComplete="off"
-                      required
-                    />
-                  </motion.div>
-
-                  <motion.div className="form-group" variants={staggerItem}>
-                    <label className="form-label" htmlFor="register-password">Password</label>
-                    <input
-                      id="register-password"
-                      name="newPassword"
-                      type="password"
-                      className="form-control"
-                      placeholder="Create a password (min 6 chars)"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      onFocus={() => setMascotFocus('password')}
-                      onBlur={(event) => {
-                        if (event.relatedTarget?.type !== 'password') setMascotFocus(null);
-                      }}
-                      autoComplete="new-password"
-                      required
-                    />
-                  </motion.div>
-
-                  <motion.div className="form-group" variants={staggerItem}>
-                    <label className="form-label" htmlFor="register-confirm-password">Confirm Password</label>
-                    <input
-                      id="register-confirm-password"
-                      name="confirmNewPassword"
-                      type="password"
-                      className="form-control"
-                      placeholder="Re-enter your password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      onFocus={() => setMascotFocus('password')}
-                      onBlur={(event) => {
-                        if (event.relatedTarget?.type !== 'password') setMascotFocus(null);
-                      }}
-                      autoComplete="new-password"
-                      required
-                    />
-                  </motion.div>
-
-                  <motion.div variants={staggerItem}>
-                    <button
-                      type="submit"
-                      className="btn btn-primary btn-full btn-lg"
-                      disabled={loading}
-                    >
-                      <UserPlus size={18} /> {loading ? 'Creating Account...' : 'Register'}
-                    </button>
-                  </motion.div>
-                </form>
-
-                {/* Footer Link */}
                 <motion.div
-                  variants={staggerItem}
-                  style={{
-                    textAlign: 'center',
-                    marginTop: '1.5rem',
-                    fontSize: '0.9rem',
-                    color: 'var(--slate-600)',
-                  }}
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
                 >
-                  Already have an account?{' '}
-                  <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 700 }}>
-                    Sign In
-                  </Link>
+                  {/* Header with Logo */}
+                  <motion.div className="auth-header" variants={staggerItem}>
+                    <div className="brand-icon auth-logo-glow" style={{ margin: '0 auto 1rem', width: '48px', height: '48px' }}>
+                      <GraduationCap size={26} />
+                    </div>
+                    <h1 className="auth-title">Create Account</h1>
+                    <p className="auth-subtitle">Join CampusConnect as a Student</p>
+                  </motion.div>
+
+                  {/* Notifications */}
+                  <AnimatePresence mode="wait">
+                    {errorMsg && (
+                      <motion.div
+                        key="error"
+                        className="alert alert-danger"
+                        variants={alertVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                      >
+                        <AlertCircle size={17} />
+                        <span>{errorMsg}</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <AnimatePresence mode="wait">
+                    {successMsg && (
+                      <motion.div
+                        key="success"
+                        className="alert alert-success"
+                        variants={alertVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                      >
+                        <CheckCircle size={17} />
+                        <span>{successMsg}</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Register Form */}
+                  <form onSubmit={handleSubmit} autoComplete="off">
+                    <motion.div className="form-group" variants={staggerItem}>
+                      <label className="form-label" htmlFor="register-name">Full Name</label>
+                      <div className="input-icon-wrapper">
+                        <User size={17} className="input-leading-icon" />
+                        <input
+                          id="register-name"
+                          name="fullName"
+                          type="text"
+                          className="form-control form-control-with-icon"
+                          placeholder="Enter your full name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          onFocus={() => setMascotFocus('email')}
+                          onBlur={() => setMascotFocus(null)}
+                          autoComplete="off"
+                          required
+                        />
+                      </div>
+                    </motion.div>
+
+                    <motion.div className="form-group" variants={staggerItem}>
+                      <label className="form-label" htmlFor="register-email">Email Address</label>
+                      <div className="input-icon-wrapper">
+                        <Mail size={17} className="input-leading-icon" />
+                        <input
+                          id="register-email"
+                          name="registerEmail"
+                          type="email"
+                          className="form-control form-control-with-icon"
+                          placeholder="Enter your institutional email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          onFocus={() => setMascotFocus('email')}
+                          onBlur={() => setMascotFocus(null)}
+                          autoComplete="off"
+                          required
+                        />
+                      </div>
+                    </motion.div>
+
+                    <motion.div className="form-group" variants={staggerItem}>
+                      <label className="form-label" htmlFor="register-password">Password</label>
+                      <div className="input-icon-wrapper">
+                        <Lock size={17} className="input-leading-icon" />
+                        <input
+                          id="register-password"
+                          name="newPassword"
+                          type={showPassword ? 'text' : 'password'}
+                          className="form-control form-control-with-icon form-control-with-trailing"
+                          placeholder="Create a password (min 6 chars)"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          onFocus={() => setMascotFocus('password')}
+                          onBlur={(event) => {
+                            if (event.relatedTarget?.type !== 'password') setMascotFocus(null);
+                          }}
+                          autoComplete="new-password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="password-toggle-btn"
+                          onClick={() => setShowPassword(!showPassword)}
+                          title={showPassword ? 'Hide password' : 'Show password'}
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                        </button>
+                      </div>
+                    </motion.div>
+
+                    <motion.div className="form-group" variants={staggerItem}>
+                      <label className="form-label" htmlFor="register-confirm-password">Confirm Password</label>
+                      <div className="input-icon-wrapper">
+                        <Lock size={17} className="input-leading-icon" />
+                        <input
+                          id="register-confirm-password"
+                          name="confirmNewPassword"
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          className="form-control form-control-with-icon form-control-with-trailing"
+                          placeholder="Re-enter your password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          onFocus={() => setMascotFocus('password')}
+                          onBlur={(event) => {
+                            if (event.relatedTarget?.type !== 'password') setMascotFocus(null);
+                          }}
+                          autoComplete="new-password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="password-toggle-btn"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                          aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                        </button>
+                      </div>
+                    </motion.div>
+
+                    <motion.div variants={staggerItem} style={{ marginTop: '1.4rem' }}>
+                      <button
+                        type="submit"
+                        className="btn btn-primary btn-full btn-lg auth-submit-btn"
+                        disabled={loading}
+                      >
+                        <UserPlus size={18} /> {loading ? 'Creating Account...' : 'Register'}
+                      </button>
+                    </motion.div>
+                  </form>
+
+                  {/* Footer Link */}
+                  <motion.div
+                    variants={staggerItem}
+                    className="auth-footer-nav"
+                  >
+                    <span>Already have an account?</span>{' '}
+                    <Link to="/login" className="auth-register-link">
+                      Sign In
+                    </Link>
+                  </motion.div>
                 </motion.div>
               </motion.div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

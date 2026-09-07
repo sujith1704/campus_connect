@@ -1,11 +1,12 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
-import { GraduationCap, LogIn, AlertCircle, CheckCircle, KeyRound } from 'lucide-react';
+import { GraduationCap, LogIn, AlertCircle, CheckCircle, Mail, Lock, Eye, EyeOff, Sparkles } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import AuthBackground from '../components/AuthBackground';
 import { authCardVariants, alertVariants } from '../utils/animations';
+import ThreeLoginExperience from '../components/ThreeLoginExperience';
 
 const staggerContainer = {
   initial: { opacity: 0 },
@@ -19,47 +20,28 @@ const staggerContainer = {
 };
 
 const staggerItem = {
-  initial: { opacity: 0, y: 10 },
+  initial: { opacity: 0, y: 8 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
   },
 };
-
-// Lazy-load the mascot only on non-touch devices (it's purely decorative)
-const LoginMascotLazy = React.lazy(() => import('../components/LoginMascot'));
-// Feature-detect hover/pointer support once at module level
-const hasFinePointer =
-  typeof window !== 'undefined'
-    ? window.matchMedia('(hover: hover) and (pointer: fine)').matches
-    : false;
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated, loading: authLoading, login, loginWithGoogle } = useContext(AuthContext);
 
+  // Email and password start completely empty
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState(location.state?.message || '');
   const [mascotFocus, setMascotFocus] = useState(null);
-  // Mount mascot after first paint — it's decorative and should not block UI
-  const [showMascot, setShowMascot] = useState(false);
-
-  useEffect(() => {
-    // Only load the mascot on devices with fine pointer (desktop/laptop)
-    // Touch devices get it hidden via CSS already, so avoid the overhead entirely
-    if (!hasFinePointer) return;
-    let raf1 = requestAnimationFrame(() => {
-      let raf2 = requestAnimationFrame(() => setShowMascot(true));
-      return () => cancelAnimationFrame(raf2);
-    });
-    return () => cancelAnimationFrame(raf1);
-  }, []);
 
   // Auto-dismiss notifications after 3 seconds
   useEffect(() => {
@@ -128,7 +110,7 @@ const LoginPage = () => {
         setErrorMsg(serverMessage);
       } else if (err.code === 'ERR_NETWORK' || !err.response) {
         setErrorMsg(
-          'Network Error: Backend API server at http://localhost:5000 is not running. Please start the backend server by running "npm run dev" inside the backend folder.'
+          'Network Error: Backend API server at http://localhost:5000 is not running. Please start the backend server.'
         );
       } else if (err.response?.status === 503) {
         setErrorMsg('Database is unavailable. Start MongoDB or check the MongoDB connection string in backend/.env.');
@@ -257,158 +239,179 @@ const LoginPage = () => {
         <AuthBackground />
 
         <div className="container main-content auth-content-layer">
-          <div className="auth-container">
-            {showMascot && (
-              <React.Suspense fallback={null}>
-                <LoginMascotLazy focusTarget={mascotFocus} />
-              </React.Suspense>
-            )}
-            <motion.div
-              className="auth-card"
-              variants={authCardVariants}
-              initial="initial"
-              animate="animate"
-            >
+          <div className="auth-split-container">
+            {/* LEFT: Clean 3D Robot Mascot */}
+            <div className="auth-split-visual">
+              {/* Multi-layered luxury studio background */}
+              <div className="auth-stage-spotlight" />
+              <div className="auth-stage-ambient-glow" />
+              <div className="auth-stage-grid" />
+              <div className="auth-stage-floor-grid" />
+              <div className="auth-stage-scanline" />
+              <div className="auth-stage-border-beam" />
+
+              {/* HUD Telemetry Header */}
+              <div className="auth-stage-hud-top">
+                <div className="hud-metric">
+                  <span className="hud-metric-dot" />
+                  <span>AI_LAB // ACTIVE</span>
+                </div>
+                <div className="auth-stage-pill">
+                  <span className="stage-pill-dot" />
+                  <span>Interactive Campus Trio</span>
+                </div>
+                <div className="hud-metric hud-metric-right">
+                  <span>SYNC // 60FPS</span>
+                </div>
+              </div>
+
+              {/* 3D Interactive Mascot Canvas */}
+              <div className="auth-robot-canvas-wrapper">
+                <ThreeLoginExperience focusTarget={mascotFocus} />
+              </div>
+
+              {/* HUD Telemetry Footer */}
+              <div className="auth-stage-hud-bottom">
+                <span className="hud-footer-code">SYS_ID #CC-MASCOT-03</span>
+                <span className="hud-footer-status">CampusConnect Robotics Lab</span>
+              </div>
+            </div>
+
+            {/* RIGHT: Professional Glass Login Card */}
+            <div className="auth-split-form">
               <motion.div
-                variants={staggerContainer}
+                className="auth-card auth-card-refined"
+                variants={authCardVariants}
                 initial="initial"
                 animate="animate"
               >
-                {/* Header with Logo */}
-                <motion.div className="auth-header" variants={staggerItem}>
-                  <motion.div
-                    className="brand-icon auth-logo-glow"
-                    style={{ margin: '0 auto 1.25rem', width: '52px', height: '52px' }}
-                    whileHover={{ scale: 1.1, rotate: 6 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  >
-                    <GraduationCap size={30} />
-                  </motion.div>
-                  <h1 className="auth-title">Sign In</h1>
-                  <p className="auth-subtitle">Login to your CampusConnect account</p>
-                </motion.div>
-
-                {/* Notifications */}
-                <AnimatePresence mode="wait">
-                  {infoMsg && (
-                    <motion.div
-                      key="info"
-                      className="alert alert-success"
-                      variants={alertVariants}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                    >
-                      <CheckCircle size={18} />
-                      <span>{infoMsg}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <AnimatePresence mode="wait">
-                  {errorMsg && (
-                    <motion.div
-                      key="error"
-                      className="alert alert-danger"
-                      variants={alertVariants}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                    >
-                      <AlertCircle size={18} />
-                      <span>{errorMsg}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Login Form */}
-                <form onSubmit={handleSubmit} autoComplete="off">
-                  <motion.div className="form-group" variants={staggerItem}>
-                    <label className="form-label">Email Address</label>
-                    <input
-                      type="email"
-                      className="form-control"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onFocus={() => setMascotFocus('email')}
-                      autoComplete="off"
-                      required
-                    />
-                  </motion.div>
-
-                  <motion.div className="form-group" variants={staggerItem}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <label className="form-label">Password</label>
-                      <Link
-                        to="/forgot-password"
-                        style={{ fontSize: '0.825rem', color: 'var(--primary)', fontWeight: 600 }}
-                      >
-                        Forgot Password?
-                      </Link>
-                    </div>
-                    <input
-                      type="password"
-                      className="form-control"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      onFocus={() => setMascotFocus('password')}
-                      onBlur={(event) => {
-                        if (event.relatedTarget?.type !== 'password') setMascotFocus(null);
-                      }}
-                      autoComplete="off"
-                      required
-                    />
-                  </motion.div>
-
-                  <motion.div variants={staggerItem}>
-                    <button
-                      type="submit"
-                      className="btn btn-primary btn-full btn-lg"
-                      disabled={loading || googleLoading}
-                    >
-                      <LogIn size={18} /> {loading ? 'Signing in...' : 'Sign In'}
-                    </button>
-                  </motion.div>
-                </form>
-
-                {/* Footer Links */}
                 <motion.div
-                  variants={staggerItem}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.75rem',
-                    textAlign: 'center',
-                    marginTop: '1.5rem',
-                    fontSize: '0.9rem',
-                    color: 'var(--slate-600)',
-                  }}
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
                 >
-                  <div>
-                    <Link
-                      to="/forgot-password"
-                      style={{
-                        color: 'var(--slate-600)',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.3rem',
-                        fontWeight: 600,
-                      }}
-                    >
-                      <KeyRound size={15} /> Forgot Password?
-                    </Link>
-                  </div>
-                  <div>
-                    Don't have an account?{' '}
-                    <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 700 }}>
+                  {/* Header with Logo */}
+                  <motion.div className="auth-header" variants={staggerItem}>
+                    <div className="brand-icon auth-logo-glow" style={{ margin: '0 auto 1rem', width: '48px', height: '48px' }}>
+                      <GraduationCap size={26} />
+                    </div>
+                    <h1 className="auth-title">Sign In</h1>
+                  </motion.div>
+
+                  {/* Notifications */}
+                  <AnimatePresence mode="wait">
+                    {infoMsg && (
+                      <motion.div
+                        key="info"
+                        className="alert alert-success"
+                        variants={alertVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                      >
+                        <CheckCircle size={17} />
+                        <span>{infoMsg}</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <AnimatePresence mode="wait">
+                    {errorMsg && (
+                      <motion.div
+                        key="error"
+                        className="alert alert-danger"
+                        variants={alertVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                      >
+                        <AlertCircle size={17} />
+                        <span>{errorMsg}</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Email & Password Form */}
+                  <form onSubmit={handleSubmit} autoComplete="off">
+                    <motion.div className="form-group" variants={staggerItem}>
+                      <label className="form-label">Email Address</label>
+                      <div className="input-icon-wrapper">
+                        <Mail size={17} className="input-leading-icon" />
+                        <input
+                          type="email"
+                          className="form-control form-control-with-icon"
+                          placeholder="Enter your email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          onFocus={() => setMascotFocus('email')}
+                          onBlur={() => setMascotFocus(null)}
+                          autoComplete="off"
+                          required
+                        />
+                      </div>
+                    </motion.div>
+
+                    <motion.div className="form-group" variants={staggerItem}>
+                      <div className="password-header-row">
+                        <label className="form-label">Password</label>
+                        <Link
+                          to="/forgot-password"
+                          className="forgot-password-link"
+                        >
+                          Forgot Password?
+                        </Link>
+                      </div>
+                      <div className="input-icon-wrapper">
+                        <Lock size={17} className="input-leading-icon" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          className="form-control form-control-with-icon form-control-with-trailing"
+                          placeholder="Enter your password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          onFocus={() => setMascotFocus('password')}
+                          onBlur={(event) => {
+                            if (event.relatedTarget?.type !== 'password') setMascotFocus(null);
+                          }}
+                          autoComplete="off"
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="password-toggle-btn"
+                          onClick={() => setShowPassword(!showPassword)}
+                          title={showPassword ? 'Hide password' : 'Show password'}
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                        </button>
+                      </div>
+                    </motion.div>
+
+                    <motion.div variants={staggerItem} style={{ marginTop: '1.4rem' }}>
+                      <button
+                        type="submit"
+                        className="btn btn-primary btn-full btn-lg auth-submit-btn"
+                        disabled={loading || googleLoading}
+                      >
+                        <LogIn size={18} /> {loading ? 'Signing in...' : 'Sign In'}
+                      </button>
+                    </motion.div>
+                  </form>
+
+                  {/* Register Footer */}
+                  <motion.div
+                    variants={staggerItem}
+                    className="auth-footer-nav"
+                  >
+                    <span>Don't have an account?</span>{' '}
+                    <Link to="/register" className="auth-register-link">
                       Register
                     </Link>
-                  </div>
+                  </motion.div>
                 </motion.div>
               </motion.div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
