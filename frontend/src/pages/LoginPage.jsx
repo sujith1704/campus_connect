@@ -267,7 +267,7 @@ const LoginPage = () => {
 
               {/* 3D Interactive Mascot Canvas */}
               <div className="auth-robot-canvas-wrapper">
-                <ThreeLoginExperience focusTarget={mascotFocus} />
+                <ThreeLoginExperience focusTarget={showPassword ? 'password' : mascotFocus} />
               </div>
 
               {/* HUD Telemetry Footer */}
@@ -371,7 +371,10 @@ const LoginPage = () => {
                           onChange={(e) => setPassword(e.target.value)}
                           onFocus={() => setMascotFocus('password')}
                           onBlur={(event) => {
-                            if (event.relatedTarget?.type !== 'password') setMascotFocus(null);
+                            if (event.relatedTarget?.classList?.contains('password-toggle-btn')) {
+                              return;
+                            }
+                            setMascotFocus(null);
                           }}
                           autoComplete="off"
                           required
@@ -379,7 +382,16 @@ const LoginPage = () => {
                         <button
                           type="button"
                           className="password-toggle-btn"
-                          onClick={() => setShowPassword(!showPassword)}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            if (showPassword) {
+                              setShowPassword(false);
+                              setMascotFocus(null);
+                            } else {
+                              setShowPassword(true);
+                              setMascotFocus('password');
+                            }
+                          }}
                           title={showPassword ? 'Hide password' : 'Show password'}
                           aria-label={showPassword ? 'Hide password' : 'Show password'}
                         >

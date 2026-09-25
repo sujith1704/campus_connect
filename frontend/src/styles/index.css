@@ -4510,7 +4510,7 @@ button.btn:active:not(:disabled) {
   justify-content: center;
   position: relative;
   border-radius: 24px;
-  background: 
+  background:
     /* Ambient cyan & indigo backlights */
     radial-gradient(ellipse 70% 45% at 50% 36%, rgba(56, 189, 248, 0.18) 0%, rgba(99, 102, 241, 0.1) 48%, transparent 75%),
     radial-gradient(ellipse 55% 35% at 50% 88%, rgba(240, 93, 77, 0.1) 0%, transparent 65%),
@@ -4522,7 +4522,7 @@ button.btn:active:not(:disabled) {
   height: 500px;
   max-height: 500px;
   box-sizing: border-box;
-  box-shadow: 
+  box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
     inset 0 -1px 0 rgba(255, 255, 255, 0.04),
     0 0 35px -8px rgba(56, 189, 248, 0.16),
@@ -4537,14 +4537,12 @@ button.btn:active:not(:disabled) {
   transform: translateX(-50%);
   width: 480px;
   height: 380px;
-  background: conic-gradient(
-    from 180deg at 50% 0%,
-    transparent 162deg,
-    rgba(56, 189, 248, 0.05) 173deg,
-    rgba(125, 211, 252, 0.13) 180deg,
-    rgba(56, 189, 248, 0.05) 187deg,
-    transparent 198deg
-  );
+  background: conic-gradient(from 180deg at 50% 0%,
+      transparent 162deg,
+      rgba(56, 189, 248, 0.05) 173deg,
+      rgba(125, 211, 252, 0.13) 180deg,
+      rgba(56, 189, 248, 0.05) 187deg,
+      transparent 198deg);
   filter: blur(14px);
   pointer-events: none;
   z-index: 0;
@@ -4556,6 +4554,7 @@ button.btn:active:not(:disabled) {
     opacity: 0.7;
     transform: translateX(-50%) scaleX(0.95);
   }
+
   100% {
     opacity: 1;
     transform: translateX(-50%) scaleX(1.06);
@@ -4566,7 +4565,7 @@ button.btn:active:not(:disabled) {
 .auth-stage-ambient-glow {
   position: absolute;
   inset: -25%;
-  background: 
+  background:
     radial-gradient(ellipse 65% 55% at 50% 38%, rgba(56, 189, 248, 0.18) 0%, rgba(99, 102, 241, 0.11) 42%, transparent 70%),
     radial-gradient(ellipse 50% 45% at 50% 88%, rgba(240, 93, 77, 0.1) 0%, transparent 62%);
   pointer-events: none;
@@ -4580,10 +4579,12 @@ button.btn:active:not(:disabled) {
     transform: scale(0.92) translate(0, 0);
     opacity: 0.7;
   }
+
   50% {
     transform: scale(1.08) translate(1.5%, -1%);
     opacity: 1;
   }
+
   100% {
     transform: scale(0.96) translate(-1%, 1.5%);
     opacity: 0.8;
@@ -4607,6 +4608,7 @@ button.btn:active:not(:disabled) {
   0% {
     background-position: 0 0;
   }
+
   100% {
     background-position: 22px 44px;
   }
@@ -4619,7 +4621,7 @@ button.btn:active:not(:disabled) {
   left: 0;
   right: 0;
   height: 145px;
-  background-image: 
+  background-image:
     linear-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
   background-size: 26px 26px;
@@ -4633,8 +4635,13 @@ button.btn:active:not(:disabled) {
 }
 
 @keyframes floorGridPulse {
-  0% { opacity: 0.6; }
-  100% { opacity: 0.95; }
+  0% {
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 0.95;
+  }
 }
 
 /* Layer 5: High-Tech Holographic Scanner Sweep Beam */
@@ -4643,13 +4650,11 @@ button.btn:active:not(:disabled) {
   left: 0;
   right: 0;
   height: 90px;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(56, 189, 248, 0.02) 40%,
-    rgba(56, 189, 248, 0.1) 85%,
-    rgba(56, 189, 248, 0.28) 100%
-  );
+  background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(56, 189, 248, 0.02) 40%,
+      rgba(56, 189, 248, 0.1) 85%,
+      rgba(56, 189, 248, 0.28) 100%);
   border-bottom: 1.5px solid rgba(56, 189, 248, 0.45);
   box-shadow: 0 4px 18px rgba(56, 189, 248, 0.2);
   pointer-events: none;
@@ -4663,15 +4668,19 @@ button.btn:active:not(:disabled) {
     top: -90px;
     opacity: 0;
   }
+
   8% {
     opacity: 0.85;
   }
+
   85% {
     opacity: 0.85;
   }
+
   96% {
     opacity: 0.1;
   }
+
   100% {
     top: 100%;
     opacity: 0;
@@ -4697,20 +4706,23 @@ button.btn:active:not(:disabled) {
   content: '';
   position: absolute;
   inset: -60%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    transparent 280deg,
-    rgba(56, 189, 248, 0.7) 325deg,
-    rgba(99, 102, 241, 0.85) 350deg,
-    rgba(240, 93, 77, 0.8) 360deg
-  );
+  background: conic-gradient(from 0deg,
+      transparent 0deg,
+      transparent 280deg,
+      rgba(56, 189, 248, 0.7) 325deg,
+      rgba(99, 102, 241, 0.85) 350deg,
+      rgba(240, 93, 77, 0.8) 360deg);
   animation: borderBeamSpin 10s linear infinite;
 }
 
 @keyframes borderBeamSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Stage Pedestal Outer Glow Ring beneath the robots - Animated Breathing */
@@ -4725,7 +4737,7 @@ button.btn:active:not(:disabled) {
   border-radius: 50%;
   background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.22) 0%, rgba(99, 102, 241, 0.1) 45%, transparent 75%);
   border: 1px solid rgba(56, 189, 248, 0.26);
-  box-shadow: 
+  box-shadow:
     0 0 38px rgba(56, 189, 248, 0.2),
     inset 0 0 24px rgba(99, 102, 241, 0.15);
   pointer-events: none;
@@ -4736,14 +4748,15 @@ button.btn:active:not(:disabled) {
 @keyframes pedestalOuterPulse {
   0% {
     transform: translateX(-50%) scale(0.96);
-    box-shadow: 
+    box-shadow:
       0 0 24px rgba(56, 189, 248, 0.14),
       inset 0 0 16px rgba(99, 102, 241, 0.1);
     border-color: rgba(56, 189, 248, 0.22);
   }
+
   100% {
     transform: translateX(-50%) scale(1.03);
-    box-shadow: 
+    box-shadow:
       0 0 48px rgba(56, 189, 248, 0.32),
       inset 0 0 30px rgba(99, 102, 241, 0.24);
     border-color: rgba(56, 189, 248, 0.44);
@@ -4771,6 +4784,7 @@ button.btn:active:not(:disabled) {
   0% {
     transform: translateX(-50%) perspective(450px) rotateX(72deg) rotateZ(0deg);
   }
+
   100% {
     transform: translateX(-50%) perspective(450px) rotateX(72deg) rotateZ(360deg);
   }
@@ -4816,8 +4830,18 @@ button.btn:active:not(:disabled) {
 }
 
 @keyframes hudDotPulse {
-  0%, 100% { opacity: 0.7; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.25); box-shadow: 0 0 9px #10b981; }
+
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+    box-shadow: 0 0 9px #10b981;
+  }
 }
 
 .hud-metric-right {
@@ -4856,8 +4880,18 @@ button.btn:active:not(:disabled) {
 }
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 0.6; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 12px #38bdf8; }
+
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+    box-shadow: 0 0 12px #38bdf8;
+  }
 }
 
 /* Bottom Telemetry HUD Bar */
@@ -4909,10 +4943,13 @@ button.btn:active:not(:disabled) {
 }
 
 @keyframes crosshairBreathe {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.3;
     color: rgba(148, 163, 184, 0.3);
   }
+
   50% {
     opacity: 0.8;
     color: #38bdf8;
