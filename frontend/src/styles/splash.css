@@ -1,0 +1,292 @@
+/* ==========================================================================
+   CAMPUSCONNECT - FIRST-OPEN SPLASH SCREEN & UIVERSE LOADER
+   ========================================================================== */
+
+/* --- Splash Screen Overlay --- */
+.splash-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  background-color: #070b14;
+  background-image:
+    radial-gradient(circle at 50% 40%, rgba(99, 102, 241, 0.14), transparent 30rem),
+    radial-gradient(circle at 45% 60%, rgba(238, 88, 72, 0.11), transparent 26rem),
+    radial-gradient(circle at 55% 50%, rgba(56, 189, 248, 0.08), transparent 28rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.45s ease;
+  visibility: visible;
+  pointer-events: all;
+  user-select: none;
+}
+
+.splash-overlay.fade-out {
+  opacity: 0;
+  transform: scale(1.03);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Background Ambient Glow Elements */
+.splash-ambient-glow {
+  position: absolute;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  opacity: 0.6;
+  animation: splashPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes splashPulse {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.45;
+  }
+  100% {
+    transform: scale(1.08);
+    opacity: 0.7;
+  }
+}
+
+/* Centered Content Container */
+.splash-card {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.5rem 2rem;
+  max-width: 480px;
+  width: 90%;
+  animation: splashEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes splashEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --- CampusConnect Brand Symbol --- */
+.splash-brand-badge {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(20, 28, 51, 0.9) 0%, rgba(13, 19, 36, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 12px 35px -6px rgba(0, 0, 0, 0.6),
+    0 0 25px -4px rgba(238, 88, 72, 0.25),
+    0 0 35px -8px rgba(99, 102, 241, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.splash-brand-badge::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, rgba(238, 88, 72, 0.4), rgba(168, 85, 247, 0.25), rgba(56, 189, 248, 0.3));
+  z-index: -1;
+  opacity: 0.65;
+  filter: blur(6px);
+}
+
+.splash-symbol-svg {
+  width: 52px;
+  height: 52px;
+  filter: drop-shadow(0 2px 8px rgba(238, 88, 72, 0.28));
+}
+
+/* --- CampusConnect Title & Tagline --- */
+.splash-title {
+  font-family: 'Plus Jakarta Sans', 'DM Sans', -apple-system, sans-serif;
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin: 0 0 0.4rem 0;
+  line-height: 1.15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+}
+
+.splash-title-campus {
+  color: #ffffff;
+}
+
+.splash-title-connect {
+  background: linear-gradient(135deg, #ee5848 0%, #f2695a 40%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.splash-tagline {
+  font-family: 'Plus Jakarta Sans', 'DM Sans', -apple-system, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9ab0c8;
+  margin: 0 0 2rem 0;
+  opacity: 0.85;
+}
+
+/* --- Uiverse.io Loader by SelfMadeSystem --- */
+
+.splash-loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.25em 0;
+}
+
+.w-2 {
+  width: 0.5em;
+}
+
+.dash {
+  animation: dashArray 2s ease-in-out infinite,
+    dashOffset 2s linear infinite;
+}
+
+.spin {
+  animation: spinDashArray 2s ease-in-out infinite,
+    spin 8s ease-in-out infinite,
+    dashOffset 2s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes dashArray {
+  0% {
+    stroke-dasharray: 0 1 359 0;
+  }
+
+  50% {
+    stroke-dasharray: 0 359 1 0;
+  }
+
+  100% {
+    stroke-dasharray: 359 1 0 0;
+  }
+}
+
+@keyframes spinDashArray {
+  0% {
+    stroke-dasharray: 270 90;
+  }
+
+  50% {
+    stroke-dasharray: 0 360;
+  }
+
+  100% {
+    stroke-dasharray: 270 90;
+  }
+}
+
+@keyframes dashOffset {
+  0% {
+    stroke-dashoffset: 365;
+  }
+
+  100% {
+    stroke-dashoffset: 5;
+  }
+}
+
+@keyframes spin {
+  0% {
+    rotate: 0deg;
+  }
+
+  12.5%,
+  25% {
+    rotate: 270deg;
+  }
+
+  37.5%,
+  50% {
+    rotate: 540deg;
+  }
+
+  62.5%,
+  75% {
+    rotate: 810deg;
+  }
+
+  87.5%,
+  100% {
+    rotate: 1080deg;
+  }
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 480px) {
+  .splash-brand-badge {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    margin-bottom: 1.25rem;
+  }
+
+  .splash-symbol-svg {
+    width: 44px;
+    height: 44px;
+  }
+
+  .splash-title {
+    font-size: 1.95rem;
+  }
+
+  .splash-tagline {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    margin-bottom: 1.75rem;
+  }
+}

@@ -42,9 +42,9 @@ const ConfettiCanvas = () => {
 
     // ── Brand colour palette ──────────────────────────────────────────────
     const COLORS = [
-      '#f05d4d', '#38bdf8', '#10b981', '#fbbf24',
-      '#a855f7', '#ec4899', '#6366f1', '#ffffff',
-      '#fb923c', '#34d399', '#f472b6', '#818cf8',
+      '#ee5848', '#38bdf8', '#10b981', '#fbbf24',
+      '#a855f7', '#6366f1', '#c084fc', '#ffffff',
+      '#ea580c', '#34d399', '#f2695a', '#818cf8',
     ];
 
     const isMobile = width < 600;

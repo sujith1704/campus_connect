@@ -17,7 +17,14 @@ const Navbar = () => {
 
   const isActive = (path) => location.pathname === path;
 
-  if (isAuthenticated && (isStudent || isOrganizer)) {
+  const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname);
+
+  // Standalone password reset pages must not show student portal sidebar, student portal navbar, or portal layout
+  if (['/forgot-password', '/reset-password'].includes(location.pathname)) {
+    return null;
+  }
+
+  if (!isAuthPage && isAuthenticated && (isStudent || isOrganizer)) {
     return <PortalSidebar />;
   }
 
@@ -75,7 +82,7 @@ const Navbar = () => {
             {isOrganizer && (
               <>
                 <li>
-                  <Link to="/organizer/dashboard" className={`nav-link ${isActive('/organizer/dashboard') ? 'active' : ''}`}>
+                  <Link to="/organizer/panel" className={`nav-link ${isActive('/organizer/panel') ? 'active' : ''}`}>
                     Dashboard
                   </Link>
                 </li>
@@ -105,7 +112,7 @@ const Navbar = () => {
           {isAuthenticated ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <Link
-                to={isStudent ? "/student/profile" : "/organizer/dashboard"}
+                to="/student/profile"
                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
                 <span className={`user-badge ${user?.role}`}>
@@ -125,18 +132,11 @@ const Navbar = () => {
               </motion.button>
             </div>
           ) : (
-            <>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link to="/login" className="btn btn-outline btn-sm">
-                  Login
-                </Link>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link to="/register" className="btn btn-primary btn-sm">
-                  Register
-                </Link>
-              </motion.div>
-            </>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link to="/login" className="btn btn-outline btn-sm">
+                Login
+              </Link>
+            </motion.div>
           )}
         </div>
       </div>

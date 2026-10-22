@@ -244,15 +244,15 @@ const TicketPassModal = ({ ticket, user, onClose }) => {
                     {/* QR Position Squares */}
                     <rect x="6" y="6" width="26" height="26" rx="4" fill="white" />
                     <rect x="10" y="10" width="18" height="18" rx="2" fill="#0f172a" />
-                    <rect x="14" y="14" width="10" height="10" rx="1" fill="#f05d4d" />
+                    <rect x="14" y="14" width="10" height="10" rx="1" fill="#ee5848" />
 
                     <rect x="68" y="6" width="26" height="26" rx="4" fill="white" />
                     <rect x="72" y="10" width="18" height="18" rx="2" fill="#0f172a" />
-                    <rect x="76" y="14" width="10" height="10" rx="1" fill="#f05d4d" />
+                    <rect x="76" y="14" width="10" height="10" rx="1" fill="#ee5848" />
 
                     <rect x="6" y="68" width="26" height="26" rx="4" fill="white" />
                     <rect x="10" y="72" width="18" height="18" rx="2" fill="#0f172a" />
-                    <rect x="14" y="76" width="10" height="10" rx="1" fill="#f05d4d" />
+                    <rect x="14" y="76" width="10" height="10" rx="1" fill="#ee5848" />
 
                     {/* QR Matrix Elements */}
                     <rect x="38" y="8" width="6" height="6" rx="1" fill="white" />
@@ -268,7 +268,7 @@ const TicketPassModal = ({ ticket, user, onClose }) => {
                     <rect x="8" y="54" width="6" height="6" rx="1" fill="white" />
                     <rect x="22" y="54" width="8" height="8" rx="1" fill="white" />
 
-                    <rect x="38" y="40" width="10" height="10" rx="2" fill="#16b8a6" />
+                    <rect x="38" y="40" width="10" height="10" rx="2" fill="#38bdf8" />
                     <rect x="52" y="44" width="8" height="8" rx="1" fill="white" />
                     <rect x="42" y="54" width="8" height="8" rx="1" fill="white" />
                     <rect x="56" y="56" width="6" height="6" rx="1" fill="white" />

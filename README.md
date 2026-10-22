@@ -2,14 +2,14 @@
 
 A modern, complete full-stack web application designed for colleges and universities to manage campus events, student registrations, event approvals, and organizer control desks.
 
-Built with **React.js**, **Node.js + Express.js**, **MongoDB (Mongoose)**, and **JWT Authentication**.
+Built with **React.js**, **Node.js + Express.js**, **Firebase Firestore**, and **Clerk Authentication**.
 
 ---
 
 ## 🌟 Key Features & User Roles
 
 ### 1. 👨‍🎓 Student Role
-* **Register & Login**: Simple authentication with role-based access.
+* **Register & Login via Clerk**: Secure authentication with Clerk (supporting email/password and social logins like Google).
 * **Discover Events**: Search by keywords (title/venue) and filter by category (Technical, Cultural, Sports, Workshop, Gaming, Seminar).
 * **Event Details**: Real-time seat capacity counter, date, time, venue, description, and organizer details.
 * **Single-Click Registration**: Atomic seat reservation, duplicate registration prevention, and instant confirmation ticket pass.
@@ -24,7 +24,7 @@ Built with **React.js**, **Node.js + Express.js**, **MongoDB (Mongoose)**, and *
 ### 3. 🛡️ Admin Role
 * **Organizer Panel**: System stats, event approvals, registrations, attendance, and user management.
 * **Event Approval Queue**: Approve or reject newly created events, or delete inappropriate events.
-* **User Management**: View all users, change user roles (`student`, `organizer`, `admin`), and delete user accounts.
+* **User Management**: View all users, change user roles (`student`, `organizer`), and delete user accounts.
 * **Platform Audit Logs**: View platform-wide registration logs.
 
 ---
@@ -35,32 +35,35 @@ Built with **React.js**, **Node.js + Express.js**, **MongoDB (Mongoose)**, and *
 campus-connect/
 ├── backend/
 │   ├── config/
-│   │   └── db.js                 # MongoDB connection setup
+│   │   └── firebase.js           # Firebase Admin SDK & Firestore initialization
 │   ├── controllers/
-│   │   ├── adminController.js    # System stats & user management
-│   │   ├── authController.js     # User registration & JWT login
+│   │   ├── adminController.js    # System stats, user management & role promotion
+│   │   ├── authController.js     # User sync & profile retrieval
 │   │   ├── eventController.js    # Event CRUD & status approval
-│   │   └── registrationController.js # Seat reservation & cancellation
+│   │   ├── registrationController.js # Seat reservation & cancellation
+│   │   └── statsController.js    # Analytics & platform stats
 │   ├── middleware/
-│   │   └── auth.js               # JWT verification & role auth
-│   ├── models/
-│   │   ├── Event.js              # Event schema
-│   │   ├── Registration.js       # Registration schema (unique index)
-│   │   └── User.js               # User schema (bcrypt password hashing)
+│   │   ├── auth.js               # Clerk verification, user linking & role enforcement
+│   │   └── security.js           # ID validation & rate limiters
+│   ├── services/
+│   │   ├── eventService.js       # Firestore Event collection operations
+│   │   ├── registrationService.js# Firestore Registration collection operations
+│   │   └── userService.js        # Firestore User collection operations
 │   ├── routes/
 │   │   ├── adminRoutes.js
 │   │   ├── authRoutes.js
 │   │   ├── eventRoutes.js
-│   │   └── registrationRoutes.js
+│   │   ├── registrationRoutes.js
+│   │   └── statsRoutes.js
 │   ├── .env                      # Environment variables configuration
 │   ├── .env.example              # Environment variables template
 │   ├── package.json
-│   ├── seed.js                   # Database seed script for test data
-│   └── server.js                 # Express server entry point
+│   ├── seed.js                   # Firestore seed script for default events
+│   └── server.js                 # Express server with clerkMiddleware()
 ├── frontend/
 │   ├── src/
-│   │   ├── components/           # Navbar, Footer, EventCard, ProtectedRoute
-│   │   ├── context/              # AuthContext for user state & JWT storage
+│   │   ├── components/           # Navbar, Footer, EventCard, ProtectedRoute, MascotCanvas
+│   │   ├── context/              # AuthContext bridging Clerk state with backend Firestore user
 │   │   ├── pages/
 │   │   │   ├── admin/            # AdminDashboard
 │   │   │   ├── organizer/        # OrganizerDashboard, Create, Edit, Attendees
@@ -68,13 +71,13 @@ campus-connect/
 │   │   │   ├── EventDetailsPage.jsx
 │   │   │   ├── EventsPage.jsx
 │   │   │   ├── HomePage.jsx
-│   │   │   ├── LoginPage.jsx
-│   │   │   └── RegisterPage.jsx
+│   │   │   ├── LoginPage.jsx     # Clerk <SignIn /> integration
+│   │   │   └── RegisterPage.jsx  # Clerk <SignUp /> integration
 │   │   ├── services/
-│   │   │   └── api.js            # Axios client with JWT interceptor
+│   │   │   └── api.js            # Axios client with dynamic Clerk Bearer token injection
 │   │   ├── styles/
-│   │   │   └── index.css         # Modern responsive CSS styles
-│   │   ├── App.jsx               # React Router layout
+│   │   │   └── index.css         # Modern responsive CSS styles and Clerk dark theme
+│   │   ├── App.jsx               # React Router with ClerkProvider wrapper
 │   │   └── main.jsx              # React entry point
 │   ├── index.html
 │   ├── package.json
@@ -89,7 +92,8 @@ campus-connect/
 ### Prerequisites
 Make sure you have installed:
 1. **Node.js** (v18.x or higher)
-2. **MongoDB** (Local MongoDB running at `mongodb://127.0.0.1:27017` or MongoDB Atlas URI)
+2. **Firebase Project**: Create a project in [Firebase Console](https://console.firebase.google.com/) with Cloud Firestore enabled.
+3. **Clerk Account**: Free account at [clerk.com](https://clerk.com) to obtain API keys.
 
 ---
 
@@ -105,24 +109,21 @@ Make sure you have installed:
    npm install
    ```
 
-3. Ensure the local `backend/.env` is configured with your existing MongoDB Atlas URI:
+3. Ensure local `backend/.env` is configured:
    ```env
    PORT=5000
-   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/campusconnect
-   JWT_SECRET=campusconnect_super_secret_jwt_key_2026
+   FIREBASE_PROJECT_ID=your-project-id
+   # Optional: Service account credentials (if running outside Google Cloud)
+   # FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxx@your-project-id.iam.gserviceaccount.com
+   # FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+   CLERK_PUBLISHABLE_KEY=pk_test_...
+   CLERK_SECRET_KEY=sk_test_...
    NODE_ENV=development
    ```
 
-   Keep `backend/.env` local. It is ignored by Git and must never be copied into the frontend.
+   Keep `backend/.env` local. It is ignored by Git and must never be exposed to the client.
 
-4. Optionally populate the database with the demo Organizer and Student accounts:
-   ```bash
-   npm run seed
-   ```
-
-   `npm run seed` is the only command that runs the seed script. It clears and recreates the demo users, so do not run it when you need to preserve existing application data.
-
-5. Start the Backend Server:
+4. Start the Backend Server:
    ```bash
    npm run dev
    # Server will start on http://localhost:5000
@@ -142,7 +143,13 @@ Make sure you have installed:
    npm install
    ```
 
-3. Start Vite Development Server:
+3. Ensure `frontend/.env` is configured with your Clerk Publishable Key:
+   ```env
+   VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+   VITE_API_URL=http://localhost:5000/api
+   ```
+
+4. Start Vite Development Server:
    ```bash
    npm run dev
    # App will run on http://localhost:3000
@@ -150,30 +157,27 @@ Make sure you have installed:
 
 ---
 
-## 🔐 Default Demo Login Credentials
+## 🔐 Authentication & Roles (Clerk Integration)
 
-The seed script creates two ready-to-use accounts. You can also click the **"Quick Demo Autofill"** buttons on the Login screen!
-
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Student** | `student@campusconnect.com` | `student123` |
-| **Organizer** | `organizer@campusconnect.com` | `organizerpass` (or `organizer123`) |
+- **Single Auth Provider**: Clerk handles all sign-up, sign-in, session tokens, password reset, email verification, and social auth (e.g. Google).
+- **Default Role**: All newly registered accounts default strictly to the `student` role in Firestore.
+- **Organizer Promotion**: Organizers/admins promote students securely via the Organizer Dashboard / Admin route (`PATCH /api/admin/users/:id/role`), which syncs the role to Clerk `publicMetadata` server-side with `CLERK_SECRET_KEY`.
+- **Existing Account Linking**: Existing database records (e.g., `organizer@campusconnect.com`) are automatically linked to Clerk when the user signs in with the matching verified email address, retaining their existing role and event records.
 
 ---
 
 ## 📡 REST API Endpoint Reference
 
-### Authentication (`/api/auth`)
-* `POST /api/auth/register` - Create student or organizer account
-* `POST /api/auth/login` - Authenticate user & receive JWT token
-* `GET /api/auth/me` - Fetch logged in user profile *(Protected)*
+### Authentication & Profile (`/api/auth`)
+* `GET /api/auth/me` - Fetch authenticated user profile and role *(Protected by Clerk)*
+* `POST /api/auth/sync` - Sync Clerk session with Firestore profile *(Protected by Clerk)*
 
 ### Events (`/api/events`)
 * `GET /api/events` - Fetch approved events (supports `category` & `search` filters)
 * `GET /api/events/:id` - Fetch single event details
-* `POST /api/events` - Create event *(Organizer/Admin)*
-* `PUT /api/events/:id` - Update event *(Creator/Admin)*
-* `DELETE /api/events/:id` - Delete event *(Creator/Admin)*
+* `POST /api/events` - Create event *(Organizer/Admin only)*
+* `PUT /api/events/:id` - Update event *(Creator/Admin only)*
+* `DELETE /api/events/:id` - Delete event *(Creator/Admin only)*
 * `GET /api/events/organizer/my-events` - Get organizer's created events *(Organizer)*
 * `PATCH /api/events/:id/status` - Approve or reject event *(Admin)*
 
@@ -185,26 +189,7 @@ The seed script creates two ready-to-use accounts. You can also click the **"Qui
 * `GET /api/registrations/all` - List all platform registrations *(Admin)*
 
 ### Admin (`/api/admin`)
-* `GET /api/admin/stats` - Fetch overall dashboard statistics *(Admin)*
-* `GET /api/admin/users` - Fetch user directory *(Admin)*
-* `PATCH /api/admin/users/:id/role` - Update user role *(Admin)*
+* `GET /api/admin/stats` - Fetch overall dashboard statistics *(Admin/Organizer)*
+* `GET /api/admin/users` - Fetch user directory *(Admin/Organizer)*
+* `PATCH /api/admin/users/:id/role` - Update user role & sync Clerk metadata *(Admin/Organizer)*
 * `DELETE /api/admin/users/:id` - Remove user account *(Admin)*
-
----
-
-## 🔮 Code Architecture for Future Feature Extensions
-
-The codebase is built cleanly using modular components and schemas, ready for future enhancements:
-1. **QR Code Event Tickets**: Integrate `qrcode` library in `MyRegistrationsPage.jsx` to render downloadable QR codes encoding registration ticket IDs `#TKT-...`.
-2. **Email Notifications**: Add `nodemailer` service in `controllers/registrationController.js` to dispatch automated confirmation emails upon successful registration.
-3. **Event Certificates**: Create a PDF generation endpoint using `pdfkit` once an event date passes.
-4. **Event Feedback & Ratings**: Extend `Event.js` schema with a `reviews` array containing `{ studentId, rating, comment }`.
-5. **AI Event Recommendation & Chatbot**: Connect an OpenAI / Gemini API endpoint in `backend/routes/aiRoutes.js` for personalized event recommendations and campus event query answering.
-
----
-
-## 💡 Notes for B.Tech First-Year Students
-
-- **Mongoose Schemas**: Define structure for objects saved in MongoDB. `ref: 'User'` creates a relationship similar to foreign keys in SQL.
-- **JWT (JSON Web Token)**: Encodes user ID and role securely into a string token sent in HTTP headers (`Authorization: Bearer <token>`) so the server knows who is logged in.
-- **React Context API (`AuthContext.jsx`)**: Avoids prop drilling by storing user session globally.

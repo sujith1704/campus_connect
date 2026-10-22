@@ -4,9 +4,11 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
+    host: true,
     port: 3000,
     open: true,
   },
+  // Supabase Auth configured: Unified Google OAuth & Email authentication active
   build: {
     rollupOptions: {
       output: {
@@ -15,6 +17,7 @@ export default defineConfig({
           'motion': ['framer-motion'],
           'icons': ['lucide-react'],
           'axios': ['axios'],
+          'supabase': ['@supabase/supabase-js'],
         },
       },
     },

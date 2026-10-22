@@ -17,66 +17,66 @@ const categoriesList = [
     icon: <Code size={22} />,
     desc: 'Hackathons, Coding & Tech',
     accentBar: 'linear-gradient(180deg, #6366f1, #38bdf8)',
-    iconBg: 'rgba(99, 102, 241, 0.15)',
+    iconBg: 'rgba(99, 102, 241, 0.12)',
     iconColor: '#818cf8',
-    iconBorder: 'rgba(99, 102, 241, 0.35)',
-    iconGlow: '0 0 16px rgba(99, 102, 241, 0.35)',
-    accentGlow: 'rgba(99, 102, 241, 0.22)',
+    iconBorder: 'rgba(99, 102, 241, 0.28)',
+    iconGlow: '0 0 12px rgba(99, 102, 241, 0.22)',
+    accentGlow: 'rgba(99, 102, 241, 0.16)',
   },
   {
     name: 'Cultural',
     icon: <Music size={22} />,
     desc: 'Music, Dance & Fest',
-    accentBar: 'linear-gradient(180deg, #ec4899, #f43f5e)',
-    iconBg: 'rgba(236, 72, 153, 0.15)',
-    iconColor: '#f472b6',
-    iconBorder: 'rgba(236, 72, 153, 0.35)',
-    iconGlow: '0 0 16px rgba(236, 72, 153, 0.35)',
-    accentGlow: 'rgba(236, 72, 153, 0.22)',
+    accentBar: 'linear-gradient(180deg, #f43f5e, #e11d48)',
+    iconBg: 'rgba(244, 63, 94, 0.12)',
+    iconColor: '#fb7185',
+    iconBorder: 'rgba(244, 63, 94, 0.28)',
+    iconGlow: '0 0 12px rgba(244, 63, 94, 0.22)',
+    accentGlow: 'rgba(244, 63, 94, 0.16)',
   },
   {
     name: 'Sports',
     icon: <Trophy size={22} />,
     desc: 'Tournaments & Athletics',
-    accentBar: 'linear-gradient(180deg, #f59e0b, #f97316)',
-    iconBg: 'rgba(245, 158, 11, 0.15)',
+    accentBar: 'linear-gradient(180deg, #f59e0b, #ea580c)',
+    iconBg: 'rgba(245, 158, 11, 0.12)',
     iconColor: '#fbbf24',
-    iconBorder: 'rgba(245, 158, 11, 0.35)',
-    iconGlow: '0 0 16px rgba(245, 158, 11, 0.35)',
-    accentGlow: 'rgba(245, 158, 11, 0.22)',
+    iconBorder: 'rgba(245, 158, 11, 0.28)',
+    iconGlow: '0 0 12px rgba(245, 158, 11, 0.22)',
+    accentGlow: 'rgba(245, 158, 11, 0.16)',
   },
   {
     name: 'Workshop',
     icon: <BookOpen size={22} />,
     desc: 'Hands-on AI & Skill Dev',
     accentBar: 'linear-gradient(180deg, #10b981, #06b6d4)',
-    iconBg: 'rgba(16, 185, 129, 0.15)',
+    iconBg: 'rgba(16, 185, 129, 0.12)',
     iconColor: '#34d399',
-    iconBorder: 'rgba(16, 185, 129, 0.35)',
-    iconGlow: '0 0 16px rgba(16, 185, 129, 0.35)',
-    accentGlow: 'rgba(16, 185, 129, 0.22)',
+    iconBorder: 'rgba(16, 185, 129, 0.28)',
+    iconGlow: '0 0 12px rgba(16, 185, 129, 0.22)',
+    accentGlow: 'rgba(16, 185, 129, 0.16)',
   },
   {
     name: 'Gaming',
     icon: <Gamepad2 size={22} />,
     desc: 'Esports & LAN Battles',
     accentBar: 'linear-gradient(180deg, #a855f7, #6366f1)',
-    iconBg: 'rgba(168, 85, 247, 0.15)',
+    iconBg: 'rgba(168, 85, 247, 0.12)',
     iconColor: '#c084fc',
-    iconBorder: 'rgba(168, 85, 247, 0.35)',
-    iconGlow: '0 0 16px rgba(168, 85, 247, 0.35)',
-    accentGlow: 'rgba(168, 85, 247, 0.22)',
+    iconBorder: 'rgba(168, 85, 247, 0.28)',
+    iconGlow: '0 0 12px rgba(168, 85, 247, 0.22)',
+    accentGlow: 'rgba(168, 85, 247, 0.16)',
   },
   {
     name: 'Seminar',
     icon: <Mic size={22} />,
     desc: 'Keynotes & Higher Ed',
-    accentBar: 'linear-gradient(180deg, #f05d4d, #38bdf8)',
-    iconBg: 'rgba(240, 93, 77, 0.15)',
+    accentBar: 'linear-gradient(180deg, #ee5848, #38bdf8)',
+    iconBg: 'rgba(238, 88, 72, 0.12)',
     iconColor: '#f87171',
-    iconBorder: 'rgba(240, 93, 77, 0.35)',
-    iconGlow: '0 0 16px rgba(240, 93, 77, 0.35)',
-    accentGlow: 'rgba(240, 93, 77, 0.22)',
+    iconBorder: 'rgba(238, 88, 72, 0.28)',
+    iconGlow: '0 0 12px rgba(238, 88, 72, 0.22)',
+    accentGlow: 'rgba(238, 88, 72, 0.16)',
   },
 ];
 
@@ -216,7 +216,7 @@ const HomePage = () => {
               <Sparkles size={16} /> Campus Event Portal 2026
             </div>
             <h2 className="hero-title">
-              <ParticleText>Welcome back, sujith! 🎓</ParticleText>
+              <ParticleText>{`Welcome back, ${user?.name ? user.name.split(' ')[0] : 'Student'}! 🎓`}</ParticleText>
             </h2>
 
             <p className="hero-subtitle">
@@ -261,7 +261,7 @@ const HomePage = () => {
               </div>
               <div>
                 <div className="stat-value">
-                  {statsLoading && stats.eventsHosted === null ? '—' : stats.eventsHosted}
+                  {statsLoading && stats.eventsHosted === null ? '—' : (typeof stats.eventsHosted === 'number' ? stats.eventsHosted.toLocaleString() : 0)}
                 </div>
                 <div className="stat-label">College Events Hosted</div>
               </div>
@@ -278,7 +278,7 @@ const HomePage = () => {
               </div>
               <div>
                 <div className="stat-value">
-                  {statsLoading && stats.activeRegistrations === null ? '—' : stats.activeRegistrations.toLocaleString()}
+                  {statsLoading && stats.activeRegistrations === null ? '—' : (typeof stats.activeRegistrations === 'number' ? stats.activeRegistrations.toLocaleString() : 0)}
                 </div>
                 <div className="stat-label">Active Student Registrations</div>
               </div>
@@ -295,7 +295,7 @@ const HomePage = () => {
               </div>
               <div>
                 <div className="stat-value">
-                  {statsLoading && stats.organizers === null ? '—' : stats.organizers}
+                  {statsLoading && stats.organizers === null ? '—' : (typeof stats.organizers === 'number' ? stats.organizers.toLocaleString() : 0)}
                 </div>
                 <div className="stat-label">Clubs & Organizers</div>
               </div>

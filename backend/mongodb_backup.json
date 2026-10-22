@@ -1,0 +1,146 @@
+{
+  "backupDate": "2026-10-20T19:04:00.000Z",
+  "source": "CampusConnect MongoDB Data Export",
+  "collections": {
+    "users": [
+      {
+        "_id": "user_3KcxjyDCVy3CpKipsQ7ZvTp3E6r",
+        "clerkUserId": "user_3KcxjyDCVy3CpKipsQ7ZvTp3E6r",
+        "clerkId": "user_3KcxjyDCVy3CpKipsQ7ZvTp3E6r",
+        "name": "Campus Organizer",
+        "email": "organizer@campusconnect.com",
+        "role": "organizer",
+        "createdAt": "2026-10-20T12:46:42.680Z",
+        "updatedAt": "2026-10-20T12:46:42.685Z"
+      },
+      {
+        "_id": "user_3Kcxsb5vuGgvL3E4xWbHy6B53TO",
+        "clerkUserId": "user_3Kcxsb5vuGgvL3E4xWbHy6B53TO",
+        "clerkId": "user_3Kcxsb5vuGgvL3E4xWbHy6B53TO",
+        "name": "Campus Student",
+        "email": "student@campusconnect.com",
+        "role": "student",
+        "createdAt": "2026-10-20T12:46:42.688Z",
+        "updatedAt": "2026-10-20T12:46:42.688Z"
+      },
+      {
+        "_id": "user_3Kcwu2FdNrtaXvX7gxFPtgUjeyd",
+        "clerkUserId": "user_3Kcwu2FdNrtaXvX7gxFPtgUjeyd",
+        "clerkId": "user_3Kcwu2FdNrtaXvX7gxFPtgUjeyd",
+        "name": "Sujith",
+        "email": "sujithvarvadi17@gmail.com",
+        "role": "student",
+        "createdAt": "2026-10-20T12:46:42.690Z",
+        "updatedAt": "2026-10-20T12:46:42.690Z"
+      }
+    ],
+    "events": [
+      {
+        "_id": "doc_t2tliqcuv0",
+        "title": "HackCampus 2026: AI & Web3 Hackathon",
+        "description": "Join the premier 36-hour collegiate hackathon exploring cutting-edge generative AI, cloud systems, and decentralization. Cash prizes, tech mentorship, and sponsor bounties.",
+        "category": "Technical",
+        "date": "2026-11-15",
+        "time": "09:00 AM",
+        "venue": "Main Auditorium & Innovation Lab",
+        "maxParticipants": 350,
+        "registeredCount": 0,
+        "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80",
+        "status": "approved",
+        "isDeleted": false,
+        "organizer": "user_3KcxjyDCVy3CpKipsQ7ZvTp3E6r",
+        "organizerData": {
+          "name": "Campus Organizer",
+          "email": "organizer@campusconnect.com"
+        },
+        "createdAt": "2026-10-20T12:46:42.696Z",
+        "updatedAt": "2026-10-20T12:46:42.696Z"
+      },
+      {
+        "_id": "doc_3jfw5plfer",
+        "title": "Spring Rhythm: Inter-College Cultural Fest",
+        "description": "An electrifying celebration of collegiate dance, vocal performances, battle of the bands, and theatrical arts across campuses.",
+        "category": "Cultural",
+        "date": "2026-11-20",
+        "time": "05:00 PM",
+        "venue": "Open Air Amphitheatre",
+        "maxParticipants": 800,
+        "registeredCount": 0,
+        "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80",
+        "status": "approved",
+        "isDeleted": false,
+        "organizer": "user_3KcxjyDCVy3CpKipsQ7ZvTp3E6r",
+        "organizerData": {
+          "name": "Campus Organizer",
+          "email": "organizer@campusconnect.com"
+        },
+        "createdAt": "2026-10-20T12:46:42.698Z",
+        "updatedAt": "2026-10-20T12:46:42.698Z"
+      },
+      {
+        "_id": "doc_qsje5qi3mb",
+        "title": "Campus Champions: Annual Football Championship",
+        "description": "Cheer on your department in the grand finals of the inter-branch football tournament.",
+        "category": "Sports",
+        "date": "2026-11-25",
+        "time": "03:30 PM",
+        "venue": "University Sports Complex",
+        "maxParticipants": 500,
+        "registeredCount": 0,
+        "image": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80",
+        "status": "approved",
+        "isDeleted": false,
+        "organizer": "user_3KcxjyDCVy3CpKipsQ7ZvTp3E6r",
+        "organizerData": {
+          "name": "Campus Organizer",
+          "email": "organizer@campusconnect.com"
+        },
+        "createdAt": "2026-10-20T12:46:42.701Z",
+        "updatedAt": "2026-10-20T12:46:42.701Z"
+      },
+      {
+        "_id": "doc_l9aejvthln",
+        "title": "Full-Stack Cloud Architecture Workshop",
+        "description": "Hands-on intensive masterclass on microservices, cloud deployments, and resilient API architectures.",
+        "category": "Workshop",
+        "date": "2026-12-01",
+        "time": "10:00 AM",
+        "venue": "Seminar Hall 3",
+        "maxParticipants": 120,
+        "registeredCount": 0,
+        "image": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80",
+        "status": "approved",
+        "isDeleted": false,
+        "organizer": "user_3KcxjyDCVy3CpKipsQ7ZvTp3E6r",
+        "organizerData": {
+          "name": "Campus Organizer",
+          "email": "organizer@campusconnect.com"
+        },
+        "createdAt": "2026-10-20T12:46:42.704Z",
+        "updatedAt": "2026-10-20T12:46:42.704Z"
+      },
+      {
+        "_id": "doc_uqz9wddsd3",
+        "title": "Valorant & BGMI Campus Esports Arena",
+        "description": "LAN tournament featuring high-stakes tactical shooter matchups, custom spectator displays, and tournament trophies.",
+        "category": "Gaming",
+        "date": "2026-12-05",
+        "time": "11:00 AM",
+        "venue": "Computer Center Lab 2",
+        "maxParticipants": 200,
+        "registeredCount": 0,
+        "image": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80",
+        "status": "approved",
+        "isDeleted": false,
+        "organizer": "user_3KcxjyDCVy3CpKipsQ7ZvTp3E6r",
+        "organizerData": {
+          "name": "Campus Organizer",
+          "email": "organizer@campusconnect.com"
+        },
+        "createdAt": "2026-10-20T12:46:42.706Z",
+        "updatedAt": "2026-10-20T12:46:42.706Z"
+      }
+    ],
+    "registrations": []
+  }
+}

@@ -156,13 +156,28 @@ const AdminDashboard = () => {
     }
   };
 
+  // Toggle User Role (Student <-> Organizer)
+  const handleToggleRole = async (userId, currentRole) => {
+    const newRole = currentRole === 'organizer' ? 'student' : 'organizer';
+    try {
+      const res = await API.patch(`/admin/users/${userId}/role`, { role: newRole });
+      if (res.data.success) {
+        setMsg({ type: 'success', text: `User role updated to '${newRole}'.` });
+        setUsers((prev) => prev.map((u) => (u._id === userId ? { ...u, role: newRole } : u)));
+        refreshStats();
+      }
+    } catch (error) {
+      setMsg({ type: 'danger', text: error.response?.data?.message || 'Failed to update user role.' });
+    }
+  };
+
   return (
     <PageTransition>
       <div className="container main-content">
         {/* Admin Panel Header */}
         <div className="dashboard-banner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-            <Shield size={32} style={{ color: '#f472b6', filter: 'drop-shadow(0 0 8px rgba(244, 114, 182, 0.5))' }} />
+            <Shield size={32} style={{ color: '#c084fc', filter: 'drop-shadow(0 0 8px rgba(168, 85, 247, 0.45))' }} />
             <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#ffffff' }}>CampusConnect Organizer Panel</h1>
           </div>
           <p style={{ color: 'var(--text-muted)' }}>

@@ -375,6 +375,19 @@ export const DataProvider = ({ children }) => {
       ...prev,
       [newEvent._id]: { data: newEvent, fetchedAt: Date.now() },
     }));
+    // Live update College Events Hosted count
+    setPlatformStats((prev) => {
+      if (prev.data) {
+        return {
+          data: {
+            ...prev.data,
+            eventsHosted: (prev.data.eventsHosted || 0) + 1,
+          },
+          fetchedAt: 0,
+        };
+      }
+      return { data: prev.data, fetchedAt: 0 };
+    });
   }, []);
 
   // Update existing event in cache
@@ -423,6 +436,19 @@ export const DataProvider = ({ children }) => {
         [eventId]: { data: markedDeleted, fetchedAt: Date.now() },
       }));
     }
+    // Live update College Events Hosted count
+    setPlatformStats((prev) => {
+      if (prev.data) {
+        return {
+          data: {
+            ...prev.data,
+            eventsHosted: Math.max(0, (prev.data.eventsHosted || 0) - 1),
+          },
+          fetchedAt: 0,
+        };
+      }
+      return { data: prev.data, fetchedAt: 0 };
+    });
   }, []);
 
   // Restore deleted event
@@ -449,6 +475,19 @@ export const DataProvider = ({ children }) => {
         [eventId]: { data: activeObj, fetchedAt: Date.now() },
       }));
     }
+    // Live update College Events Hosted count
+    setPlatformStats((prev) => {
+      if (prev.data) {
+        return {
+          data: {
+            ...prev.data,
+            eventsHosted: (prev.data.eventsHosted || 0) + 1,
+          },
+          fetchedAt: 0,
+        };
+      }
+      return { data: prev.data, fetchedAt: 0 };
+    });
   }, []);
 
   // Permanently purge deleted event
@@ -533,6 +572,7 @@ export const DataProvider = ({ children }) => {
     setOrganizerEvents((prev) => ({ data: prev.data, fetchedAt: 0 }));
     setApprovedEvents((prev) => ({ data: prev.data, fetchedAt: 0 }));
     setAdminData((prev) => ({ data: prev.data, fetchedAt: 0 }));
+    setPlatformStats((prev) => ({ data: prev.data, fetchedAt: 0 }));
   }, []);
 
   const invalidateStudentRegistrations = useCallback(() => {

@@ -12,7 +12,7 @@ const categories = ['Technical', 'Cultural', 'Sports', 'Workshop', 'Seminar', 'G
 const CreateEventPage = () => {
   const navigate = useNavigate();
   const { addEventToCache } = useContext(DataContext) || {};
-  const returnPath = '/organizer/dashboard';
+  const returnPath = '/organizer/manage-events';
 
   const [formData, setFormData] = useState({
     title: '',

@@ -1,49 +1,108 @@
-import React, { useContext, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { AuthContext } from './context/AuthContext';
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { DataProvider } from './context/DataContext';
 
 import Navbar from './components/Navbar';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from './auth/ProtectedRoute';
+import SplashScreen from './components/SplashScreen';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const EventsPage = lazy(() => import('./pages/EventsPage'));
 const EventDetailsPage = lazy(() => import('./pages/EventDetailsPage'));
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const RegisterPage = lazy(() => import('./pages/RegisterPage'));
-const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 
 const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'));
 const MyRegistrationsPage = lazy(() => import('./pages/student/MyRegistrationsPage'));
 const StudentDeletedEventsPage = lazy(() => import('./pages/student/DeletedEventsPage'));
 const ProfilePage = lazy(() => import('./pages/student/ProfilePage'));
 
-const OrganizerDashboard = lazy(() => import('./pages/organizer/OrganizerDashboard'));
 const CreateEventPage = lazy(() => import('./pages/organizer/CreateEventPage'));
 const EditEventPage = lazy(() => import('./pages/organizer/EditEventPage'));
 const ManageEventsPage = lazy(() => import('./pages/organizer/ManageEventsPage'));
 const DeletedEventsPage = lazy(() => import('./pages/organizer/DeletedEventsPage'));
 const EventRegistrationsPage = lazy(() => import('./pages/organizer/EventRegistrationsPage'));
-
 const OrganizerPanel = lazy(() => import('./pages/admin/AdminDashboard'));
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('CampusConnect ErrorBoundary caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem',
+          textAlign: 'center',
+          color: '#f8fafc',
+        }}>
+          <h2 style={{ color: '#ee5848', marginBottom: '1rem', fontSize: '1.5rem' }}>Session Refresh Required</h2>
+          <p style={{ color: '#9ab0c8', maxWidth: '480px', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+            Your account credentials updated. Click below to refresh your CampusConnect dashboard.
+          </p>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              window.location.href = '/';
+            }}
+            className="btn btn-primary"
+            style={{ padding: '0.75rem 1.75rem', borderRadius: '10px', fontWeight: 600 }}
+          >
+            Refresh Dashboard
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function AppContent() {
-  const { isAuthenticated, isStudent, isOrganizer } = useContext(AuthContext);
-  const hasPortalSidebar = isAuthenticated && (isStudent || isOrganizer);
+  const { isAuthenticated, isStudent, isOrganizer } = useAuth();
+  const location = useLocation();
+
+  const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname);
+  const hasPortalSidebar = !isAuthPage && isAuthenticated && (isStudent || isOrganizer);
 
   return (
-    <Router>
+    <ErrorBoundary>
       <Navbar />
       <div className={hasPortalSidebar ? 'portal-main' : ''} style={{ flex: 1 }}>
-        <Suspense fallback={null}>
+        <Suspense fallback={
+          <div className="spinner-container container" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="spinner"></div>
+            <p style={{ marginTop: '1rem', color: '#9ab0c8', fontSize: '0.95rem' }}>Loading CampusConnect...</p>
+          </div>
+        }>
           <Routes>
-            {/* Public Auth Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password/:resetToken" element={<ResetPasswordPage />} />
+            {/* Public Standalone Authentication Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/sign-in/*" element={<Navigate to="/login" replace />} />
+            <Route path="/sign-in" element={<Navigate to="/login" replace />} />
+            <Route path="/sign-up/*" element={<Navigate to="/register" replace />} />
+            <Route path="/sign-up" element={<Navigate to="/register" replace />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/reset-password/*" element={<ResetPassword />} />
 
             {/* General Protected Routes - Require Login */}
             <Route
@@ -71,11 +130,11 @@ function AppContent() {
               }
             />
 
-            {/* Student Protected Routes */}
+            {/* Student Protected Routes - Open to all authenticated users */}
             <Route
               path="/student/dashboard"
               element={
-                <ProtectedRoute allowedRoles={['student']}>
+                <ProtectedRoute>
                   <StudentDashboard />
                 </ProtectedRoute>
               }
@@ -83,7 +142,7 @@ function AppContent() {
             <Route
               path="/student/my-registrations"
               element={
-                <ProtectedRoute allowedRoles={['student']}>
+                <ProtectedRoute>
                   <MyRegistrationsPage />
                 </ProtectedRoute>
               }
@@ -91,7 +150,7 @@ function AppContent() {
             <Route
               path="/student/deleted-events"
               element={
-                <ProtectedRoute allowedRoles={['student']}>
+                <ProtectedRoute>
                   <StudentDeletedEventsPage />
                 </ProtectedRoute>
               }
@@ -99,25 +158,21 @@ function AppContent() {
             <Route
               path="/student/profile"
               element={
-                <ProtectedRoute allowedRoles={['student', 'organizer']}>
+                <ProtectedRoute>
                   <ProfilePage />
                 </ProtectedRoute>
               }
             />
 
-            {/* Organizer Protected Routes */}
+            {/* Organizer Routes */}
             <Route
               path="/organizer/dashboard"
-              element={
-                <ProtectedRoute allowedRoles={['organizer']}>
-                  <OrganizerDashboard />
-                </ProtectedRoute>
-              }
+              element={<Navigate to="/organizer/panel" replace />}
             />
             <Route
               path="/organizer/panel"
               element={
-                <ProtectedRoute allowedRoles={['organizer']}>
+                <ProtectedRoute>
                   <OrganizerPanel />
                 </ProtectedRoute>
               }
@@ -125,7 +180,7 @@ function AppContent() {
             <Route
               path="/organizer/create-event"
               element={
-                <ProtectedRoute allowedRoles={['organizer']}>
+                <ProtectedRoute>
                   <CreateEventPage />
                 </ProtectedRoute>
               }
@@ -133,7 +188,7 @@ function AppContent() {
             <Route
               path="/organizer/edit-event/:id"
               element={
-                <ProtectedRoute allowedRoles={['organizer']}>
+                <ProtectedRoute>
                   <EditEventPage />
                 </ProtectedRoute>
               }
@@ -141,7 +196,7 @@ function AppContent() {
             <Route
               path="/organizer/manage-events"
               element={
-                <ProtectedRoute allowedRoles={['organizer']}>
+                <ProtectedRoute>
                   <ManageEventsPage />
                 </ProtectedRoute>
               }
@@ -149,7 +204,7 @@ function AppContent() {
             <Route
               path="/organizer/deleted-events"
               element={
-                <ProtectedRoute allowedRoles={['organizer']}>
+                <ProtectedRoute>
                   <DeletedEventsPage />
                 </ProtectedRoute>
               }
@@ -157,31 +212,33 @@ function AppContent() {
             <Route
               path="/organizer/registrations/:eventId"
               element={
-                <ProtectedRoute allowedRoles={['organizer']}>
+                <ProtectedRoute>
                   <EventRegistrationsPage />
                 </ProtectedRoute>
               }
             />
 
-            {/* Legacy Admin URL redirects to the Organizer Panel */}
             <Route path="/admin/*" element={<Navigate to="/organizer/panel" replace />} />
 
-            {/* Catch-all route: Redirect to /login if unauthenticated or unknown path */}
+            {/* Catch-all route */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </Suspense>
       </div>
-    </Router>
+    </ErrorBoundary>
   );
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <DataProvider>
-        <AppContent />
-      </DataProvider>
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <DataProvider>
+          <SplashScreen />
+          <AppContent />
+        </DataProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

@@ -1,5 +1,19 @@
-const Event = require('../models/Event');
-const Registration = require('../models/Registration');
+const eventService = require('../services/eventService');
+const { isValidDocumentId } = require('../middleware/security');
+
+// Valid event categories
+const VALID_CATEGORIES = ['Technical', 'Cultural', 'Sports', 'Workshop', 'Seminar', 'Gaming', 'Other'];
+
+// Helper to validate image URLs
+const isValidImageUrl = (url) => {
+  if (typeof url !== 'string') return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch (e) {
+    return false;
+  }
+};
 
 // @desc    Get all events (Public: approved only; Admin/Organizer can pass status)
 // @route   GET /api/events
@@ -8,32 +22,11 @@ exports.getEvents = async (req, res) => {
   try {
     const { search, category, status } = req.query;
 
-    let query = { isDeleted: false };
-
-    // Filter by status (Default to approved for public views)
-    if (status) {
-      query.status = status;
-    } else {
-      query.status = 'approved';
-    }
-
-    // Filter by category
-    if (category && category !== 'All') {
-      query.category = category;
-    }
-
-    // Search by title, venue, or description
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { venue: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-      ];
-    }
-
-    const events = await Event.find(query)
-      .populate('organizer', 'name email')
-      .sort({ createdAt: -1 });
+    const events = await eventService.getEvents({
+      search,
+      category,
+      status,
+    });
 
     res.json({
       success: true,
@@ -51,7 +44,11 @@ exports.getEvents = async (req, res) => {
 // @access  Public
 exports.getEventById = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id).populate('organizer', 'name email');
+    if (!isValidDocumentId(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'Invalid event ID' });
+    }
+
+    const event = await eventService.getEventById(req.params.id);
 
     if (!event) {
       return res.status(404).json({ success: false, message: 'Event not found' });
@@ -68,7 +65,7 @@ exports.getEventById = async (req, res) => {
 
 // @desc    Create a new event
 // @route   POST /api/events
-// @access  Private (Organizer, Admin)
+// @access  Private (Organizer)
 exports.createEvent = async (req, res) => {
   try {
     const { title, description, category, date, time, venue, maxParticipants, image } = req.body;
@@ -77,41 +74,77 @@ exports.createEvent = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please provide all required fields' });
     }
 
-    // Status: Admin creates approved events directly; Organizers create approved events by default for immediate testing
-    const initialStatus = 'approved';
+    // Validation
+    const cleanTitle = String(title).trim();
+    const cleanDesc = String(description).trim();
+    const cleanVenue = String(venue).trim();
+    const cleanDate = String(date).trim();
+    const cleanTime = String(time).trim();
 
-    const event = await Event.create({
-      title,
-      description,
-      category: category || 'Technical',
-      date,
-      time,
-      venue,
-      maxParticipants: maxParticipants ? Number(maxParticipants) : 1000,
-      image: image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80',
-      organizer: req.user._id,
-      status: initialStatus,
-    });
+    if (cleanTitle.length === 0 || cleanTitle.length > 200) {
+      return res.status(400).json({ success: false, message: 'Title must be between 1 and 200 characters' });
+    }
 
-    const populatedEvent = await Event.findById(event._id).populate('organizer', 'name email');
+    if (cleanDesc.length === 0 || cleanDesc.length > 5000) {
+      return res.status(400).json({ success: false, message: 'Description must be between 1 and 5000 characters' });
+    }
+
+    const selectedCategory = VALID_CATEGORIES.includes(category) ? category : 'Technical';
+
+    let validatedMaxParticipants = 1000;
+    if (maxParticipants !== undefined) {
+      const parsed = Number(maxParticipants);
+      if (!Number.isFinite(parsed) || parsed < 1 || parsed > 100000) {
+        return res.status(400).json({ success: false, message: 'Max participants must be a positive number up to 100,000' });
+      }
+      validatedMaxParticipants = Math.floor(parsed);
+    }
+
+    let eventImage = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80';
+    if (image && typeof image === 'string' && image.trim()) {
+      if (!isValidImageUrl(image.trim())) {
+        return res.status(400).json({ success: false, message: 'Image must be a valid HTTP or HTTPS URL' });
+      }
+      eventImage = image.trim();
+    }
+
+    const event = await eventService.createEvent(
+      {
+        title: cleanTitle,
+        description: cleanDesc,
+        category: selectedCategory,
+        date: cleanDate,
+        time: cleanTime,
+        venue: cleanVenue,
+        maxParticipants: validatedMaxParticipants,
+        image: eventImage,
+        status: 'approved',
+      },
+      req.user
+    );
 
     res.status(201).json({
       success: true,
       message: 'Event created successfully',
-      data: populatedEvent,
+      data: event,
     });
   } catch (error) {
     console.error('createEvent error:', error);
-    res.status(500).json({ success: false, message: error.message || 'Server Error' });
+    const isDev = process.env.NODE_ENV !== 'production';
+    res.status(500).json({ success: false, message: isDev ? (error.message || 'Server Error') : 'Server error occurred while creating event' });
   }
 };
 
 // @desc    Update event
 // @route   PUT /api/events/:id
-// @access  Private (Organizer - own event, Admin - any event)
+// @access  Private (Organizer - own event only)
 exports.updateEvent = async (req, res) => {
   try {
-    let event = await Event.findById(req.params.id);
+    if (!isValidDocumentId(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'Invalid event ID' });
+    }
+
+    const event = await eventService.getEventById(req.params.id);
 
     if (!event) {
       return res.status(404).json({ success: false, message: 'Event not found' });
@@ -121,27 +154,60 @@ exports.updateEvent = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Deleted events cannot be edited' });
     }
 
-    // Check ownership or admin status
-    if (event.organizer.toString() !== req.user._id.toString() && req.user.role !== 'organizer') {
+    // Strict Ownership Enforcement: Only the event creator can edit it
+    const organizerId = typeof event.organizer === 'object' ? event.organizer._id || event.organizer.id : event.organizer;
+    const currentUserId = req.user._id || req.user.id;
+    if (String(organizerId) !== String(currentUserId)) {
       return res.status(403).json({ success: false, message: 'Not authorized to edit this event' });
     }
 
     const { title, description, category, date, time, venue, maxParticipants, image, status } = req.body;
+    const updates = {};
 
-    // Update fields
-    if (title !== undefined) event.title = title;
-    if (description !== undefined) event.description = description;
-    if (category !== undefined) event.category = category;
-    if (date !== undefined) event.date = date;
-    if (time !== undefined) event.time = time;
-    if (venue !== undefined) event.venue = venue;
-    if (maxParticipants !== undefined) event.maxParticipants = Number(maxParticipants);
-    if (image !== undefined && image !== '') event.image = image;
-    if (status !== undefined && req.user.role === 'organizer') event.status = status;
+    if (title !== undefined) {
+      const cleanTitle = String(title).trim();
+      if (!cleanTitle || cleanTitle.length > 200) {
+        return res.status(400).json({ success: false, message: 'Title must be between 1 and 200 characters' });
+      }
+      updates.title = cleanTitle;
+    }
 
-    await event.save();
+    if (description !== undefined) {
+      const cleanDesc = String(description).trim();
+      if (!cleanDesc || cleanDesc.length > 5000) {
+        return res.status(400).json({ success: false, message: 'Description must be between 1 and 5000 characters' });
+      }
+      updates.description = cleanDesc;
+    }
 
-    const updatedEvent = await Event.findById(event._id).populate('organizer', 'name email');
+    if (category !== undefined && VALID_CATEGORIES.includes(category)) {
+      updates.category = category;
+    }
+
+    if (date !== undefined) updates.date = String(date).trim();
+    if (time !== undefined) updates.time = String(time).trim();
+    if (venue !== undefined) updates.venue = String(venue).trim();
+
+    if (maxParticipants !== undefined) {
+      const parsed = Number(maxParticipants);
+      if (!Number.isFinite(parsed) || parsed < 1 || parsed > 100000) {
+        return res.status(400).json({ success: false, message: 'Max participants must be a positive number' });
+      }
+      updates.maxParticipants = Math.floor(parsed);
+    }
+
+    if (image !== undefined && image !== '') {
+      if (!isValidImageUrl(String(image).trim())) {
+        return res.status(400).json({ success: false, message: 'Image must be a valid HTTP or HTTPS URL' });
+      }
+      updates.image = String(image).trim();
+    }
+
+    if (status !== undefined && ['approved', 'pending', 'rejected'].includes(status)) {
+      updates.status = status;
+    }
+
+    const updatedEvent = await eventService.updateEvent(req.params.id, updates);
 
     res.json({
       success: true,
@@ -149,16 +215,21 @@ exports.updateEvent = async (req, res) => {
       data: updatedEvent,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message || 'Server Error' });
+    const isDev = process.env.NODE_ENV !== 'production';
+    res.status(500).json({ success: false, message: isDev ? (error.message || 'Server Error') : 'Failed to update event' });
   }
 };
 
 // @desc    Delete event
 // @route   DELETE /api/events/:id
-// @access  Private (Organizer - own event, Admin - any event)
+// @access  Private (Organizer - own event only)
 exports.deleteEvent = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
+    if (!isValidDocumentId(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'Invalid event ID' });
+    }
+
+    const event = await eventService.getEventById(req.params.id);
 
     if (!event) {
       return res.status(404).json({ success: false, message: 'Event not found' });
@@ -168,20 +239,19 @@ exports.deleteEvent = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Event is already deleted' });
     }
 
-    // Check ownership or admin status
-    if (event.organizer.toString() !== req.user._id.toString() && req.user.role !== 'organizer') {
+    // Strict Ownership Enforcement: Only the event creator can delete their event
+    const organizerId = typeof event.organizer === 'object' ? event.organizer._id || event.organizer.id : event.organizer;
+    const currentUserId = req.user._id || req.user.id;
+    if (String(organizerId) !== String(currentUserId)) {
       return res.status(403).json({ success: false, message: 'Not authorized to delete this event' });
     }
 
-    event.isDeleted = true;
-    event.deletedAt = new Date();
-    event.deletedBy = req.user._id;
-    await event.save();
+    const deleted = await eventService.deleteEvent(req.params.id, currentUserId);
 
     res.json({
       success: true,
       message: 'Event marked as deleted successfully',
-      data: event,
+      data: deleted,
     });
   } catch (error) {
     console.error('deleteEvent error:', error);
@@ -194,8 +264,8 @@ exports.deleteEvent = async (req, res) => {
 // @access  Private (Organizer)
 exports.getOrganizerEvents = async (req, res) => {
   try {
-    const query = req.query.scope === 'all' ? { isDeleted: false } : { organizer: req.user._id, isDeleted: false };
-    const events = await Event.find(query).populate('organizer', 'name email').sort({ createdAt: -1 });
+    const currentUserId = req.user._id || req.user.id;
+    const events = await eventService.getOrganizerEvents(currentUserId, req.query.scope);
 
     res.json({
       success: true,
@@ -209,14 +279,10 @@ exports.getOrganizerEvents = async (req, res) => {
 
 // @desc    Get deleted events
 // @route   GET /api/events/deleted
-// @access  Private (Student, Organizer, Admin)
+// @access  Private (Student, Organizer)
 exports.getDeletedEvents = async (req, res) => {
   try {
-    const query = { isDeleted: true };
-    const events = await Event.find(query)
-      .populate('organizer', 'name email')
-      .populate('deletedBy', 'name email')
-      .sort({ deletedAt: -1, createdAt: -1 });
+    const events = await eventService.getDeletedEvents();
 
     res.json({
       success: true,
@@ -230,26 +296,29 @@ exports.getDeletedEvents = async (req, res) => {
 
 // @desc    Approve or reject event
 // @route   PATCH /api/events/:id/status
-// @access  Private (Admin)
+// @access  Private (Organizer supervisory action)
 exports.approveRejectEvent = async (req, res) => {
   try {
+    if (!isValidDocumentId(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'Invalid event ID' });
+    }
+
     const { status } = req.body;
     if (!['approved', 'rejected', 'pending'].includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid status value' });
     }
 
-    const event = await Event.findById(req.params.id);
+    const event = await eventService.getEventById(req.params.id);
     if (!event) {
       return res.status(404).json({ success: false, message: 'Event not found' });
     }
 
-    event.status = status;
-    await event.save();
+    const updated = await eventService.updateStatus(req.params.id, status);
 
     res.json({
       success: true,
       message: `Event status updated to '${status}'`,
-      data: event,
+      data: updated,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });

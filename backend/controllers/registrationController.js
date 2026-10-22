@@ -1,5 +1,6 @@
-const Registration = require('../models/Registration');
-const Event = require('../models/Event');
+const registrationService = require('../services/registrationService');
+const eventService = require('../services/eventService');
+const { isValidDocumentId } = require('../middleware/security');
 
 // @desc    Register student for an event
 // @route   POST /api/registrations/register/:eventId
@@ -7,10 +8,14 @@ const Event = require('../models/Event');
 exports.registerForEvent = async (req, res) => {
   try {
     const eventId = req.params.eventId;
-    const studentId = req.user._id;
+    const studentId = req.user._id || req.user.id;
+
+    if (!isValidDocumentId(eventId)) {
+      return res.status(400).json({ success: false, message: 'Invalid event ID' });
+    }
 
     // 1. Fetch Event
-    const event = await Event.findById(eventId);
+    const event = await eventService.getEventById(eventId);
     if (!event) {
       return res.status(404).json({ success: false, message: 'Event not found' });
     }
@@ -24,7 +29,9 @@ exports.registerForEvent = async (req, res) => {
     }
 
     // 2. Check seat availability
-    if (event.registeredCount >= event.maxParticipants) {
+    const maxParticipants = event.maxParticipants || 1000;
+    const currentRegistered = event.registeredCount || 0;
+    if (currentRegistered >= maxParticipants) {
       return res.status(400).json({
         success: false,
         message: 'Registration full! No available seats remaining for this event.',
@@ -32,7 +39,7 @@ exports.registerForEvent = async (req, res) => {
     }
 
     // 3. Check for existing active registration
-    const existingReg = await Registration.findOne({
+    const existingReg = await registrationService.findOne({
       student: studentId,
       event: eventId,
     });
@@ -45,68 +52,64 @@ exports.registerForEvent = async (req, res) => {
         });
       } else {
         // Re-activate cancelled registration
-        existingReg.status = 'confirmed';
-        existingReg.registeredAt = new Date();
-        await existingReg.save();
+        const updatedReg = await registrationService.updateStatus(existingReg.id, 'confirmed');
 
         // Increment event seat count
-        event.registeredCount += 1;
-        await event.save();
-
-        const populatedReg = await Registration.findById(existingReg._id).populate('event');
+        await eventService.adjustRegisteredCount(eventId, 1);
 
         return res.status(200).json({
           success: true,
           message: 'Successfully re-registered for the event!',
-          data: populatedReg,
+          data: updatedReg,
         });
       }
     }
 
     // 4. Create registration record
-    const registration = await Registration.create({
-      student: studentId,
-      event: eventId,
-      status: 'confirmed',
+    const registration = await registrationService.createRegistration({
+      studentId,
+      eventId,
     });
 
     // 5. Update event registeredCount
-    event.registeredCount += 1;
-    await event.save();
-
-    const populatedReg = await Registration.findById(registration._id).populate('event');
+    await eventService.adjustRegisteredCount(eventId, 1);
 
     res.status(201).json({
       success: true,
       message: 'Registration successful! Confirmation ticket generated.',
-      data: populatedReg,
+      data: registration,
     });
   } catch (error) {
     console.error('Registration error:', error);
-    if (error.code === 11000) {
-      return res.status(400).json({ success: false, message: 'You have already registered for this event' });
-    }
-    res.status(500).json({ success: false, message: error.message || 'Server Error during registration' });
+    const isDev = process.env.NODE_ENV !== 'production';
+    res.status(500).json({ success: false, message: isDev ? (error.message || 'Server Error') : 'Server error occurred during event registration' });
   }
 };
 
 // @desc    Cancel an event registration
 // @route   DELETE /api/registrations/:id
-// @access  Private (Student - own registration, Admin)
+// @access  Private (Student - own registration only)
 exports.cancelRegistration = async (req, res) => {
   try {
-    const registration = await Registration.findById(req.params.id);
+    if (!isValidDocumentId(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'Invalid registration ID' });
+    }
+
+    const registration = await registrationService.findById(req.params.id);
 
     if (!registration) {
       return res.status(404).json({ success: false, message: 'Registration not found' });
     }
 
-    // Verify ownership
-    if (registration.student.toString() !== req.user._id.toString() && req.user.role !== 'organizer') {
+    // Strict Ownership Enforcement: A student can only cancel their own registration
+    const regStudentId = typeof registration.student === 'object' ? registration.student._id || registration.student.id : registration.student;
+    const currentUserId = req.user._id || req.user.id;
+    if (String(regStudentId) !== String(currentUserId)) {
       return res.status(403).json({ success: false, message: 'Not authorized to cancel this registration' });
     }
 
-    const event = await Event.findById(registration.event);
+    const eventId = typeof registration.event === 'object' ? registration.event._id || registration.event.id : registration.event;
+    const event = await eventService.getEventById(eventId);
     if (event && event.isDeleted) {
       return res.status(400).json({ success: false, message: 'This event has been deleted and registration can no longer be cancelled normally.' });
     }
@@ -116,13 +119,11 @@ exports.cancelRegistration = async (req, res) => {
     }
 
     // Update status to cancelled
-    registration.status = 'cancelled';
-    await registration.save();
+    await registrationService.updateStatus(registration.id, 'cancelled');
 
     // Decrement event registered count safely
-    if (event && event.registeredCount > 0) {
-      event.registeredCount -= 1;
-      await event.save();
+    if (eventId) {
+      await eventService.adjustRegisteredCount(eventId, -1);
     }
 
     res.json({
@@ -140,12 +141,8 @@ exports.cancelRegistration = async (req, res) => {
 // @access  Private (Student)
 exports.getStudentRegistrations = async (req, res) => {
   try {
-    const registrations = await Registration.find({ student: req.user._id })
-      .populate({
-        path: 'event',
-        populate: { path: 'organizer', select: 'name email' },
-      })
-      .sort({ registeredAt: -1 });
+    const studentId = req.user._id || req.user.id;
+    const registrations = await registrationService.getStudentRegistrations(studentId);
 
     res.json({
       success: true,
@@ -153,31 +150,33 @@ exports.getStudentRegistrations = async (req, res) => {
       data: registrations,
     });
   } catch (error) {
+    console.error('getStudentRegistrations error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch registrations' });
   }
 };
 
 // @desc    Get registered students for a specific event
 // @route   GET /api/registrations/event/:eventId
-// @access  Private (Organizer of the event, Admin)
+// @access  Private (Organizer of the event)
 exports.getEventRegistrations = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.eventId);
+    if (!isValidDocumentId(req.params.eventId)) {
+      return res.status(400).json({ success: false, message: 'Invalid event ID' });
+    }
+
+    const event = await eventService.getEventById(req.params.eventId);
     if (!event) {
       return res.status(404).json({ success: false, message: 'Event not found' });
     }
 
-    // Check organizer authorization
-    if (event.organizer.toString() !== req.user._id.toString() && req.user.role !== 'organizer') {
-      return res.status(403).json({ success: false, message: 'Not authorized to view attendee list' });
+    // Strict Ownership Enforcement: Only the organizer who created the event can view attendee list
+    const organizerId = typeof event.organizer === 'object' ? event.organizer._id || event.organizer.id : event.organizer;
+    const currentUserId = req.user._id || req.user.id;
+    if (String(organizerId) !== String(currentUserId)) {
+      return res.status(403).json({ success: false, message: 'Not authorized to view attendee list for this event' });
     }
 
-    const registrations = await Registration.find({
-      event: req.params.eventId,
-      status: 'confirmed',
-    })
-      .populate('student', 'name email createdAt')
-      .sort({ registeredAt: -1 });
+    const registrations = await registrationService.getEventRegistrations(req.params.eventId);
 
     res.json({
       success: true,
@@ -192,13 +191,10 @@ exports.getEventRegistrations = async (req, res) => {
 
 // @desc    Get all registrations in system
 // @route   GET /api/registrations/all
-// @access  Private (Admin)
+// @access  Private (Organizer Panel)
 exports.getAllRegistrations = async (req, res) => {
   try {
-    const registrations = await Registration.find()
-      .populate('student', 'name email')
-      .populate('event', 'title category date time venue')
-      .sort({ registeredAt: -1 });
+    const registrations = await registrationService.getAllRegistrations();
 
     res.json({
       success: true,
