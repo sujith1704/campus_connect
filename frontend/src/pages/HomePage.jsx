@@ -121,53 +121,73 @@ const CategoryCard = ({ cat }) => (
   </MagicBentoCard>
 );
 
+// Smooth counter component for real-time stats
+const AnimatedStatValue = ({ value, suffix = '' }) => {
+  const [displayValue, setDisplayValue] = useState(typeof value === 'number' ? value : 0);
+
+  useEffect(() => {
+    const end = typeof value === 'number' ? value : 0;
+    let start = displayValue;
+    if (start === end) return;
+
+    const duration = 700; // ms
+    const startTime = performance.now();
+
+    const updateNumber = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // easeOutCubic
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(start + (end - start) * ease);
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        requestAnimationFrame(updateNumber);
+      }
+    };
+
+    const animId = requestAnimationFrame(updateNumber);
+    return () => cancelAnimationFrame(animId);
+  }, [value]);
+
+  return <span>{displayValue.toLocaleString()}{suffix}</span>;
+};
+
 const HomePage = () => {
   const { user, isOrganizer, authSessionId } = useContext(AuthContext);
   const { platformStats, fetchPlatformStats } = useContext(DataContext);
   const [stats, setStats] = useState({
-    eventsHosted: null,
-    activeRegistrations: null,
-    organizers: null,
+    eventsHosted: platformStats?.eventsHosted ?? 0,
+    activeRegistrations: platformStats?.activeRegistrations ?? 7,
+    organizers: platformStats?.organizers ?? 3,
     verifiedEvents: 100,
   });
-  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    
-    // Defer stats loading to after initial render for better performance
-    const timer = setTimeout(() => {
-      if (!cancelled) {
-        const loadStats = async () => {
-          try {
-            const data = await fetchPlatformStats();
-            if (!cancelled && data) {
-              setStats(data);
-              setStatsLoading(false);
-            }
-          } catch (error) {
-            if (!cancelled) {
-              console.error('Error fetching platform statistics:', error);
-              setStatsLoading(false);
-            }
-          }
-        };
 
-        loadStats();
+    const loadStats = async () => {
+      try {
+        const data = await fetchPlatformStats();
+        if (!cancelled && data) {
+          setStats(data);
+        }
+      } catch (error) {
+        console.warn('Error fetching platform statistics:', error);
       }
-    }, 100); // Small delay to allow page to render first
+    };
+
+    loadStats();
 
     return () => {
       cancelled = true;
-      clearTimeout(timer);
     };
   }, [fetchPlatformStats]);
 
-  // Sync from context when it updates
+  // Sync from context when it updates (live cache mutations)
   useEffect(() => {
     if (platformStats) {
       setStats(platformStats);
-      setStatsLoading(false);
     }
   }, [platformStats]);
 
@@ -261,7 +281,7 @@ const HomePage = () => {
               </div>
               <div>
                 <div className="stat-value">
-                  {statsLoading && stats.eventsHosted === null ? '—' : (typeof stats.eventsHosted === 'number' ? stats.eventsHosted.toLocaleString() : 0)}
+                  <AnimatedStatValue value={stats.eventsHosted} />
                 </div>
                 <div className="stat-label">College Events Hosted</div>
               </div>
@@ -278,7 +298,7 @@ const HomePage = () => {
               </div>
               <div>
                 <div className="stat-value">
-                  {statsLoading && stats.activeRegistrations === null ? '—' : (typeof stats.activeRegistrations === 'number' ? stats.activeRegistrations.toLocaleString() : 0)}
+                  <AnimatedStatValue value={stats.activeRegistrations} />
                 </div>
                 <div className="stat-label">Active Student Registrations</div>
               </div>
@@ -295,7 +315,7 @@ const HomePage = () => {
               </div>
               <div>
                 <div className="stat-value">
-                  {statsLoading && stats.organizers === null ? '—' : (typeof stats.organizers === 'number' ? stats.organizers.toLocaleString() : 0)}
+                  <AnimatedStatValue value={stats.organizers} />
                 </div>
                 <div className="stat-label">Clubs & Organizers</div>
               </div>

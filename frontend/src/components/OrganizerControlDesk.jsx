@@ -45,6 +45,22 @@ const OrganizerControlDesk = () => {
           </p>
         </div>
 
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <Link
+            to="/organizer/panel"
+            className="btn btn-primary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
+          >
+            <Clock size={18} /> Open Dashboard Panel
+          </Link>
+          <Link
+            to="/organizer/create-event"
+            className="btn btn-secondary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
+          >
+            <PlusCircle size={18} /> Create Event
+          </Link>
+        </div>
       </MagicBentoCard>
 
       {/* Metrics Section */}
@@ -65,7 +81,7 @@ const OrganizerControlDesk = () => {
             <Calendar size={26} />
           </div>
           <div className="stat-text">
-            <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : totalEvents}</div>
+            <div className="stat-value">{totalEvents}</div>
             <div className="stat-label">Total Events Created</div>
           </div>
         </MagicBentoCard>
@@ -80,7 +96,7 @@ const OrganizerControlDesk = () => {
             <Users size={26} />
           </div>
           <div className="stat-text">
-            <div className="stat-value">{organizerEventsLoading && !organizerEvents ? '—' : totalRegistrations}</div>
+            <div className="stat-value">{totalRegistrations}</div>
             <div className="stat-label">Total Student Registrations</div>
           </div>
         </MagicBentoCard>

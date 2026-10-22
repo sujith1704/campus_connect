@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
+dotenv.config();
 const { db } = require('./config/firebase');
 
-dotenv.config();
 
 const sampleEvents = [
   {
@@ -108,26 +108,9 @@ const seedData = async () => {
       updatedAt: new Date(),
     }, { merge: true });
 
-    // 4. Seed Events
-    for (const event of sampleEvents) {
-      const q = await db.collection('events').where('title', '==', event.title).limit(1).get();
-      if (q.empty) {
-        await db.collection('events').add({
-          ...event,
-          organizer: organizerId,
-          organizerData: {
-            name: 'Campus Organizer',
-            email: 'organizer@campusconnect.com',
-          },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      }
-    }
-
     console.log('✅ Firestore seeding completed successfully!');
     console.log(' - Users provisioned: organizer@campusconnect.com, student@campusconnect.com, sujithvarvadi17@gmail.com');
-    console.log(` - Sample events created: ${sampleEvents.length}`);
+    console.log(' - Only real events provided by organizers will be hosted.');
     process.exit(0);
   } catch (error) {
     console.error('❌ Error seeding Firestore database:', error);

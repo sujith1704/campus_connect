@@ -105,7 +105,7 @@ const PortalSidebar = () => {
     if (path === '/') return location.pathname === '/';
     if (path === '/events') return location.pathname === '/events';
     if (path === '/student/dashboard') return location.pathname === '/student/dashboard';
-    if (path === '/organizer/panel') return location.pathname.startsWith('/organizer/panel');
+    if (path === '/organizer/panel') return location.pathname.startsWith('/organizer/panel') || location.pathname.startsWith('/organizer/dashboard');
     return location.pathname === path;
   };
 

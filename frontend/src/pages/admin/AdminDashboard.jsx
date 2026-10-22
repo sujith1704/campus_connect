@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../services/api';
 import { DataContext } from '../../context/DataContext';
 import EventCard from '../../components/EventCard';
-import { Shield, Users, Calendar, Ticket, Trash2, AlertTriangle, X } from 'lucide-react';
+import { Shield, Users, Calendar, Ticket, Trash2, AlertTriangle, X, PlusCircle } from 'lucide-react';
 import { formatDate } from '../../utils/date';
 import PageTransition from '../../components/PageTransition';
 import AnimatedList from '../../components/AnimatedList';
@@ -57,11 +57,13 @@ const AdminDashboard = () => {
           if (data.users) setUsers(data.users);
           if (data.events) setEvents(data.events);
           if (data.registrations) setRegistrations(data.registrations);
-          setLoading(false);
         }
       } catch (error) {
         if (!cancelled) {
           console.error('Failed to load organizer panel data:', error);
+        }
+      } finally {
+        if (!cancelled) {
           setLoading(false);
         }
       }
@@ -306,9 +308,29 @@ const AdminDashboard = () => {
                   </MagicBentoCard>
                 </div>
 
+                {/* Quick Actions Bar */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1.75rem', marginBottom: '2rem' }}>
+                  <Link to="/organizer/create-event" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+                    <PlusCircle size={18} /> Create New Event
+                  </Link>
+                  <Link to="/organizer/manage-events" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+                    <Calendar size={18} /> Manage My Events
+                  </Link>
+                  <button
+                    onClick={() => handleTabChange('registrations')}
+                    className="btn btn-secondary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                  >
+                    <Ticket size={18} /> View All Registrations ({registrations.length})
+                  </button>
+                  <Link to="/organizer/deleted-events" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+                    <Trash2 size={18} /> Recycle Bin
+                  </Link>
+                </div>
+
                 {/* Pending Approvals Section */}
                 {events.filter((e) => e.status === 'pending').length > 0 && (
-                  <div style={{ marginTop: '2rem' }}>
+                  <div style={{ marginTop: '2rem', marginBottom: '2.5rem' }}>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--warning)' }}>
                       ⚠️ Events Pending Approval ({events.filter((e) => e.status === 'pending').length})
                     </h3>
@@ -335,6 +357,45 @@ const AdminDashboard = () => {
                     </motion.div>
                   </div>
                 )}
+
+                {/* Active Platform Events Section */}
+                <div style={{ marginTop: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>
+                      Active College Events ({events.filter((e) => e.status !== 'pending').length})
+                    </h3>
+                    <Link to="/organizer/manage-events" style={{ color: 'var(--primary)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>
+                      View all in Manage Events →
+                    </Link>
+                  </div>
+                  {events.filter((e) => e.status !== 'pending').length > 0 ? (
+                    <motion.div
+                      className="events-grid"
+                      variants={containerVariants}
+                      initial="initial"
+                      animate="animate"
+                    >
+                      {events
+                        .filter((e) => e.status !== 'pending')
+                        .map((event) => (
+                          <motion.div key={event._id} variants={cardVariants}>
+                            <EventCard
+                              event={event}
+                              showAdminControls={true}
+                              onDelete={(id) => setDeleteEventId(id)}
+                            />
+                          </motion.div>
+                        ))}
+                    </motion.div>
+                  ) : (
+                    <MagicBentoCard style={{ padding: '2.5rem', textAlign: 'center' }}>
+                      <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>No events published yet.</p>
+                      <Link to="/organizer/create-event" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+                        <PlusCircle size={18} /> Publish Your First Event
+                      </Link>
+                    </MagicBentoCard>
+                  )}
+                </div>
               </motion.div>
             )}
 
@@ -431,8 +492,8 @@ const AdminDashboard = () => {
                         <td className="event-date-cell">{formatDate(reg.event?.date)}</td>
                         <td className="registration-date-cell">
                           <div className="registration-date">
-                            <span className="date">{new Date(reg.registeredAt).toLocaleDateString()}</span>
-                            <span className="time">{new Date(reg.registeredAt).toLocaleTimeString()}</span>
+                            <span className="date">{reg.registeredAt ? formatDate(reg.registeredAt) : 'Recently'}</span>
+                            <span className="time">{reg.registeredAt && !isNaN(new Date(reg.registeredAt).getTime()) ? new Date(reg.registeredAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
                           </div>
                         </td>
                         <td>

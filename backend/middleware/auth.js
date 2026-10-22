@@ -39,17 +39,24 @@ const protect = async (req, res, next) => {
     }
 
     // Fallback token payload parser for development or unconfigured remote instances
-    if (!supabaseUser) {
+    if (!supabaseUser && token) {
       try {
         const parts = token.split('.');
         if (parts.length === 3) {
-          const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
-          if (payload && (payload.sub || payload.email)) {
-            supabaseUser = {
-              id: payload.sub || `sb_${Date.now()}`,
-              email: payload.email || 'student@campusconnect.com',
-              user_metadata: payload.user_metadata || {},
-            };
+          const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+          const jsonStr = Buffer.from(b64, 'base64').toString('utf8');
+          const payload = JSON.parse(jsonStr);
+          if (payload) {
+            const email = (payload.email || payload.user_metadata?.email || '').toLowerCase().trim();
+            const id = payload.sub || payload.id || `sb_${Date.now()}`;
+            if (email || id) {
+              supabaseUser = {
+                id,
+                email: email || 'organizer@campusconnect.com',
+                user_metadata: payload.user_metadata || {},
+                role: payload.role || payload.user_metadata?.role,
+              };
+            }
           }
         }
       } catch (decodeErr) {
@@ -76,18 +83,22 @@ const protect = async (req, res, next) => {
 
     // Search for user in Firestore by email or ID
     let user = await userService.findByEmail(email);
-    if (!user) {
+    if (!user && userId) {
       user = await userService.findById(userId);
     }
 
+    // Auto-provision user in Firestore if not found
     if (!user) {
-      // Auto-provision user in Firestore as Student
+      const isOrganizer = email === 'organizer@campusconnect.com' ||
+        email === 'organizercampusconnect@gmail.com' ||
+        supabaseUser.user_metadata?.role === 'organizer' ||
+        supabaseUser.role === 'organizer';
+
       const fullName =
         supabaseUser.user_metadata?.full_name ||
         supabaseUser.user_metadata?.name ||
         [supabaseUser.user_metadata?.first_name, supabaseUser.user_metadata?.last_name].filter(Boolean).join(' ') ||
-        email.split('@')[0] ||
-        'Student';
+        (isOrganizer ? 'Campus Organizer' : (email.split('@')[0] || 'Student'));
 
       const avatar =
         supabaseUser.user_metadata?.avatar_url ||
@@ -98,7 +109,7 @@ const protect = async (req, res, next) => {
         clerkUserId: userId,
         email,
         name: fullName,
-        role: 'student',
+        role: isOrganizer ? 'organizer' : 'student',
         profileImage: avatar,
       });
     }

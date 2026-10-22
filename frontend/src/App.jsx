@@ -167,7 +167,11 @@ function AppContent() {
             {/* Organizer Routes */}
             <Route
               path="/organizer/dashboard"
-              element={<Navigate to="/organizer/panel" replace />}
+              element={
+                <ProtectedRoute>
+                  <OrganizerPanel />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/organizer/panel"
