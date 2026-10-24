@@ -392,20 +392,16 @@ const EventDetailsPage = () => {
                           Your ticket has been generated. You can view your pass in your my registration section.
                         </p>
                         <div className="event-registration-content">
-                          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-                            <Link to="/student/my-registrations" className="btn btn-secondary btn-full">
-                              <Ticket size={16} /> View My Ticket Pass
-                            </Link>
-                          </motion.div>
-                          <motion.button
+                          <Link to="/student/my-registrations" className="btn btn-secondary btn-full">
+                            <Ticket size={16} /> View My Ticket Pass
+                          </Link>
+                          <button
                             type="button"
                             onClick={() => setShowCancelConfirmation(true)}
                             className="btn btn-danger btn-full"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.97 }}
                           >
                             Cancel Registration
-                          </motion.button>
+                          </button>
                         </div>
                       </div>
                     ) : isFull ? (
@@ -419,16 +415,14 @@ const EventDetailsPage = () => {
                         <p className="event-registration-card-subtitle">
                           Click below to instantly register and reserve your entry pass.
                         </p>
-                        <motion.button
+                        <button
                           type="button"
                           onClick={handleRegister}
                           disabled={submitting}
                           className="btn btn-primary btn-full btn-lg"
-                          whileHover={!submitting ? { scale: 1.02 } : {}}
-                          whileTap={!submitting ? { scale: 0.97 } : {}}
                         >
                           {submitting ? 'Registering...' : isAuthenticated ? 'Register Now' : 'Login to Register'}
-                        </motion.button>
+                        </button>
                       </div>
                     )}
                   </div>
@@ -468,24 +462,22 @@ const EventDetailsPage = () => {
                   Are you sure you want to cancel your registration for this event?
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                  <motion.button
+                  <button
                     type="button"
                     onClick={() => setShowCancelConfirmation(false)}
                     className="btn btn-secondary"
                     disabled={cancelling}
-                    whileTap={{ scale: 0.95 }}
                   >
                     Keep Registration
-                  </motion.button>
-                  <motion.button
+                  </button>
+                  <button
                     type="button"
                     onClick={handleCancelRegistration}
                     className="btn btn-danger"
                     disabled={cancelling}
-                    whileTap={{ scale: 0.95 }}
                   >
                     {cancelling ? 'Cancelling...' : 'Cancel Registration'}
-                  </motion.button>
+                  </button>
                 </div>
               </motion.div>
             </motion.div>

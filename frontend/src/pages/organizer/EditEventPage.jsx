@@ -248,16 +248,14 @@ const EditEventPage = () => {
                 <Link to={returnPath} className="btn btn-secondary" style={{ flex: 1 }}>
                   Cancel
                 </Link>
-                <motion.button
+                <button
                   type="submit"
                   className="btn btn-primary"
                   style={{ flex: 2 }}
                   disabled={submitting}
-                  whileHover={!submitting ? { scale: 1.02 } : {}}
-                  whileTap={!submitting ? { scale: 0.97 } : {}}
                 >
                   <Edit3 size={18} /> {submitting ? 'Saving Changes...' : 'Save Changes'}
-                </motion.button>
+                </button>
               </div>
             </form>
           </motion.div>

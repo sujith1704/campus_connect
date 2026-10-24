@@ -75,41 +75,21 @@ const seedData = async () => {
   try {
     console.log('🔥 Initializing Firestore seeding for CampusConnect...');
 
-    // 1. Seed Organizer in Firestore
-    const organizerId = 'organizer_demo_user';
+    // 1. Seed Single Valid Organizer in Firestore
+    const organizerId = 'organizer_campus_connect';
     const orgRef = db.collection('users').doc(organizerId);
     await orgRef.set({
+      clerkUserId: organizerId,
+      clerkId: organizerId,
       name: 'Campus Organizer',
-      email: 'organizer@campusconnect.com',
+      email: 'organizercampusconnect@gmail.com',
       role: 'organizer',
       createdAt: new Date(),
       updatedAt: new Date(),
     }, { merge: true });
 
-    // 2. Seed Student in Firestore
-    const studentId = 'student_demo_user';
-    const studRef = db.collection('users').doc(studentId);
-    await studRef.set({
-      name: 'Campus Student',
-      email: 'student@campusconnect.com',
-      role: 'student',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }, { merge: true });
-
-    // 3. Seed Existing Google Account
-    const googleId = 'student_demo_sujith';
-    const googleRef = db.collection('users').doc(googleId);
-    await googleRef.set({
-      name: 'Sujith',
-      email: 'sujithvarvadi17@gmail.com',
-      role: 'student',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }, { merge: true });
-
     console.log('✅ Firestore seeding completed successfully!');
-    console.log(' - Users provisioned: organizer@campusconnect.com, student@campusconnect.com, sujithvarvadi17@gmail.com');
+    console.log(' - Valid organizer provisioned: organizercampusconnect@gmail.com');
     console.log(' - Only real events provided by organizers will be hosted.');
     process.exit(0);
   } catch (error) {

@@ -351,15 +351,13 @@ const RegistrationSuccessModal = ({ event, registration, onViewPass, onClose }) 
           {/* Action Buttons */}
           <div className="registration-success-actions">
             {onViewPass && (
-              <motion.button
+              <button
                 onClick={onViewPass}
                 className="btn btn-primary btn-full registration-view-pass-btn"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
                 type="button"
               >
                 <Ticket size={18} /> View Ticket Pass
-              </motion.button>
+              </button>
             )}
 
             <button

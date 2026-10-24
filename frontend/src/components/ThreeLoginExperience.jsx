@@ -373,6 +373,7 @@ function buildRobotInstance(scene, badgeTexture, shadowTexture, options = {}) {
     group: mascotGroup,
     headPivot,
     eyesContainer,
+    eyeMat,
     leftHandGroup,
     rightHandGroup,
     tasselCord,
@@ -396,10 +397,12 @@ function buildRobotInstance(scene, badgeTexture, shadowTexture, options = {}) {
   };
 }
 
-const ThreeLoginExperience = ({ focusTarget = null }) => {
+const ThreeLoginExperience = ({ focusTarget = null, isPasswordVisible = false, passwordVisible = false }) => {
   const containerRef = useRef(null);
+  const isPassVis = Boolean(isPasswordVisible || passwordVisible);
   const stateRef = useRef({
     focusTarget,
+    isPasswordVisible: isPassVis,
     targetPointer: { x: 0, y: 0 },
     isMobile: false,
     isVisible: true,
@@ -408,6 +411,10 @@ const ThreeLoginExperience = ({ focusTarget = null }) => {
   useEffect(() => {
     stateRef.current.focusTarget = focusTarget;
   }, [focusTarget]);
+
+  useEffect(() => {
+    stateRef.current.isPasswordVisible = Boolean(isPasswordVisible || passwordVisible);
+  }, [isPasswordVisible, passwordVisible]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -655,9 +662,11 @@ const ThreeLoginExperience = ({ focusTarget = null }) => {
 
       // Animate all 3 robots in synchronized harmony
       robots.forEach((r) => {
-        // Individual Blinking
+        const isPassVis = Boolean(stateRef.current.isPasswordVisible);
+
+        // Individual Blinking (only active when password is hidden and eyes are open)
         r.blinkTimer += delta;
-        if (!r.isBlinking && r.blinkTimer > r.nextBlinkInterval) {
+        if (!isPassVis && !r.isBlinking && r.blinkTimer > r.nextBlinkInterval) {
           r.isBlinking = true;
           r.blinkProgress = 0;
           r.blinkTimer = 0;
@@ -665,7 +674,7 @@ const ThreeLoginExperience = ({ focusTarget = null }) => {
         }
 
         let naturalEyeScaleY = 1.0;
-        if (r.isBlinking) {
+        if (!isPassVis && r.isBlinking) {
           r.blinkProgress += delta * 7;
           if (r.blinkProgress >= Math.PI) {
             r.isBlinking = false;
@@ -675,7 +684,7 @@ const ThreeLoginExperience = ({ focusTarget = null }) => {
           }
         }
 
-        // Focus State Calculations
+        // Focus & Password Visibility State Calculations
         let targetHeadX = 0;
         let targetHeadY = 0;
         let targetHeadZ = 0;
@@ -684,12 +693,14 @@ const ThreeLoginExperience = ({ focusTarget = null }) => {
         let targetEyeClose = naturalEyeScaleY;
         let targetShield = 0;
 
-        if (focusTarget === 'password') {
-          // Privacy Mode: All robots turn away politely to the left, tilt down, close eyes, and raise shielding hand
+        if (isPassVis) {
+          // Password is VISIBLE (Show Password clicked):
+          // Robot behaves as if it does not want to look at the user's password (🙈)
+          // Eyes close smoothly, head turns away politely, shielding hand raises
           targetHeadY = -0.56;
           targetHeadX = 0.2;
           targetHeadZ = -0.05;
-          targetEyeClose = 0.08;
+          targetEyeClose = 0.04;
           targetEyesX = 0;
           targetEyesY = 0;
           targetShield = 1.0;
@@ -702,9 +713,11 @@ const ThreeLoginExperience = ({ focusTarget = null }) => {
           targetHeadZ = px * 0.05;
           targetEyesX = px * 0.07 + 0.03;
           targetEyesY = py * 0.04;
+          targetEyeClose = naturalEyeScaleY;
           targetShield = 0;
         } else {
-          // Normal cursor tracking
+          // Password is HIDDEN (type="password"):
+          // Robot eyes OPEN (👀), natural tracking and floating
           const px = isMobile ? Math.sin(time * 0.7 + r.phaseOffset) * 0.15 : currentPointer.x;
           const py = isMobile ? Math.cos(time * 0.8 + r.phaseOffset) * 0.08 : currentPointer.y;
           targetHeadY = px * 0.38 + r.baseRotY;
@@ -712,10 +725,11 @@ const ThreeLoginExperience = ({ focusTarget = null }) => {
           targetHeadZ = px * 0.04;
           targetEyesX = px * 0.06;
           targetEyesY = py * 0.035;
+          targetEyeClose = naturalEyeScaleY;
           targetShield = 0;
         }
 
-        // Smooth Lerp
+        // Smooth Lerp transitions
         const headLerp = 0.08;
         r.currentHeadRot.x += (targetHeadX - r.currentHeadRot.x) * headLerp;
         r.currentHeadRot.y += (targetHeadY - r.currentHeadRot.y) * headLerp;
@@ -727,8 +741,15 @@ const ThreeLoginExperience = ({ focusTarget = null }) => {
         r.eyesContainer.position.x = r.currentEyesPos.x;
         r.eyesContainer.position.y = r.currentEyesPos.y;
 
-        r.currentEyeScaleY += (targetEyeClose - r.currentEyeScaleY) * 0.18;
-        r.eyesContainer.scale.y = Math.max(0.06, r.currentEyeScaleY);
+        // Smooth eye open/close transition
+        const eyeLerp = 0.18;
+        r.currentEyeScaleY += (targetEyeClose - r.currentEyeScaleY) * eyeLerp;
+        r.eyesContainer.scale.y = Math.max(0.04, r.currentEyeScaleY);
+
+        // Soft eye glow when closed vs open
+        if (r.eyeMat) {
+          r.eyeMat.emissiveIntensity = isPassVis ? 0.45 : (1.3 + Math.sin(time * 2.8 + r.phaseOffset) * 0.2);
+        }
 
         r.currentHandShield += (targetShield - r.currentHandShield) * 0.09;
 

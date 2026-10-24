@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../auth/AuthProvider';
 import PageTransition from '../components/PageTransition';
@@ -10,6 +10,7 @@ import { Mail, Lock, UserPlus, AlertCircle, CheckCircle, Eye, EyeOff } from 'luc
 
 const Register = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { registerWithEmail, loginWithGoogle, isAuthenticated, loading: authLoading } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -21,10 +22,13 @@ const Register = () => {
 
   // If already authenticated, redirect straight to Home page
   useEffect(() => {
+    if (location.state?.loggedOut) {
+      return;
+    }
     if (isAuthenticated && !authLoading) {
       navigate('/', { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, authLoading, navigate, location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

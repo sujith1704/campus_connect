@@ -158,8 +158,8 @@ const HomePage = () => {
   const { platformStats, fetchPlatformStats } = useContext(DataContext);
   const [stats, setStats] = useState({
     eventsHosted: platformStats?.eventsHosted ?? 0,
-    activeRegistrations: platformStats?.activeRegistrations ?? 7,
-    organizers: platformStats?.organizers ?? 3,
+    activeRegistrations: platformStats?.activeRegistrations ?? 0,
+    organizers: platformStats?.organizers ?? 0,
     verifiedEvents: 100,
   });
 
@@ -253,11 +253,9 @@ const HomePage = () => {
               />
             </p>
             <div className="hero-actions">
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                <Link to="/events" className="btn btn-primary btn-lg">
-                  Explore Events <ArrowRight size={18} />
-                </Link>
-              </motion.div>
+              <Link to="/events" className="btn btn-primary btn-lg">
+                Explore Events <ArrowRight size={18} />
+              </Link>
             </div>
           </div>
         </section>
@@ -300,7 +298,7 @@ const HomePage = () => {
                 <div className="stat-value">
                   <AnimatedStatValue value={stats.activeRegistrations} />
                 </div>
-                <div className="stat-label">Active Student Registrations</div>
+                <div className="stat-label">Active Students</div>
               </div>
             </MagicBentoCard>
 

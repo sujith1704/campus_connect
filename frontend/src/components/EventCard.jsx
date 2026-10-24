@@ -47,12 +47,12 @@ const EventCard = ({ event, showAdminControls, showApprovalActions = false, onAp
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
               {showApprovalActions && status === 'pending' && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                  <motion.button onClick={() => onApprove(_id)} className="btn btn-primary btn-sm" whileTap={{ scale: 0.96 }}>
+                  <button type="button" onClick={() => onApprove(_id)} className="btn btn-primary btn-sm">
                     Approve
-                  </motion.button>
-                  <motion.button onClick={() => onReject(_id)} className="btn btn-secondary btn-sm" whileTap={{ scale: 0.96 }}>
+                  </button>
+                  <button type="button" onClick={() => onReject(_id)} className="btn btn-secondary btn-sm">
                     Reject
-                  </motion.button>
+                  </button>
                 </div>
               )}
 
@@ -65,18 +65,16 @@ const EventCard = ({ event, showAdminControls, showApprovalActions = false, onAp
                   <Edit3 size={14} style={{ flexShrink: 0 }} />
                   <span>Edit</span>
                 </Link>
-                <motion.button onClick={() => onDelete(_id)} className="btn btn-danger btn-sm event-action-btn" title="Delete" style={{ width: '100%' }} whileTap={{ scale: 0.96 }}>
+                <button type="button" onClick={() => onDelete(_id)} className="btn btn-danger btn-sm event-action-btn" title="Delete" style={{ width: '100%' }}>
                   <Trash2 size={14} style={{ flexShrink: 0 }} />
                   <span>Delete</span>
-                </motion.button>
+                </button>
               </div>
             </div>
           ) : (
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-              <Link to={`/events/${_id}`} className="btn btn-primary btn-full">
-                View Details <ArrowRight size={16} />
-              </Link>
-            </motion.div>
+            <Link to={`/events/${_id}`} className="btn btn-primary btn-full">
+              View Details <ArrowRight size={16} />
+            </Link>
           )}
         </div>
       </div>

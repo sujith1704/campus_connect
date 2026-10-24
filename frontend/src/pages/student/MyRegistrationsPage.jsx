@@ -106,24 +106,20 @@ const MyRegistrationsPage = () => {
             <h1 className="section-title">My Registrations & Tickets</h1>
             <p className="section-subtitle" style={{ marginBottom: '0.6rem' }}>Manage your registered campus events and access your entry passes</p>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <motion.button
+              <button
                 type="button"
                 className={`btn btn-sm ${filterTab === 'present' ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => setFilterTab('present')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
                 Present
-              </motion.button>
-              <motion.button
+              </button>
+              <button
                 type="button"
                 className={`btn btn-sm ${filterTab === 'past' ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => setFilterTab('past')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
                 Past
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
@@ -210,14 +206,13 @@ const MyRegistrationsPage = () => {
 
                           <div className="event-card-footer" style={{ marginTop: 'auto', paddingTop: '1.15rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', gap: '0.5rem' }}>
                             {!isCancelled && !isDeleted && (
-                              <motion.button
+                              <button
+                                type="button"
                                 onClick={() => setSelectedTicket(reg)}
                                 className="btn btn-primary btn-full"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.97 }}
                               >
                                 <Ticket size={16} /> View Ticket Pass
-                              </motion.button>
+                              </button>
                             )}
                             {isCancelled && !isDeleted && (
                               <span style={{ fontSize: '0.85rem', color: 'var(--danger)', fontWeight: 600 }}>
@@ -339,14 +334,13 @@ const MyRegistrationsPage = () => {
 
                           <div className="event-card-footer" style={{ marginTop: 'auto', paddingTop: '1.15rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', gap: '0.5rem' }}>
                             {isUserRegistered && (
-                              <motion.button
+                              <button
+                                type="button"
                                 onClick={() => setSelectedTicket(reg)}
                                 className="btn btn-primary btn-full"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.97 }}
                               >
                                 <Ticket size={16} /> View Ticket Pass
-                              </motion.button>
+                              </button>
                             )}
                           </div>
                         </div>

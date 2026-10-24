@@ -2,32 +2,65 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
+import { DataContext } from '../../context/DataContext';
 import { Ticket, Calendar, Clock, MapPin, ArrowRight, CheckCircle } from 'lucide-react';
 import MagicBentoCard from '../../components/MagicBento';
 import { containerVariants, statCardVariants } from '../../utils/animations';
 import { motion } from 'framer-motion';
 
+// Session cache flag to ensure reloading only occurs once on first visit
+let _hasLoadedStudentDashboardOnce = false;
+
 const StudentDashboard = () => {
-  const { user } = useContext(AuthContext);
-  const [registrations, setRegistrations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user, isAuthenticated } = useContext(AuthContext);
+  const { studentRegistrations, fetchStudentRegistrations } = useContext(DataContext);
+
+  const shouldShowInitialLoading = !_hasLoadedStudentDashboardOnce || studentRegistrations === null;
+  const [registrations, setRegistrations] = useState(studentRegistrations || []);
+  const [loading, setLoading] = useState(shouldShowInitialLoading);
+
+  // Reset session cache if user logs out
+  useEffect(() => {
+    if (!isAuthenticated) {
+      _hasLoadedStudentDashboardOnce = false;
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    fetchMyRegistrations();
-  }, []);
+    let cancelled = false;
 
-  const fetchMyRegistrations = async () => {
-    try {
-      const res = await API.get('/registrations/my-registrations');
-      if (res.data.success) {
-        setRegistrations(res.data.data);
+    const loadData = async () => {
+      try {
+        const data = await fetchStudentRegistrations();
+        if (!cancelled && data) {
+          setRegistrations(data);
+          _hasLoadedStudentDashboardOnce = true;
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Error fetching student dashboard registrations:', error);
+        }
+      } finally {
+        if (!cancelled) {
+          _hasLoadedStudentDashboardOnce = true;
+          setLoading(false);
+        }
       }
-    } catch (error) {
-      console.error('Error fetching registrations:', error);
-    } finally {
-      setLoading(false);
+    };
+
+    loadData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchStudentRegistrations]);
+
+  // Sync from context when it updates
+  useEffect(() => {
+    if (studentRegistrations) {
+      setRegistrations(studentRegistrations);
     }
-  };
+  }, [studentRegistrations]);
 
   const activeRegistrations = registrations.filter(
     (r) => r.status === 'confirmed' && !r.event?.isDeleted

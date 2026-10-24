@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
@@ -9,10 +9,24 @@ const Navbar = () => {
   const { user, isAuthenticated, logout, isStudent, isOrganizer } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
+  const handleLogout = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      navigate('/login', { replace: true, state: { loggedOut: true } });
+    } catch (err) {
+      console.error('Logout error:', err);
+      navigate('/login', { replace: true, state: { loggedOut: true } });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const isActive = (path) => location.pathname === path;
@@ -121,22 +135,20 @@ const Navbar = () => {
                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user?.name}</span>
               </Link>
 
-              <motion.button
+              <button
+                type="button"
                 onClick={handleLogout}
                 className="btn btn-secondary btn-sm"
                 title="Logout"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                disabled={isLoggingOut}
               >
                 <LogOut size={16} /> Logout
-              </motion.button>
+              </button>
             </div>
           ) : (
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link to="/login" className="btn btn-outline btn-sm">
-                Login
-              </Link>
-            </motion.div>
+            <Link to="/login" className="btn btn-outline btn-sm">
+              Login
+            </Link>
           )}
         </div>
       </div>

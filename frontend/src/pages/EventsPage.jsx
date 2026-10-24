@@ -19,6 +19,7 @@ const EventsPage = () => {
 
   const [events, setEvents] = useState(approvedEvents || []);
   const [loading, setLoading] = useState(!approvedEvents);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
 
@@ -58,6 +59,34 @@ const EventsPage = () => {
       setSearchParams({});
     } else {
       setSearchParams({ category });
+    }
+  };
+
+  const handleResetFilters = async () => {
+    setIsReloading(true);
+    setLoading(true);
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setSearchParams({});
+
+    // Ensure reloading state lasts at least 1 second and at most 3 seconds
+    const minDelayDuration = Math.floor(Math.random() * 800) + 1200; // ~1.2s - 2.0s
+    const minDelay = new Promise((resolve) => setTimeout(resolve, minDelayDuration));
+    const maxTimeout = new Promise((resolve) => setTimeout(resolve, 3000));
+
+    try {
+      await Promise.all([
+        minDelay,
+        Promise.race([
+          fetchApprovedEvents(true),
+          maxTimeout,
+        ]),
+      ]);
+    } catch (error) {
+      console.error('Error reloading events:', error);
+    } finally {
+      setIsReloading(false);
+      setLoading(false);
     }
   };
 
@@ -107,17 +136,35 @@ const EventsPage = () => {
               <Filter size={15} /> Category:
             </span>
             {categories.map((cat) => (
-              <motion.button
+              <button
+                type="button"
                 key={cat}
                 onClick={() => handleCategoryChange(cat)}
                 className={`btn btn-sm ${selectedCategory === cat ? 'btn-primary' : 'btn-secondary'}`}
                 style={{ borderRadius: 'var(--radius-full)' }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
                 {cat}
-              </motion.button>
+              </button>
             ))}
+
+            {(searchQuery.trim() !== '' || selectedCategory !== 'All') && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="btn btn-sm btn-outline"
+                disabled={isReloading}
+                style={{ borderRadius: 'var(--radius-full)', marginLeft: 'auto' }}
+              >
+                {isReloading ? (
+                  <>
+                    <span className="spinner-sm" style={{ marginRight: '0.4rem', display: 'inline-block' }} />
+                    Reloading...
+                  </>
+                ) : (
+                  'Reset Filters'
+                )}
+              </button>
+            )}
           </div>
         </div>
 
@@ -125,7 +172,7 @@ const EventsPage = () => {
         {loading ? (
           <div className="spinner-container">
             <div className="spinner"></div>
-            <p>Loading events...</p>
+            <p>{isReloading ? 'Reloading...' : 'Loading events...'}</p>
           </div>
         ) : filteredEvents.length > 0 ? (
           <motion.div
@@ -148,13 +195,19 @@ const EventsPage = () => {
               We couldn't find any events matching your search or category filter. Try clearing your search query.
             </div>
             <button
-              onClick={() => {
-                setSearchQuery('');
-                handleCategoryChange('All');
-              }}
+              type="button"
+              onClick={handleResetFilters}
               className="btn btn-outline"
+              disabled={isReloading}
             >
-              Reset Filters
+              {isReloading ? (
+                <>
+                  <span className="spinner-sm" style={{ marginRight: '0.5rem', display: 'inline-block' }} />
+                  Reloading...
+                </>
+              ) : (
+                'Reset Filters'
+              )}
             </button>
           </div>
         )}

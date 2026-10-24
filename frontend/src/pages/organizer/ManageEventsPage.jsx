@@ -99,31 +99,25 @@ const ManageEventsPage = () => {
             <h1 className="section-title">Manage My Events</h1>
             <p className="section-subtitle" style={{ marginBottom: '0.6rem' }}>Edit details, track registrations, and manage attendees</p>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <motion.button
+              <button
                 type="button"
                 className={`btn btn-sm ${filterTab === 'present' ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => handleTabChange('present')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
                 Present Events
-              </motion.button>
-              <motion.button
+              </button>
+              <button
                 type="button"
                 className={`btn btn-sm ${filterTab === 'past' ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => handleTabChange('past')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
                 Past Events
-              </motion.button>
+              </button>
             </div>
           </div>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-            <Link to="/organizer/create-event" className="btn btn-primary btn-sm">
-              <PlusCircle size={16} /> Create New Event
-            </Link>
-          </motion.div>
+          <Link to="/organizer/create-event" className="btn btn-primary btn-sm">
+            <PlusCircle size={16} /> Create New Event
+          </Link>
         </div>
 
         <AnimatePresence mode="wait">
@@ -206,16 +200,15 @@ const ManageEventsPage = () => {
                                 <span>Edit</span>
                               </Link>
                             )}
-                            <motion.button
+                            <button
                               type="button"
                               onClick={() => setDeleteId(event._id)}
                               className="btn btn-danger btn-sm event-action-btn"
                               title="Delete"
-                              whileTap={{ scale: 0.95 }}
                             >
                               <Trash2 size={14} style={{ flexShrink: 0 }} />
                               <span>Delete</span>
-                            </motion.button>
+                            </button>
                           </div>
                         </div>
                       </MagicBentoCard>
@@ -241,11 +234,9 @@ const ManageEventsPage = () => {
                       : 'None of your events have concluded yet.'}
                   </div>
                   {filterTab === 'present' && (
-                    <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                      <Link to="/organizer/create-event" className="btn btn-primary">
-                        Create Event
-                      </Link>
-                    </motion.div>
+                    <Link to="/organizer/create-event" className="btn btn-primary">
+                      Create Event
+                    </Link>
                   )}
                 </motion.div>
               )}
@@ -277,9 +268,9 @@ const ManageEventsPage = () => {
                   <h3 className="modal-title" style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <AlertTriangle size={22} /> Delete Event?
                   </h3>
-                  <motion.button type="button" onClick={() => setDeleteId(null)} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <button type="button" onClick={() => setDeleteId(null)} className="modal-close-btn" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                     <X size={20} />
-                  </motion.button>
+                  </button>
                 </div>
 
                 <p style={{ color: 'var(--slate-600)', margin: '1rem 0 1.5rem' }}>
@@ -287,12 +278,12 @@ const ManageEventsPage = () => {
                 </p>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                  <motion.button type="button" onClick={() => setDeleteId(null)} className="btn btn-secondary" disabled={deleting} whileTap={{ scale: 0.96 }}>
+                  <button type="button" onClick={() => setDeleteId(null)} className="btn btn-secondary" disabled={deleting}>
                     Cancel
-                  </motion.button>
-                  <motion.button type="button" onClick={handleDelete} className="btn btn-danger" disabled={deleting} whileTap={{ scale: 0.96 }}>
+                  </button>
+                  <button type="button" onClick={handleDelete} className="btn btn-danger" disabled={deleting}>
                     {deleting ? 'Deleting...' : 'Yes, Delete Event'}
-                  </motion.button>
+                  </button>
                 </div>
               </motion.div>
             </motion.div>

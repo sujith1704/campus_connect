@@ -16,8 +16,8 @@ exports.getAdminStats = async (req, res) => {
       pendingEvents,
       approvedEvents,
     ] = await Promise.all([
-      userService.countUsers('student'),
-      userService.countUsers('organizer'),
+      userService.countRegisteredStudents(),
+      userService.countOrganizers(),
       eventService.countEvents({ isDeleted: false }),
       registrationService.countRegistrations({ status: 'confirmed' }),
       eventService.countEvents({ status: 'pending', isDeleted: false }),
@@ -80,14 +80,9 @@ exports.deleteUser = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Cannot delete your own account' });
     }
 
-    // Protect primary demo organizer account
-    if (user.email === 'organizer@campusconnect.com') {
-      return res.status(403).json({ success: false, message: 'System organizer demo account cannot be deleted' });
-    }
-
-    // Organizers cannot delete other organizers
-    if (user.role === 'organizer') {
-      return res.status(403).json({ success: false, message: 'Cannot delete other organizer accounts' });
+    // Protect primary organizer account
+    if (user.email === 'organizercampusconnect@gmail.com') {
+      return res.status(403).json({ success: false, message: 'Primary organizer account cannot be deleted' });
     }
 
     // Cleanup registrations or events
@@ -133,9 +128,14 @@ exports.updateUserRole = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Protect primary demo organizer account
-    if (user.email === 'organizer@campusconnect.com' && role !== 'organizer') {
-      return res.status(403).json({ success: false, message: 'Primary demo organizer account role cannot be changed' });
+    // Protect primary organizer account
+    if (user.email === 'organizercampusconnect@gmail.com' && role !== 'organizer') {
+      return res.status(403).json({ success: false, message: 'Primary organizer account role cannot be changed' });
+    }
+
+    // Disallow creating other organizers
+    if (role === 'organizer' && user.email !== 'organizercampusconnect@gmail.com') {
+      return res.status(403).json({ success: false, message: 'Only organizercampusconnect@gmail.com can be an organizer' });
     }
 
     const updatedUser = await userService.updateRole(user.id, role);

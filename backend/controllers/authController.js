@@ -58,5 +58,18 @@ exports.syncUser = async (req, res) => {
   }
 };
 
-
-
+// @desc    Explicitly handle user logout to update active session state
+// @route   POST /api/auth/logout
+// @access  Private (Supabase authenticated)
+exports.logout = async (req, res) => {
+  try {
+    const user = req.user;
+    if (user && (user.id || user._id)) {
+      await userService.endStudentSession(user.id || user._id);
+    }
+    return res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('logout error:', error);
+    return res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};

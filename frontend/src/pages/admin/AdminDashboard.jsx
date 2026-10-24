@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../services/api';
+import { AuthContext } from '../../context/AuthContext';
 import { DataContext } from '../../context/DataContext';
 import EventCard from '../../components/EventCard';
 import { Shield, Users, Calendar, Ticket, Trash2, AlertTriangle, X, PlusCircle } from 'lucide-react';
@@ -11,6 +12,9 @@ import AnimatedList from '../../components/AnimatedList';
 import MagicBentoCard from '../../components/MagicBento';
 import { containerVariants, cardVariants, statCardVariants, alertVariants, backdropVariants, modalVariants } from '../../utils/animations';
 
+// Session cache flag to ensure reloading only occurs once on first visit
+let _hasLoadedOrganizerDashboardOnce = false;
+
 const AdminDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -19,7 +23,10 @@ const AdminDashboard = () => {
   const initialTab = validTabs.includes(requestedTab) ? requestedTab : 'overview';
   const [activeTab, setActiveTab] = useState(initialTab);
 
+  const { isAuthenticated } = useContext(AuthContext);
   const { adminData, fetchAdminData, invalidateOrganizerEvents, invalidateStudentRegistrations } = useContext(DataContext);
+
+  const shouldShowInitialLoading = !_hasLoadedOrganizerDashboardOnce || !adminData;
 
   const [stats, setStats] = useState(adminData?.stats || {
     totalStudents: 0,
@@ -34,7 +41,7 @@ const AdminDashboard = () => {
   const [events, setEvents] = useState(adminData?.events || []);
   const [registrations, setRegistrations] = useState(adminData?.registrations || []);
 
-  const [loading, setLoading] = useState(!adminData);
+  const [loading, setLoading] = useState(shouldShowInitialLoading);
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [deleteUserId, setDeleteUserId] = useState(null);
   const [deleteEventId, setDeleteEventId] = useState(null);
@@ -47,6 +54,13 @@ const AdminDashboard = () => {
     }
   }, [msg]);
 
+  // Reset session cache if user logs out
+  useEffect(() => {
+    if (!isAuthenticated) {
+      _hasLoadedOrganizerDashboardOnce = false;
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -57,6 +71,7 @@ const AdminDashboard = () => {
           if (data.users) setUsers(data.users);
           if (data.events) setEvents(data.events);
           if (data.registrations) setRegistrations(data.registrations);
+          _hasLoadedOrganizerDashboardOnce = true;
         }
       } catch (error) {
         if (!cancelled) {
@@ -64,6 +79,7 @@ const AdminDashboard = () => {
         }
       } finally {
         if (!cancelled) {
+          _hasLoadedOrganizerDashboardOnce = true;
           setLoading(false);
         }
       }
@@ -204,30 +220,27 @@ const AdminDashboard = () => {
 
         {/* Organizer Panel Navigation Tabs */}
         <div className="tabs">
-          <motion.button
+          <button
+            type="button"
             className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => handleTabChange('overview')}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
           >
             Overview & Stats
-          </motion.button>
-          <motion.button
+          </button>
+          <button
+            type="button"
             className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => handleTabChange('users')}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
           >
             Manage Users ({users.length})
-          </motion.button>
-          <motion.button
+          </button>
+          <button
+            type="button"
             className={`tab-btn ${activeTab === 'registrations' ? 'active' : ''}`}
             onClick={() => handleTabChange('registrations')}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
           >
             All Registrations ({registrations.length})
-          </motion.button>
+          </button>
         </div>
 
         {loading ? (
@@ -435,14 +448,14 @@ const AdminDashboard = () => {
                         <td>{formatDate(u.createdAt)}</td>
                         <td>
                           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <motion.button
+                            <button
+                              type="button"
                               onClick={() => setDeleteUserId(u._id)}
                               className="btn btn-danger btn-sm"
                               title="Delete User"
-                              whileTap={{ scale: 0.95 }}
                             >
                               <Trash2 size={14} /> Delete
-                            </motion.button>
+                            </button>
                           </div>
                         </td>
                       </>
@@ -534,14 +547,14 @@ const AdminDashboard = () => {
                   <h3 className="modal-title" style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <AlertTriangle size={22} /> Delete User Account?
                   </h3>
-                  <button onClick={() => setDeleteUserId(null)}><X size={20} /></button>
+                  <button type="button" onClick={() => setDeleteUserId(null)}><X size={20} /></button>
                 </div>
                 <p style={{ color: 'var(--slate-600)', margin: '1rem 0 1.5rem' }}>
                   Are you sure you want to delete this user? Their registrations and events will be deleted.
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                  <motion.button onClick={() => setDeleteUserId(null)} className="btn btn-secondary" whileTap={{ scale: 0.95 }}>Cancel</motion.button>
-                  <motion.button onClick={handleDeleteUser} className="btn btn-danger" whileTap={{ scale: 0.95 }}>Delete Account</motion.button>
+                  <button type="button" onClick={() => setDeleteUserId(null)} className="btn btn-secondary">Cancel</button>
+                  <button type="button" onClick={handleDeleteUser} className="btn btn-danger">Delete Account</button>
                 </div>
               </motion.div>
             </motion.div>
@@ -572,14 +585,14 @@ const AdminDashboard = () => {
                   <h3 className="modal-title" style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <AlertTriangle size={22} /> Delete Inappropriate Event?
                   </h3>
-                  <button onClick={() => setDeleteEventId(null)}><X size={20} /></button>
+                  <button type="button" onClick={() => setDeleteEventId(null)}><X size={20} /></button>
                 </div>
                 <p style={{ color: 'var(--slate-600)', margin: '1rem 0 1.5rem' }}>
                   Are you sure you want to remove this event from the platform?
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                  <motion.button onClick={() => setDeleteEventId(null)} className="btn btn-secondary" whileTap={{ scale: 0.95 }}>Cancel</motion.button>
-                  <motion.button onClick={handleDeleteEvent} className="btn btn-danger" whileTap={{ scale: 0.95 }}>Delete Event</motion.button>
+                  <button type="button" onClick={() => setDeleteEventId(null)} className="btn btn-secondary">Cancel</button>
+                  <button type="button" onClick={handleDeleteEvent} className="btn btn-danger">Delete Event</button>
                 </div>
               </motion.div>
             </motion.div>

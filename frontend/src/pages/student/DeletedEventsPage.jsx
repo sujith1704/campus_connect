@@ -99,11 +99,9 @@ const DeletedEventsPage = () => {
                     <div><strong>Deleted:</strong> {formatDate(event.deletedAt || event.createdAt)}</div>
                   </div>
                   <div style={{ marginTop: '1rem' }}>
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-                      <Link to={`/events/${event._id}`} state={{ from: '/student/deleted-events' }} className="btn btn-secondary btn-sm btn-full">
-                        View Event Details
-                      </Link>
-                    </motion.div>
+                    <Link to={`/events/${event._id}`} state={{ from: '/student/deleted-events' }} className="btn btn-secondary btn-sm btn-full">
+                      View Event Details
+                    </Link>
                   </div>
                 </div>
               </motion.div>

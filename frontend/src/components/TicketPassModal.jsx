@@ -55,15 +55,14 @@ const TicketPassModal = ({ ticket, user, onClose }) => {
                 <Printer size={16} />
                 <span>Print Pass</span>
               </button>
-              <motion.button
+              <button
+                type="button"
                 onClick={onClose}
                 className="ticket-close-btn"
                 title="Close Pass"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.93 }}
               >
                 <X size={18} />
-              </motion.button>
+              </button>
             </div>
           </div>
 
@@ -172,17 +171,15 @@ const TicketPassModal = ({ ticket, user, onClose }) => {
                   <span className="ticket-pass-id-label">PASS ID NUMBER</span>
                   <div className="ticket-pass-id-row">
                     <span className="ticket-pass-id-code">{ticketId}</span>
-                    <motion.button
+                    <button
                       type="button"
                       onClick={handleCopyId}
                       className="ticket-copy-btn"
                       title="Copy Ticket ID"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
                     >
                       {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
                       <span>{copied ? 'Copied!' : 'Copy'}</span>
-                    </motion.button>
+                    </button>
                   </div>
                 </div>
 

@@ -52,7 +52,7 @@ const protect = async (req, res, next) => {
             if (email || id) {
               supabaseUser = {
                 id,
-                email: email || 'organizer@campusconnect.com',
+                email: email || 'organizercampusconnect@gmail.com',
                 user_metadata: payload.user_metadata || {},
                 role: payload.role || payload.user_metadata?.role,
               };
@@ -89,10 +89,7 @@ const protect = async (req, res, next) => {
 
     // Auto-provision user in Firestore if not found
     if (!user) {
-      const isOrganizer = email === 'organizer@campusconnect.com' ||
-        email === 'organizercampusconnect@gmail.com' ||
-        supabaseUser.user_metadata?.role === 'organizer' ||
-        supabaseUser.role === 'organizer';
+      const isOrganizer = email === 'organizercampusconnect@gmail.com';
 
       const fullName =
         supabaseUser.user_metadata?.full_name ||
@@ -112,6 +109,11 @@ const protect = async (req, res, next) => {
         role: isOrganizer ? 'organizer' : 'student',
         profileImage: avatar,
       });
+    }
+
+    // Track active authenticated student session activity
+    if (user && user.role === 'student') {
+      userService.touchStudentActivity(user.id || user._id);
     }
 
     req.user = user;

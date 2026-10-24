@@ -8,8 +8,8 @@ const CACHE_TTL = 300000; // 5 minutes session cache
 
 export const DEFAULT_PLATFORM_STATS = {
   eventsHosted: 0,
-  activeRegistrations: 7,
-  organizers: 3,
+  activeRegistrations: 0,
+  organizers: 0,
   verifiedEvents: 100,
 };
 
@@ -348,8 +348,8 @@ export const DataProvider = ({ children }) => {
         const statsData = statsResult.status === 'fulfilled' && statsResult.value.data?.success
           ? statsResult.value.data.stats
           : (current.data?.stats || {
-              totalStudents: 7,
-              totalOrganizers: 3,
+              totalStudents: 0,
+              totalOrganizers: 0,
               totalEvents: 0,
               totalRegistrations: 0,
               pendingEvents: 0,
@@ -380,8 +380,8 @@ export const DataProvider = ({ children }) => {
         console.error('Error fetching admin data:', error);
         const fallback = current.data || {
           stats: {
-            totalStudents: 7,
-            totalOrganizers: 3,
+            totalStudents: 0,
+            totalOrganizers: 1,
             totalEvents: 0,
             totalRegistrations: 0,
             pendingEvents: 0,
@@ -574,17 +574,6 @@ export const DataProvider = ({ children }) => {
         fetchedAt: prev.fetchedAt || Date.now(),
       }));
     }
-    // Live update Active Student Registrations count
-    setPlatformStats((prev) => {
-      const cur = prev.data || DEFAULT_PLATFORM_STATS;
-      return {
-        data: {
-          ...cur,
-          activeRegistrations: (cur.activeRegistrations || 0) + 1,
-        },
-        fetchedAt: Date.now(),
-      };
-    });
   }, []);
 
   // Cancel student registration in cache
@@ -617,17 +606,6 @@ export const DataProvider = ({ children }) => {
         fetchedAt: prev.fetchedAt || Date.now(),
       }));
     }
-    // Live update Active Student Registrations count
-    setPlatformStats((prev) => {
-      const cur = prev.data || DEFAULT_PLATFORM_STATS;
-      return {
-        data: {
-          ...cur,
-          activeRegistrations: Math.max(0, (cur.activeRegistrations || 0) - 1),
-        },
-        fetchedAt: Date.now(),
-      };
-    });
   }, []);
 
   // Soft invalidation helpers (expire timestamp without clearing data array)

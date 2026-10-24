@@ -23,10 +23,13 @@ const Login = () => {
 
   // If already authenticated, redirect straight to Home page first
   useEffect(() => {
+    if (location.state?.loggedOut) {
+      return;
+    }
     if (isAuthenticated && !authLoading) {
       navigate('/', { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, authLoading, navigate, location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -103,7 +106,11 @@ const Login = () => {
 
               {/* 3D Mascot Canvas */}
               <div className="auth-robot-canvas-wrapper">
-                <ThreeLoginExperience focusTarget={null} />
+                <ThreeLoginExperience
+                  focusTarget={null}
+                  isPasswordVisible={showPassword}
+                  passwordVisible={showPassword}
+                />
               </div>
 
               {/* HUD Telemetry Footer */}

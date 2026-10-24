@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from './supabaseClient';
 import authService from './authService';
 import API, { setAuthTokenGetter } from '../services/api';
@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
   const [supabaseUser, setSupabaseUser] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const isLoggingOutRef = useRef(false);
 
   // Register token getter for Axios API requests to backend
   useEffect(() => {
@@ -156,6 +157,8 @@ export const AuthProvider = ({ children }) => {
           await syncWithBackend(currentUser, currentSession?.access_token);
         }
       } else if (event === 'SIGNED_OUT') {
+        setSession(null);
+        setSupabaseUser(null);
         setUser(null);
       }
 
@@ -228,11 +231,29 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    localStorage.removeItem('cc_organizer_session');
-    await authService.signOut();
-    setSession(null);
-    setSupabaseUser(null);
-    setUser(null);
+    if (isLoggingOutRef.current) return;
+    isLoggingOutRef.current = true;
+    try {
+      const token = session?.access_token;
+      if (token) {
+        API.post('/auth/logout', {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => {});
+      }
+      localStorage.removeItem('cc_organizer_session');
+      await authService.signOut();
+      setSession(null);
+      setSupabaseUser(null);
+      setUser(null);
+    } catch (err) {
+      console.warn('[Supabase Auth] Logout notice:', err?.message || err);
+      localStorage.removeItem('cc_organizer_session');
+      setSession(null);
+      setSupabaseUser(null);
+      setUser(null);
+    } finally {
+      isLoggingOutRef.current = false;
+    }
   };
 
   const refreshSession = async () => {

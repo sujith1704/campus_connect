@@ -10,13 +10,11 @@ exports.getPlatformStats = async (req, res) => {
     // 1. College Events Hosted: real count of all active/hosted events
     const eventsHosted = await eventService.countEvents({ isDeleted: false });
 
-    // 2. Active Student Registrations: real count of registered students on CampusConnect
-    const studentUsers = await userService.countUsers('student');
-    const eventRegistrations = await registrationService.countRegistrations({ status: 'confirmed' });
-    const activeRegistrations = Math.max(studentUsers, eventRegistrations);
+    // 2. Active Students: total number of real students who have registered
+    const activeRegistrations = await userService.countRegisteredStudents();
 
-    // 3. Clubs & Organizers: count of registered organizer accounts
-    const organizers = await userService.countUsers('organizer');
+    // 3. Clubs & Organizers: real count of valid organizer accounts from the database
+    const organizers = await userService.countOrganizers();
 
     // 4. Verified College Events: platform standard
     const verifiedEvents = 100;

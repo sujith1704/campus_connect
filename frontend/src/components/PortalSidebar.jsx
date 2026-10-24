@@ -93,19 +93,58 @@ const PortalSidebar = () => {
   ];
 
   const links = isStudent ? studentLinks : organizerLinks;
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
+  const handleLogout = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    closeSidebar();
+    setIsHovered(false);
+    try {
+      await logout();
+      navigate('/login', { replace: true, state: { loggedOut: true } });
+    } catch (err) {
+      console.error('Logout error:', err);
+      navigate('/login', { replace: true, state: { loggedOut: true } });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
-  const closeSidebar = () => setIsOpen(false);
+  const handleNavClick = (e, path) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    closeSidebar();
+    setIsHovered(false);
+    if (location.pathname !== path) {
+      navigate(path);
+    }
+  };
+
+  const closeSidebar = () => {
+    setIsOpen(false);
+  };
 
   const isLinkActive = (path) => {
     if (path === '/') return location.pathname === '/';
-    if (path === '/events') return location.pathname === '/events';
+    if (path === '/events') return location.pathname === '/events' || location.pathname.startsWith('/events/');
     if (path === '/student/dashboard') return location.pathname === '/student/dashboard';
+    if (path === '/student/my-registrations') return location.pathname === '/student/my-registrations';
+    if (path === '/student/deleted-events') return location.pathname === '/student/deleted-events';
     if (path === '/organizer/panel') return location.pathname.startsWith('/organizer/panel') || location.pathname.startsWith('/organizer/dashboard');
+    if (path === '/organizer/manage-events') {
+      return (
+        location.pathname === '/organizer/manage-events' ||
+        location.pathname.startsWith('/organizer/edit-event') ||
+        location.pathname.startsWith('/organizer/registrations')
+      );
+    }
+    if (path === '/organizer/create-event') return location.pathname === '/organizer/create-event';
+    if (path === '/organizer/deleted-events') return location.pathname === '/organizer/deleted-events';
     return location.pathname === path;
   };
 
@@ -119,6 +158,7 @@ const PortalSidebar = () => {
     <>
       {/* Mobile Menu Toggle Button */}
       <button
+        type="button"
         className="sidebar-menu-button"
         onClick={() => setIsOpen((open) => !open)}
         aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
@@ -130,6 +170,7 @@ const PortalSidebar = () => {
       {/* Mobile Backdrop */}
       {isOpen && (
         <button
+          type="button"
           className="sidebar-backdrop"
           onClick={closeSidebar}
           aria-label="Close navigation menu"
@@ -152,14 +193,13 @@ const PortalSidebar = () => {
           <Link
             to="/"
             className="portal-sidebar-brand"
-            onClick={closeSidebar}
+            onClick={(e) => handleNavClick(e, '/')}
             title="CampusConnect"
           >
             <motion.div
               className="portal-sidebar-logo-icon"
               variants={isDesktop ? iconMotionVariants : undefined}
               whileHover={isDesktop ? { scale: 1.08 } : undefined}
-              whileTap={isDesktop ? { scale: 0.94 } : undefined}
             >
               <GraduationCap size={22} />
             </motion.div>
@@ -186,7 +226,7 @@ const PortalSidebar = () => {
                 <Link
                   key={label}
                   to={path}
-                  onClick={closeSidebar}
+                  onClick={(e) => handleNavClick(e, path)}
                   className={`portal-sidebar-link ${active ? 'active' : ''}`}
                   title={isDesktop && !isHovered ? label : undefined}
                 >
@@ -217,7 +257,7 @@ const PortalSidebar = () => {
           <Link
             to={profilePath}
             className={`portal-sidebar-user-link ${isProfileActive ? 'active' : ''}`}
-            onClick={closeSidebar}
+            onClick={(e) => handleNavClick(e, profilePath)}
             title={isDesktop && !isHovered ? `Profile (${user?.name || 'User'})` : undefined}
           >
             <motion.div
@@ -244,6 +284,7 @@ const PortalSidebar = () => {
             className="portal-sidebar-logout-btn"
             title={isDesktop && !isHovered ? 'Logout' : undefined}
             type="button"
+            disabled={isLoggingOut}
           >
             <motion.div
               className="portal-sidebar-icon-wrap logout-icon-wrap"

@@ -221,16 +221,14 @@ const CreateEventPage = () => {
                 <Link to={returnPath} className="btn btn-secondary" style={{ flex: 1 }}>
                   Cancel
                 </Link>
-                <motion.button
+                <button
                   type="submit"
                   className="btn btn-primary"
                   style={{ flex: 2 }}
                   disabled={loading}
-                  whileHover={!loading ? { scale: 1.02 } : {}}
-                  whileTap={!loading ? { scale: 0.97 } : {}}
                 >
                   <PlusCircle size={18} /> {loading ? 'Publishing Event...' : 'Publish Event'}
-                </motion.button>
+                </button>
               </div>
             </form>
           </motion.div>
