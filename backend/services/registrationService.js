@@ -14,7 +14,9 @@ class RegistrationService {
     // 1. Populate event
     if (reg.event && typeof reg.event === 'string') {
       const eventDoc = await eventService.getEventById(reg.event);
-      reg.event = eventDoc || { _id: reg.event, id: reg.event, title: 'Unknown Event' };
+      reg.event = eventDoc || { _id: reg.event, id: reg.event, title: 'Unknown Event', isDeleted: true };
+    } else if (!reg.event) {
+      reg.event = { title: 'Unknown Event', isDeleted: true };
     }
 
     // 2. Populate student
@@ -101,10 +103,19 @@ class RegistrationService {
   /**
    * Get all registrations for a student
    */
-  async getStudentRegistrations(studentId) {
-    const snap = await db.collection(REGISTRATIONS_COLLECTION)
-      .where('student', '==', studentId)
-      .get();
+  async getStudentRegistrations(studentId, altId) {
+    const ids = Array.from(new Set([studentId, altId].filter(Boolean)));
+    let snap;
+    if (ids.length <= 1) {
+      const idToQuery = ids[0] || studentId;
+      snap = await db.collection(REGISTRATIONS_COLLECTION)
+        .where('student', '==', idToQuery)
+        .get();
+    } else {
+      snap = await db.collection(REGISTRATIONS_COLLECTION)
+        .where('student', 'in', ids)
+        .get();
+    }
 
     const regs = formatDocs(snap);
     const populated = await Promise.all(regs.map((r) => this.populateRegistration(r)));

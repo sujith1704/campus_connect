@@ -3,6 +3,20 @@ const { initializeApp, getApps, cert } = require('firebase-admin/app');
 const { getFirestore, FieldValue: AdminFieldValue, Timestamp: AdminTimestamp } = require('firebase-admin/firestore');
 const fs = require('fs');
 const path = require('path');
+const dotenv = require('dotenv');
+
+// Auto-load environment variables from all possible locations
+const envPaths = [
+  path.join(__dirname, '..', '.env'),
+  path.join(__dirname, '..', '..', '.env'),
+  path.join(process.cwd(), '.env'),
+  path.join(process.cwd(), 'backend', '.env'),
+];
+for (const envPath of envPaths) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+}
 
 let db = null;
 let FieldValue = AdminFieldValue;
@@ -230,45 +244,65 @@ const initFirebase = () => {
     return getFirestore();
   }
 
-  const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH ||
-    path.join(__dirname, '..', 'serviceAccountKey.json');
+  const projectId = process.env.FIREBASE_PROJECT_ID || 'campus-connect-d357c';
+
+  const candidateServiceAccountPaths = [
+    process.env.FIREBASE_SERVICE_ACCOUNT_PATH,
+    path.join(__dirname, '..', 'serviceAccountKey.json'),
+    path.join(__dirname, '..', '..', 'serviceAccountKey.json'),
+    path.join(process.cwd(), 'serviceAccountKey.json'),
+    path.join(process.cwd(), 'backend', 'serviceAccountKey.json'),
+  ].filter(Boolean);
 
   let hasExplicitCredentials = false;
 
   try {
     // Option 1: Explicit environment variables
-    if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
-      let privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/^["']|["']$/g, '');
-      if (privateKey.includes('\\n')) {
-        privateKey = privateKey.replace(/\\n/g, '\n');
+    if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+      let privateKey = String(process.env.FIREBASE_PRIVATE_KEY).trim();
+      if ((privateKey.startsWith('"') && privateKey.endsWith('"')) || (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
+        privateKey = privateKey.slice(1, -1);
       }
+      privateKey = privateKey.replace(/\\n/g, '\n');
+
       initializeApp({
         credential: cert({
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          projectId: projectId,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL.trim(),
           privateKey: privateKey,
         }),
       });
       hasExplicitCredentials = true;
-      console.log('✅ Firebase Admin initialized with environment credentials for project:', process.env.FIREBASE_PROJECT_ID);
+      console.log('✅ Firebase Admin initialized with environment credentials for project:', projectId);
     }
-    // Option 2: JSON string in environment variable
+    // Option 2: JSON string or base64 JSON in environment variable
     else if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      let rawJson = String(process.env.FIREBASE_SERVICE_ACCOUNT_KEY).trim();
+      if (!rawJson.startsWith('{')) {
+        try {
+          rawJson = Buffer.from(rawJson, 'base64').toString('utf8');
+        } catch (e) {
+          // not base64
+        }
+      }
+      const serviceAccount = JSON.parse(rawJson);
       initializeApp({
         credential: cert(serviceAccount),
       });
       hasExplicitCredentials = true;
-      console.log('✅ Firebase Admin initialized with FIREBASE_SERVICE_ACCOUNT_KEY JSON string');
+      console.log('✅ Firebase Admin initialized with FIREBASE_SERVICE_ACCOUNT_KEY for project:', serviceAccount.project_id || projectId);
     }
-    // Option 3: Local service account file
-    else if (fs.existsSync(serviceAccountPath)) {
-      const serviceAccount = require(serviceAccountPath);
-      initializeApp({
-        credential: cert(serviceAccount),
-      });
-      hasExplicitCredentials = true;
-      console.log('✅ Firebase Admin initialized with serviceAccountKey.json file');
+    // Option 3: Local or bundled service account file
+    else {
+      const foundPath = candidateServiceAccountPaths.find((p) => fs.existsSync(p));
+      if (foundPath) {
+        const serviceAccount = require(foundPath);
+        initializeApp({
+          credential: cert(serviceAccount),
+        });
+        hasExplicitCredentials = true;
+        console.log('✅ Firebase Admin initialized with serviceAccountKey.json file at:', foundPath);
+      }
     }
   } catch (error) {
     console.error('❌ Firebase Admin initialization error:', error.message);
@@ -285,10 +319,14 @@ const initFirebase = () => {
     return firestore;
   }
 
-  // Otherwise, fallback to local development in-memory Firestore engine
-  const projectId = process.env.FIREBASE_PROJECT_ID || 'campusconnect-f9c3a';
+  // In production or deployed environments, never fall back to an in-memory mock that drops events!
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+    throw new Error(`[Firebase Production Error] Live Cloud Firestore credentials for project ${projectId} are missing or invalid.`);
+  }
+
+  // Otherwise, fallback to local development in-memory Firestore engine for offline testing
   console.log(`ℹ️  Running with local development Firestore engine (Project: ${projectId})`);
-  console.log('💡 To link live Cloud Firestore, supply FIREBASE_CLIENT_EMAIL & FIREBASE_PRIVATE_KEY in backend/.env');
+  console.log('💡 To link live Cloud Firestore, supply FIREBASE_CLIENT_EMAIL & FIREBASE_PRIVATE_KEY in backend/.env or serviceAccountKey.json');
 
   // Provide custom FieldValue & Timestamp handlers compatible with memory store
   FieldValue = {

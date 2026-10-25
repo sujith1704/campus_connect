@@ -1,8 +1,21 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 const dotenv = require('dotenv');
 
-// Load environment variables
+// Robust environment variable loading
+const envCandidates = [
+  path.join(__dirname, '.env'),
+  path.join(__dirname, '..', '.env'),
+  path.join(process.cwd(), '.env'),
+  path.join(process.cwd(), 'backend', '.env'),
+];
+for (const envPath of envCandidates) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+}
 dotenv.config();
 
 // Initialize Firebase Firestore Database (Loaded)
@@ -171,13 +184,15 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Start Express HTTP Server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`=================================================`);
-  console.log(`🚀 CampusConnect Backend Server listening on port ${PORT}`);
-  console.log(`🔥 Database: Firebase Firestore`);
-  console.log(`📡 Base API URL: http://localhost:${PORT}/api`);
-  console.log(`=================================================`);
-});
+// Start Express HTTP Server when run standalone (not in serverless environment)
+if (!process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`=================================================`);
+    console.log(`🚀 CampusConnect Backend Server listening on port ${PORT}`);
+    console.log(`🔥 Database: Firebase Firestore`);
+    console.log(`📡 Base API URL: http://localhost:${PORT}/api`);
+    console.log(`=================================================`);
+  });
+}
 
 module.exports = app;

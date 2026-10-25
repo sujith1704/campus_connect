@@ -114,7 +114,8 @@ export const DataProvider = ({ children }) => {
   const fetchStudentRegistrations = useCallback(async (force = false) => {
     const now = Date.now();
     const current = studentRegistrationsRef.current;
-    if (!force && current.data !== null && (now - current.fetchedAt) < CACHE_TTL) {
+    const effectiveTTL = (current.data && current.data.length === 0) ? 15000 : CACHE_TTL;
+    if (!force && current.data !== null && (now - current.fetchedAt) < effectiveTTL) {
       return current.data;
     }
     if (activePromises.current.studentRegistrations) {
@@ -437,43 +438,62 @@ export const DataProvider = ({ children }) => {
 
   // Update existing event in cache
   const updateEventInCache = useCallback((updatedEvent) => {
-    if (!updatedEvent || !updatedEvent._id) return;
+    if (!updatedEvent) return;
+    const eventId = updatedEvent._id || updatedEvent.id;
+    if (!eventId) return;
     setOrganizerEvents((prev) => ({
-      data: prev.data ? prev.data.map((e) => (e._id === updatedEvent._id ? { ...e, ...updatedEvent } : e)) : null,
+      data: prev.data ? prev.data.map((e) => ((e._id || e.id) === eventId ? { ...e, ...updatedEvent } : e)) : null,
       fetchedAt: prev.fetchedAt || Date.now(),
     }));
     setApprovedEvents((prev) => ({
-      data: prev.data ? prev.data.map((e) => (e._id === updatedEvent._id ? { ...e, ...updatedEvent } : e)) : null,
+      data: prev.data ? prev.data.map((e) => ((e._id || e.id) === eventId ? { ...e, ...updatedEvent } : e)) : null,
       fetchedAt: prev.fetchedAt || Date.now(),
     }));
     setEventDetailsCache((prev) => ({
       ...prev,
-      [updatedEvent._id]: {
-        data: prev[updatedEvent._id]?.data ? { ...prev[updatedEvent._id].data, ...updatedEvent } : updatedEvent,
+      [eventId]: {
+        data: prev[eventId]?.data ? { ...prev[eventId].data, ...updatedEvent } : updatedEvent,
         fetchedAt: Date.now(),
       },
     }));
+    // Sync into student registrations cache
+    setStudentRegistrations((prev) => {
+      if (!prev.data) return prev;
+      return {
+        data: prev.data.map((r) => {
+          const rEventId = r.event?._id || r.event?.id || (typeof r.event === 'string' ? r.event : null);
+          if (String(rEventId) === String(eventId)) {
+            return {
+              ...r,
+              event: r.event && typeof r.event === 'object' ? { ...r.event, ...updatedEvent } : updatedEvent,
+            };
+          }
+          return r;
+        }),
+        fetchedAt: Date.now(),
+      };
+    });
   }, []);
 
-  // Delete event (move to deletedEvents in cache)
+  // Delete event (move to deletedEvents in cache and mark deleted in student registrations)
   const removeEventFromCache = useCallback((eventId, deletedEventObj) => {
     if (!eventId) return;
     let target = deletedEventObj;
     setOrganizerEvents((prev) => {
       if (prev.data) {
-        if (!target) target = prev.data.find((e) => e._id === eventId);
-        return { data: prev.data.filter((e) => e._id !== eventId), fetchedAt: Date.now() };
+        if (!target) target = prev.data.find((e) => (e._id || e.id) === eventId);
+        return { data: prev.data.filter((e) => (e._id || e.id) !== eventId), fetchedAt: Date.now() };
       }
       return prev;
     });
     setApprovedEvents((prev) => ({
-      data: prev.data ? prev.data.filter((e) => e._id !== eventId) : null,
+      data: prev.data ? prev.data.filter((e) => (e._id || e.id) !== eventId) : null,
       fetchedAt: Date.now(),
     }));
     if (target) {
       const markedDeleted = { ...target, isDeleted: true, deletedAt: new Date().toISOString() };
       setDeletedEvents((prev) => ({
-        data: prev.data ? [markedDeleted, ...prev.data.filter((e) => e._id !== eventId)] : [markedDeleted],
+        data: prev.data ? [markedDeleted, ...prev.data.filter((e) => (e._id || e.id) !== eventId)] : [markedDeleted],
         fetchedAt: Date.now(),
       }));
       setEventDetailsCache((prev) => ({
@@ -481,6 +501,25 @@ export const DataProvider = ({ children }) => {
         [eventId]: { data: markedDeleted, fetchedAt: Date.now() },
       }));
     }
+    // Instantly reflect deletion in studentRegistrations cache so student dashboard cards update without delay
+    setStudentRegistrations((prev) => {
+      if (!prev.data) return prev;
+      return {
+        data: prev.data.map((r) => {
+          const rEventId = r.event?._id || r.event?.id || (typeof r.event === 'string' ? r.event : null);
+          if (String(rEventId) === String(eventId)) {
+            return {
+              ...r,
+              event: r.event && typeof r.event === 'object'
+                ? { ...r.event, isDeleted: true, deletedAt: new Date().toISOString() }
+                : { _id: eventId, id: eventId, isDeleted: true, deletedAt: new Date().toISOString() },
+            };
+          }
+          return r;
+        }),
+        fetchedAt: Date.now(),
+      };
+    });
     // Live update College Events Hosted count
     setPlatformStats((prev) => {
       const cur = prev.data || DEFAULT_PLATFORM_STATS;
@@ -498,18 +537,18 @@ export const DataProvider = ({ children }) => {
   const restoreEventInCache = useCallback((eventId, restoredEvent) => {
     if (!eventId) return;
     setDeletedEvents((prev) => ({
-      data: prev.data ? prev.data.filter((e) => e._id !== eventId) : [],
+      data: prev.data ? prev.data.filter((e) => (e._id || e.id) !== eventId) : [],
       fetchedAt: Date.now(),
     }));
     if (restoredEvent) {
       const activeObj = { ...restoredEvent, isDeleted: false };
       setOrganizerEvents((prev) => ({
-        data: prev.data ? [activeObj, ...prev.data.filter((e) => e._id !== eventId)] : [activeObj],
+        data: prev.data ? [activeObj, ...prev.data.filter((e) => (e._id || e.id) !== eventId)] : [activeObj],
         fetchedAt: Date.now(),
       }));
       if (activeObj.status === 'approved') {
         setApprovedEvents((prev) => ({
-          data: prev.data ? [activeObj, ...prev.data.filter((e) => e._id !== eventId)] : [activeObj],
+          data: prev.data ? [activeObj, ...prev.data.filter((e) => (e._id || e.id) !== eventId)] : [activeObj],
           fetchedAt: Date.now(),
         }));
       }
@@ -517,6 +556,25 @@ export const DataProvider = ({ children }) => {
         ...prev,
         [eventId]: { data: activeObj, fetchedAt: Date.now() },
       }));
+      // Instantly restore in studentRegistrations cache
+      setStudentRegistrations((prev) => {
+        if (!prev.data) return prev;
+        return {
+          data: prev.data.map((r) => {
+            const rEventId = r.event?._id || r.event?.id || (typeof r.event === 'string' ? r.event : null);
+            if (String(rEventId) === String(eventId)) {
+              return {
+                ...r,
+                event: r.event && typeof r.event === 'object'
+                  ? { ...r.event, isDeleted: false, deletedAt: null }
+                  : { ...activeObj, isDeleted: false },
+              };
+            }
+            return r;
+          }),
+          fetchedAt: Date.now(),
+        };
+      });
     }
     // Live update College Events Hosted count
     setPlatformStats((prev) => {
@@ -535,7 +593,7 @@ export const DataProvider = ({ children }) => {
   const purgeEventFromCache = useCallback((eventId) => {
     if (!eventId) return;
     setDeletedEvents((prev) => ({
-      data: prev.data ? prev.data.filter((e) => e._id !== eventId) : [],
+      data: prev.data ? prev.data.filter((e) => (e._id || e.id) !== eventId) : [],
       fetchedAt: Date.now(),
     }));
     setEventDetailsCache((prev) => {
@@ -543,16 +601,36 @@ export const DataProvider = ({ children }) => {
       delete next[eventId];
       return next;
     });
+    // Mark event as deleted in studentRegistrations cache
+    setStudentRegistrations((prev) => {
+      if (!prev.data) return prev;
+      return {
+        data: prev.data.map((r) => {
+          const rEventId = r.event?._id || r.event?.id || (typeof r.event === 'string' ? r.event : null);
+          if (String(rEventId) === String(eventId)) {
+            return {
+              ...r,
+              event: { _id: eventId, id: eventId, title: 'Deleted Event', isDeleted: true },
+            };
+          }
+          return r;
+        }),
+        fetchedAt: Date.now(),
+      };
+    });
   }, []);
 
   // Add new student registration to cache
   const addRegistrationToCache = useCallback((newRegistration) => {
     if (!newRegistration) return;
+    const newId = newRegistration._id || newRegistration.id;
     setStudentRegistrations((prev) => ({
-      data: prev.data ? [newRegistration, ...prev.data.filter((r) => r._id !== newRegistration._id)] : [newRegistration],
+      data: prev.data
+        ? [newRegistration, ...prev.data.filter((r) => (r._id || r.id) !== newId)]
+        : [newRegistration],
       fetchedAt: Date.now(),
     }));
-    const eventId = newRegistration.event?._id || newRegistration.event;
+    const eventId = newRegistration.event?._id || newRegistration.event?.id || newRegistration.event;
     if (eventId) {
       setEventDetailsCache((prev) => {
         if (prev[eventId]?.data) {
@@ -570,7 +648,7 @@ export const DataProvider = ({ children }) => {
         return prev;
       });
       setApprovedEvents((prev) => ({
-        data: prev.data ? prev.data.map((e) => e._id === eventId ? { ...e, registeredCount: (e.registeredCount || 0) + 1 } : e) : null,
+        data: prev.data ? prev.data.map((e) => (e._id || e.id) === eventId ? { ...e, registeredCount: (e.registeredCount || 0) + 1 } : e) : null,
         fetchedAt: prev.fetchedAt || Date.now(),
       }));
     }
@@ -581,7 +659,10 @@ export const DataProvider = ({ children }) => {
     setStudentRegistrations((prev) => {
       if (!prev.data) return prev;
       return {
-        data: prev.data.map((r) => r._id === registrationId ? { ...r, status: 'cancelled' } : r),
+        data: prev.data.map((r) => {
+          const regId = r._id || r.id;
+          return String(regId) === String(registrationId) ? { ...r, status: 'cancelled' } : r;
+        }),
         fetchedAt: Date.now(),
       };
     });
@@ -602,7 +683,7 @@ export const DataProvider = ({ children }) => {
         return prev;
       });
       setApprovedEvents((prev) => ({
-        data: prev.data ? prev.data.map((e) => e._id === eventId ? { ...e, registeredCount: Math.max(0, (e.registeredCount || 0) - 1) } : e) : null,
+        data: prev.data ? prev.data.map((e) => (e._id || e.id) === eventId ? { ...e, registeredCount: Math.max(0, (e.registeredCount || 0) - 1) } : e) : null,
         fetchedAt: prev.fetchedAt || Date.now(),
       }));
     }
@@ -610,18 +691,44 @@ export const DataProvider = ({ children }) => {
 
   // Soft invalidation helpers (expire timestamp without clearing data array)
   const invalidateOrganizerEvents = useCallback(() => {
+    if (organizerEventsRef.current) {
+      organizerEventsRef.current = { data: organizerEventsRef.current.data, fetchedAt: 0 };
+    }
+    if (approvedEventsRef.current) {
+      approvedEventsRef.current = { data: approvedEventsRef.current.data, fetchedAt: 0 };
+    }
+    if (adminDataRef.current) {
+      adminDataRef.current = { data: adminDataRef.current.data, fetchedAt: 0 };
+    }
+    if (platformStatsRef.current) {
+      platformStatsRef.current = { data: platformStatsRef.current.data, fetchedAt: 0 };
+    }
+
     setOrganizerEvents((prev) => ({ data: prev.data, fetchedAt: 0 }));
     setApprovedEvents((prev) => ({ data: prev.data, fetchedAt: 0 }));
     setAdminData((prev) => ({ data: prev.data, fetchedAt: 0 }));
     setPlatformStats((prev) => ({ data: prev.data, fetchedAt: 0 }));
+
+    delete activePromises.current.organizerEvents;
+    delete activePromises.current.approvedEvents;
+    delete activePromises.current.adminData;
+    delete activePromises.current.platformStats;
   }, []);
 
   const invalidateStudentRegistrations = useCallback(() => {
+    if (studentRegistrationsRef.current) {
+      studentRegistrationsRef.current = { data: studentRegistrationsRef.current.data, fetchedAt: 0 };
+    }
     setStudentRegistrations((prev) => ({ data: prev.data, fetchedAt: 0 }));
+    delete activePromises.current.studentRegistrations;
   }, []);
 
   const invalidateDeletedEvents = useCallback(() => {
+    if (deletedEventsRef.current) {
+      deletedEventsRef.current = { data: deletedEventsRef.current.data, fetchedAt: 0 };
+    }
     setDeletedEvents((prev) => ({ data: prev.data, fetchedAt: 0 }));
+    delete activePromises.current.deletedEvents;
   }, []);
 
   const invalidateEvent = useCallback((eventId) => {
@@ -634,6 +741,22 @@ export const DataProvider = ({ children }) => {
     });
   }, []);
 
+  // Immediate live Firestore refresh helper for post-event creation / updates
+  const refreshOrganizerEventData = useCallback(async () => {
+    // 1. Immediately invalidate event and dashboard caches
+    invalidateOrganizerEvents();
+
+    // 2. Fetch fresh live data from Firebase Firestore
+    const results = await Promise.allSettled([
+      fetchOrganizerEvents(true),
+      fetchAdminData(true),
+      fetchPlatformStats(true),
+      fetchApprovedEvents(true),
+    ]);
+
+    return results;
+  }, [invalidateOrganizerEvents, fetchOrganizerEvents, fetchAdminData, fetchPlatformStats, fetchApprovedEvents]);
+
   return (
     <DataContext.Provider
       value={{
@@ -642,6 +765,7 @@ export const DataProvider = ({ children }) => {
         organizerEventsLoading,
         fetchOrganizerEvents,
         invalidateOrganizerEvents,
+        refreshOrganizerEventData,
         addEventToCache,
         updateEventInCache,
         removeEventFromCache,

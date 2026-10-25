@@ -115,6 +115,9 @@ class EventService {
 
     await docRef.set(newEvent);
     const createdSnap = await docRef.get();
+    if (!createdSnap.exists) {
+      throw new Error('Failed to verify created event in Firestore database');
+    }
     const event = formatDoc(createdSnap);
     return await this.populateOrganizer(event);
   }
@@ -158,15 +161,35 @@ class EventService {
   /**
    * Get events for organizer
    */
-  async getOrganizerEvents(organizerId, scope) {
-    let query = db.collection(EVENTS_COLLECTION).where('isDeleted', '==', false);
+  async getOrganizerEvents(organizerId, scope, organizerUser = null) {
+    const snap = await db.collection(EVENTS_COLLECTION).where('isDeleted', '==', false).get();
+    let events = formatDocs(snap);
 
     if (scope !== 'all') {
-      query = query.where('organizer', '==', organizerId);
+      const validIds = new Set();
+      if (organizerId) validIds.add(String(organizerId));
+      if (organizerUser) {
+        if (organizerUser.id) validIds.add(String(organizerUser.id));
+        if (organizerUser._id) validIds.add(String(organizerUser._id));
+        if (organizerUser.clerkUserId) validIds.add(String(organizerUser.clerkUserId));
+        if (organizerUser.supabaseId) validIds.add(String(organizerUser.supabaseId));
+      }
+      const organizerEmail = (organizerUser?.email || '').toLowerCase().trim();
+      if (organizerEmail === 'organizercampusconnect@gmail.com') {
+        validIds.add('organizer_campus_connect');
+      }
+
+      events = events.filter((e) => {
+        const eOrg = e.organizer;
+        const eOrgId = typeof eOrg === 'object' && eOrg ? (eOrg._id || eOrg.id) : eOrg;
+        if (eOrgId && validIds.has(String(eOrgId))) return true;
+        if (organizerEmail && e.organizerData?.email && e.organizerData.email.toLowerCase().trim() === organizerEmail) {
+          return true;
+        }
+        return false;
+      });
     }
 
-    const snap = await query.get();
-    const events = formatDocs(snap);
     const populated = await Promise.all(events.map((e) => this.populateOrganizer(e)));
     return populated.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }

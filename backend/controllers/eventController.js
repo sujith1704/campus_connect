@@ -265,7 +265,7 @@ exports.deleteEvent = async (req, res) => {
 exports.getOrganizerEvents = async (req, res) => {
   try {
     const currentUserId = req.user._id || req.user.id;
-    const events = await eventService.getOrganizerEvents(currentUserId, req.query.scope);
+    const events = await eventService.getOrganizerEvents(currentUserId, req.query.scope, req.user);
 
     res.json({
       success: true,
@@ -273,6 +273,7 @@ exports.getOrganizerEvents = async (req, res) => {
       data: events,
     });
   } catch (error) {
+    console.error('getOrganizerEvents error:', error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };

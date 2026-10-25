@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
@@ -7,6 +7,7 @@ import { Ticket, Calendar, Clock, MapPin, ArrowRight, CheckCircle } from 'lucide
 import MagicBentoCard from '../../components/MagicBento';
 import { containerVariants, statCardVariants } from '../../utils/animations';
 import { motion } from 'framer-motion';
+import { isPastEvent } from '../../utils/date';
 
 // Session cache flag to ensure reloading only occurs once on first visit
 let _hasLoadedStudentDashboardOnce = false;
@@ -18,6 +19,18 @@ const StudentDashboard = () => {
   const shouldShowInitialLoading = !_hasLoadedStudentDashboardOnce || studentRegistrations === null;
   const [registrations, setRegistrations] = useState(studentRegistrations || []);
   const [loading, setLoading] = useState(shouldShowInitialLoading);
+
+  // Re-evaluate event expiration naturally every 30s or on window focus
+  const [, setTimeTick] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setTimeTick(Date.now()), 30000);
+    const onFocus = () => setTimeTick(Date.now());
+    window.addEventListener('focus', onFocus);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
 
   // Reset session cache if user logs out
   useEffect(() => {
@@ -62,9 +75,70 @@ const StudentDashboard = () => {
     }
   }, [studentRegistrations]);
 
-  const activeRegistrations = registrations.filter(
-    (r) => r.status === 'confirmed' && !r.event?.isDeleted
-  );
+  // 1. Total Registered Events & 2. Upcoming Attending Events Calculation
+  const { totalRegisteredCount, upcomingAttendingCount, activeRegistrations } = useMemo(() => {
+    if (!Array.isArray(registrations)) {
+      return { totalRegisteredCount: 0, upcomingAttendingCount: 0, activeRegistrations: [] };
+    }
+
+    const currentStudentId = user?.id || user?._id || user?.supabaseId;
+    const currentStudentEmail = (user?.email || '').toLowerCase().trim();
+
+    // De-duplicate: do not count duplicate registrations for the same event more than once
+    const seenEventIds = new Set();
+    const validRegistrations = [];
+    let upcomingCount = 0;
+
+    for (const reg of registrations) {
+      if (!reg) continue;
+
+      // Rule 1: Count every valid registration belonging to the current student (exclude cancelled)
+      if (reg.status === 'cancelled') continue;
+
+      // Identity check: must match current student
+      if (reg.student && typeof reg.student === 'object') {
+        const regStudentId = reg.student.id || reg.student._id;
+        const regStudentEmail = (reg.student.email || '').toLowerCase().trim();
+        if (currentStudentId && regStudentId && String(regStudentId) !== String(currentStudentId)) {
+          if (!currentStudentEmail || regStudentEmail !== currentStudentEmail) {
+            continue;
+          }
+        }
+      } else if (reg.student && typeof reg.student === 'string' && currentStudentId) {
+        if (String(reg.student) !== String(currentStudentId)) {
+          continue;
+        }
+      }
+
+      // Rule 2 & 3: Do NOT count deleted events (associated event is deleted or missing)
+      const event = reg.event;
+      if (!event || event.isDeleted === true) continue;
+
+      // Rule 4: De-duplicate registrations for the same event
+      const eventId = String(event._id || event.id || reg.eventId || reg.event || '');
+      if (eventId && seenEventIds.has(eventId)) {
+        continue;
+      }
+      if (eventId) {
+        seenEventIds.add(eventId);
+      }
+
+      // Valid registered event for current student (includes both upcoming and expired/completed)
+      validRegistrations.push(reg);
+
+      // Rule 5: Upcoming Attending Events: only count events whose scheduled date/time has not yet passed
+      const isPast = isPastEvent(event) || event.status === 'completed';
+      if (!isPast) {
+        upcomingCount += 1;
+      }
+    }
+
+    return {
+      totalRegisteredCount: validRegistrations.length,
+      upcomingAttendingCount: upcomingCount,
+      activeRegistrations: validRegistrations,
+    };
+  }, [registrations, user]);
 
   return (
     <div className="container main-content">
@@ -100,7 +174,7 @@ const StudentDashboard = () => {
             <Ticket size={26} />
           </div>
           <div className="stat-text">
-            <div className="stat-value">{activeRegistrations.length}</div>
+            <div className="stat-value">{totalRegisteredCount}</div>
             <div className="stat-label">Total Registered Events</div>
           </div>
         </MagicBentoCard>
@@ -115,7 +189,7 @@ const StudentDashboard = () => {
             <Calendar size={26} />
           </div>
           <div className="stat-text">
-            <div className="stat-value">{activeRegistrations.length}</div>
+            <div className="stat-value">{upcomingAttendingCount}</div>
             <div className="stat-label">Upcoming Attending Events</div>
           </div>
         </MagicBentoCard>

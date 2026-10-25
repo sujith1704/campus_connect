@@ -142,7 +142,8 @@ exports.cancelRegistration = async (req, res) => {
 exports.getStudentRegistrations = async (req, res) => {
   try {
     const studentId = req.user._id || req.user.id;
-    const registrations = await registrationService.getStudentRegistrations(studentId);
+    const altId = req.user.clerkUserId || req.user.clerkId;
+    const registrations = await registrationService.getStudentRegistrations(studentId, altId);
 
     res.json({
       success: true,

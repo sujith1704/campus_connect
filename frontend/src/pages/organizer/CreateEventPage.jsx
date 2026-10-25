@@ -11,7 +11,14 @@ const categories = ['Technical', 'Cultural', 'Sports', 'Workshop', 'Seminar', 'G
 
 const CreateEventPage = () => {
   const navigate = useNavigate();
-  const { addEventToCache } = useContext(DataContext) || {};
+  const {
+    invalidateOrganizerEvents,
+    fetchOrganizerEvents,
+    fetchAdminData,
+    fetchPlatformStats,
+    fetchApprovedEvents,
+    refreshOrganizerEventData,
+  } = useContext(DataContext) || {};
   const returnPath = '/organizer/manage-events';
 
   const [formData, setFormData] = useState({
@@ -64,9 +71,21 @@ const CreateEventPage = () => {
     try {
       const res = await API.post('/events', formData);
       if (res.data.success) {
-        if (addEventToCache && res.data.data) {
-          addEventToCache(res.data.data);
+        // Preferred event creation flow:
+        // Create Event -> POST /events -> Firestore event created successfully
+        // -> Invalidate event cache -> Refetch events -> Refresh dashboard statistics -> Show newly created event
+        if (refreshOrganizerEventData) {
+          await refreshOrganizerEventData();
+        } else {
+          if (invalidateOrganizerEvents) invalidateOrganizerEvents();
+          await Promise.allSettled([
+            fetchOrganizerEvents?.(true),
+            fetchAdminData?.(true),
+            fetchPlatformStats?.(true),
+            fetchApprovedEvents?.(true),
+          ]);
         }
+
         setSuccessMsg('Event created successfully!');
         setTimeout(() => {
           navigate('/organizer/manage-events');
