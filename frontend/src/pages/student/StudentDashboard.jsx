@@ -225,37 +225,49 @@ const StudentDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {activeRegistrations.slice(0, 5).map((reg) => (
-                <tr key={reg._id}>
-                  <td>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{reg.event?.title}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>
-                      Org: {reg.event?.organizer?.name || 'College'}
-                    </div>
-                  </td>
-                  <td>
-                    <span className="user-badge student">{reg.event?.category}</span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', fontSize: '0.85rem' }}>
-                      <span>📅 {reg.event?.date}</span>
-                      <span style={{ color: 'var(--slate-500)' }}>⏰ {reg.event?.time}</span>
-                    </div>
-                  </td>
-                  <td>{reg.event?.venue}</td>
-                  <td>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--success)', fontWeight: 700, fontSize: '0.85rem' }}>
-                      <CheckCircle size={14} /> Confirmed
-                    </span>
-                  </td>
-                  <td>
-                    <Link to={`/events/${reg.event?._id}`} className="btn btn-sm dashboard-pass-btn">
-                      <Ticket size={15} aria-hidden="true" />
-                      <span>Pass</span>
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {activeRegistrations.slice(0, 5).map((reg) => {
+                const isCompleted = Boolean(
+                  isPastEvent(reg.event) ||
+                  reg.event?.status === 'completed' ||
+                  (reg.event?.date &&
+                    reg.event?.time &&
+                    typeof reg.event.time === 'string' &&
+                    reg.event.time.includes('-') &&
+                    isPastEvent({ ...reg.event, time: reg.event.time.split('-').pop().trim() }))
+                );
+
+                return (
+                  <tr key={reg._id}>
+                    <td>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{reg.event?.title}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>
+                        Org: {reg.event?.organizer?.name || 'College'}
+                      </div>
+                    </td>
+                    <td>
+                      <span className="user-badge student">{reg.event?.category}</span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', fontSize: '0.85rem' }}>
+                        <span>📅 {reg.event?.date}</span>
+                        <span style={{ color: 'var(--slate-500)' }}>⏰ {reg.event?.time}</span>
+                      </div>
+                    </td>
+                    <td>{reg.event?.venue}</td>
+                    <td>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--success)', fontWeight: 700, fontSize: '0.85rem' }}>
+                        <CheckCircle size={14} /> {isCompleted ? 'Completed' : 'Confirmed'}
+                      </span>
+                    </td>
+                    <td>
+                      <Link to="/student/my-registrations" className="btn btn-sm dashboard-pass-btn">
+                        <Ticket size={15} aria-hidden="true" />
+                        <span>Pass</span>
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
