@@ -66,11 +66,13 @@ const PortalSidebar = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsDesktop(window.innerWidth > 900);
-      if (window.innerWidth > 900) {
+      const desktop = window.innerWidth > 900;
+      setIsDesktop(desktop);
+      if (desktop) {
         setIsOpen(false);
       }
     };
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -95,6 +97,19 @@ const PortalSidebar = () => {
   const links = isStudent ? studentLinks : organizerLinks;
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  const closeSidebar = () => {
+    setIsOpen(false);
+  };
+
+  const handleNavClick = () => {
+    closeSidebar();
+    try {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } catch {
+      window.scrollTo(0, 0);
+    }
+  };
+
   const handleLogout = async (e) => {
     if (e) {
       e.preventDefault();
@@ -103,7 +118,6 @@ const PortalSidebar = () => {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     closeSidebar();
-    setIsHovered(false);
     try {
       await logout();
       navigate('/login', { replace: true, state: { loggedOut: true } });
@@ -115,41 +129,29 @@ const PortalSidebar = () => {
     }
   };
 
-  const handleNavClick = (e, path) => {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    e.preventDefault();
-    closeSidebar();
-    setIsHovered(false);
-    if (location.pathname !== path) {
-      navigate(path);
-    }
-  };
-
-  const closeSidebar = () => {
-    setIsOpen(false);
-  };
-
   const isLinkActive = (path) => {
-    if (path === '/') return location.pathname === '/';
-    if (path === '/events') return location.pathname === '/events' || location.pathname.startsWith('/events/');
-    if (path === '/student/dashboard') return location.pathname === '/student/dashboard';
-    if (path === '/student/my-registrations') return location.pathname === '/student/my-registrations';
-    if (path === '/student/deleted-events') return location.pathname === '/student/deleted-events';
-    if (path === '/organizer/panel') return location.pathname.startsWith('/organizer/panel') || location.pathname.startsWith('/organizer/dashboard');
-    if (path === '/organizer/manage-events') {
+    const normLocation = location.pathname.replace(/\/+$/, '') || '/';
+    const normPath = path.replace(/\/+$/, '') || '/';
+    if (normPath === '/') return normLocation === '/';
+    if (normPath === '/events') return normLocation === '/events' || normLocation.startsWith('/events/');
+    if (normPath === '/student/dashboard') return normLocation === '/student/dashboard';
+    if (normPath === '/student/my-registrations') return normLocation === '/student/my-registrations';
+    if (normPath === '/student/deleted-events') return normLocation === '/student/deleted-events';
+    if (normPath === '/organizer/panel') return normLocation.startsWith('/organizer/panel') || normLocation.startsWith('/organizer/dashboard');
+    if (normPath === '/organizer/manage-events') {
       return (
-        location.pathname === '/organizer/manage-events' ||
-        location.pathname.startsWith('/organizer/edit-event') ||
-        location.pathname.startsWith('/organizer/registrations')
+        normLocation === '/organizer/manage-events' ||
+        normLocation.startsWith('/organizer/edit-event') ||
+        normLocation.startsWith('/organizer/registrations')
       );
     }
-    if (path === '/organizer/create-event') return location.pathname === '/organizer/create-event';
-    if (path === '/organizer/deleted-events') return location.pathname === '/organizer/deleted-events';
-    return location.pathname === path;
+    if (normPath === '/organizer/create-event') return normLocation === '/organizer/create-event';
+    if (normPath === '/organizer/deleted-events') return normLocation === '/organizer/deleted-events';
+    return normLocation === normPath;
   };
 
   const profilePath = '/student/profile';
-  const isProfileActive = location.pathname === profilePath;
+  const isProfileActive = (location.pathname.replace(/\/+$/, '') || '/') === profilePath;
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
 
   const motionState = isDesktop ? (isHovered ? 'expanded' : 'collapsed') : undefined;
@@ -193,7 +195,7 @@ const PortalSidebar = () => {
           <Link
             to="/"
             className="portal-sidebar-brand"
-            onClick={(e) => handleNavClick(e, '/')}
+            onClick={handleNavClick}
             title="CampusConnect"
           >
             <motion.div
@@ -226,7 +228,7 @@ const PortalSidebar = () => {
                 <Link
                   key={label}
                   to={path}
-                  onClick={(e) => handleNavClick(e, path)}
+                  onClick={handleNavClick}
                   className={`portal-sidebar-link ${active ? 'active' : ''}`}
                   title={isDesktop && !isHovered ? label : undefined}
                 >
@@ -257,7 +259,7 @@ const PortalSidebar = () => {
           <Link
             to={profilePath}
             className={`portal-sidebar-user-link ${isProfileActive ? 'active' : ''}`}
-            onClick={(e) => handleNavClick(e, profilePath)}
+            onClick={handleNavClick}
             title={isDesktop && !isHovered ? `Profile (${user?.name || 'User'})` : undefined}
           >
             <motion.div
