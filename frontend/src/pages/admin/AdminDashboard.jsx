@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../services/api';
@@ -6,7 +6,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { DataContext } from '../../context/DataContext';
 import EventCard from '../../components/EventCard';
 import { Shield, Users, Calendar, Ticket, Trash2, AlertTriangle, X, PlusCircle } from 'lucide-react';
-import { formatDate } from '../../utils/date';
+import { formatDate, isPastEvent } from '../../utils/date';
 import PageTransition from '../../components/PageTransition';
 import AnimatedList from '../../components/AnimatedList';
 import MagicBentoCard from '../../components/MagicBento';
@@ -46,6 +46,39 @@ const AdminDashboard = () => {
   const [deleteUserId, setDeleteUserId] = useState(null);
   const [deleteEventId, setDeleteEventId] = useState(null);
 
+  // Re-evaluate event expiration naturally on interval or window focus
+  const [timeTick, setTimeTick] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setTimeTick(Date.now()), 30000);
+    const onFocus = () => setTimeTick(Date.now());
+    window.addEventListener('focus', onFocus);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
+
+  // Filter Active College Events: must be upcoming/ongoing, not completed, not expired, not deleted
+  const activeCollegeEvents = useMemo(() => {
+    return events.filter((e) => {
+      if (!e) return false;
+      if (e.status === 'pending' || e.status === 'rejected') return false;
+      if (e.isDeleted === true) return false;
+      if (typeof e.status === 'string' && e.status.toLowerCase() === 'completed') return false;
+
+      // Actual date/time check: determine if event end/completion time has passed
+      if (e.date && e.time && typeof e.time === 'string' && e.time.includes('-')) {
+        const parts = e.time.split('-');
+        const endTime = parts[parts.length - 1].trim();
+        if (isPastEvent({ ...e, time: endTime })) return false;
+      } else if (isPastEvent(e)) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [events, timeTick]);
+
   // Auto-dismiss notification after 3 seconds
   useEffect(() => {
     if (msg.text) {
@@ -65,7 +98,7 @@ const AdminDashboard = () => {
     let cancelled = false;
     const load = async () => {
       try {
-        const data = await fetchAdminData();
+        const data = await fetchAdminData(true);
         if (!cancelled && data) {
           if (data.stats) setStats(data.stats);
           if (data.users) setUsers(data.users);
@@ -375,30 +408,28 @@ const AdminDashboard = () => {
                 <div style={{ marginTop: '1rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                     <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                      Active College Events ({events.filter((e) => e.status !== 'pending').length})
+                      Active College Events ({activeCollegeEvents.length})
                     </h3>
                     <Link to="/organizer/manage-events" style={{ color: 'var(--primary)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>
                       View all in Manage Events →
                     </Link>
                   </div>
-                  {events.filter((e) => e.status !== 'pending').length > 0 ? (
+                  {activeCollegeEvents.length > 0 ? (
                     <motion.div
                       className="events-grid"
                       variants={containerVariants}
                       initial="initial"
                       animate="animate"
                     >
-                      {events
-                        .filter((e) => e.status !== 'pending')
-                        .map((event) => (
-                          <motion.div key={event._id} variants={cardVariants}>
-                            <EventCard
-                              event={event}
-                              showAdminControls={true}
-                              onDelete={(id) => setDeleteEventId(id)}
-                            />
-                          </motion.div>
-                        ))}
+                      {activeCollegeEvents.map((event) => (
+                        <motion.div key={event._id} variants={cardVariants}>
+                          <EventCard
+                            event={event}
+                            showAdminControls={true}
+                            onDelete={(id) => setDeleteEventId(id)}
+                          />
+                        </motion.div>
+                      ))}
                     </motion.div>
                   ) : (
                     <MagicBentoCard style={{ padding: '2.5rem', textAlign: 'center' }}>
