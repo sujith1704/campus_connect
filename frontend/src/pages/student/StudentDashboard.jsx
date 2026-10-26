@@ -255,7 +255,7 @@ const StudentDashboard = () => {
                     </td>
                     <td>{reg.event?.venue}</td>
                     <td>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--success)', fontWeight: 700, fontSize: '0.85rem' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: isCompleted ? '#94A3B8' : 'var(--success)', fontWeight: 700, fontSize: '0.85rem' }}>
                         <CheckCircle size={14} /> {isCompleted ? 'Completed' : 'Confirmed'}
                       </span>
                     </td>
