@@ -87,14 +87,6 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(sanitizeInput);
 
 
-// Normalize URL path so both /api/... and /... match Express routes in Vercel serverless
-app.use((req, res, next) => {
-  if (!req.url.startsWith('/api')) {
-    req.url = '/api' + (req.url.startsWith('/') ? req.url : '/' + req.url);
-  }
-  next();
-});
-
 // Apply general API rate limiting to all /api routes
 app.use('/api', apiLimiter);
 
