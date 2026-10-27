@@ -97,7 +97,7 @@ app.use('/api/registrations', require('./routes/registrationRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/stats', require('./routes/statsRoutes'));
 
-// Temporary test endpoint to verify Firestore connectivity & read/write
+// Test endpoint to verify Firestore connectivity & live collections
 app.get('/api/test-firestore', async (req, res) => {
   try {
     const testDoc = db.collection('_connection_test').doc('ping');
@@ -109,10 +109,26 @@ app.get('/api/test-firestore', async (req, res) => {
     await testDoc.set(payload);
     const snap = await testDoc.get();
     await testDoc.delete();
+
+    // Query live collection counts from Firestore
+    const [usersSnap, eventsSnap, registrationsSnap] = await Promise.all([
+      db.collection('users').get(),
+      db.collection('events').get(),
+      db.collection('registrations').get(),
+    ]);
+
+    const activeProjectId = (process.env.FIREBASE_PROJECT_ID || 'campus-connect-d357c').trim().replace(/^["']|["']$/g, '');
+
     res.json({
       success: true,
       firebaseConnection: 'successful',
       firestoreReadWrite: 'successful',
+      projectId: activeProjectId,
+      collections: {
+        users: usersSnap.size,
+        events: eventsSnap.size,
+        registrations: registrationsSnap.size,
+      },
       retrievedData: snap.data(),
     });
   } catch (error) {

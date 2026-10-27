@@ -242,6 +242,8 @@ class MemoryFirestore {
 const normalizePrivateKey = (key) => {
   if (!key) return '';
   let str = String(key).trim();
+
+  // Strip wrapping quotes (single, double, or escaped quotes commonly added by CI/Vercel)
   while (
     (str.startsWith('"') && str.endsWith('"')) ||
     (str.startsWith("'") && str.endsWith("'")) ||
@@ -253,7 +255,39 @@ const normalizePrivateKey = (key) => {
       str = str.slice(1, -1).trim();
     }
   }
+
+  // If user pasted the whole service account JSON into the private key field by mistake
+  if (str.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(str);
+      if (parsed.private_key) {
+        return normalizePrivateKey(parsed.private_key);
+      }
+    } catch (e) {
+      // Not valid JSON
+    }
+  }
+
+  // Handle Base64 encoded private key if supplied
+  if (!str.includes('-----BEGIN') && !str.includes('PRIVATE KEY')) {
+    try {
+      const decoded = Buffer.from(str, 'base64').toString('utf8');
+      if (decoded.includes('-----BEGIN')) {
+        str = decoded.trim();
+      }
+    } catch (e) {
+      // Not base64
+    }
+  }
+
+  // Convert literal escaped newlines to actual newline characters
   str = str.replace(/\\n/g, '\n').replace(/\r/g, '').trim();
+
+  // Ensure standard PEM header/footer if missing
+  if (!str.startsWith('-----BEGIN') && str.includes('MIIEv')) {
+    str = `-----BEGIN PRIVATE KEY-----\n${str}\n-----END PRIVATE KEY-----`;
+  }
+
   return str + '\n';
 };
 
@@ -262,7 +296,11 @@ const initFirebase = () => {
     return getFirestore();
   }
 
-  const projectId = process.env.FIREBASE_PROJECT_ID || 'campus-connect-d357c';
+  const projectId = String(
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.VITE_FIREBASE_PROJECT_ID ||
+    'campus-connect-d357c'
+  ).trim().replace(/^["']|["']$/g, '');
 
   const candidateServiceAccountPaths = [
     process.env.FIREBASE_SERVICE_ACCOUNT_PATH,
@@ -275,10 +313,26 @@ const initFirebase = () => {
   let hasExplicitCredentials = false;
 
   try {
+    let clientEmail = String(
+      process.env.FIREBASE_CLIENT_EMAIL ||
+      process.env.FIREBASE_CLIENTEMAIL ||
+      ''
+    ).trim().replace(/^["']|["']$/g, '');
+
+    let rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATEKEY || '';
+
+    // If whole JSON was placed in clientEmail
+    if (clientEmail.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(clientEmail);
+        if (parsed.client_email) clientEmail = parsed.client_email;
+        if (parsed.private_key && !rawPrivateKey) rawPrivateKey = parsed.private_key;
+      } catch (e) {}
+    }
+
     // Option 1: Explicit individual environment variables (Vercel standard)
-    if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
-      const clientEmail = String(process.env.FIREBASE_CLIENT_EMAIL).trim();
-      const privateKey = normalizePrivateKey(process.env.FIREBASE_PRIVATE_KEY);
+    if (clientEmail && rawPrivateKey) {
+      const privateKey = normalizePrivateKey(rawPrivateKey);
 
       initializeApp({
         credential: cert({
@@ -288,7 +342,7 @@ const initFirebase = () => {
         }),
       });
       hasExplicitCredentials = true;
-      console.log('✅ Firebase Admin initialized with environment credentials for project:', projectId);
+      console.log(`[Firebase] Initialized Cloud Firestore for project: ${projectId}`);
     }
     // Option 2: Full JSON string or Base64 JSON in environment variable (Alternative single-variable Vercel config)
     else if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
@@ -311,13 +365,15 @@ const initFirebase = () => {
         serviceAccount.private_key = normalizePrivateKey(serviceAccount.private_key);
       }
       if (serviceAccount.client_email) {
-        serviceAccount.client_email = String(serviceAccount.client_email).trim();
+        serviceAccount.client_email = String(serviceAccount.client_email).trim().replace(/^["']|["']$/g, '');
       }
+      const saProjectId = (serviceAccount.project_id || projectId).trim().replace(/^["']|["']$/g, '');
+
       initializeApp({
         credential: cert(serviceAccount),
       });
       hasExplicitCredentials = true;
-      console.log('✅ Firebase Admin initialized with FIREBASE_SERVICE_ACCOUNT_KEY for project:', serviceAccount.project_id || projectId);
+      console.log(`[Firebase] Initialized Cloud Firestore with FIREBASE_SERVICE_ACCOUNT_KEY for project: ${saProjectId}`);
     }
     // Option 3: Local or bundled service account file (for local development)
     else {
@@ -331,11 +387,11 @@ const initFirebase = () => {
           credential: cert(serviceAccount),
         });
         hasExplicitCredentials = true;
-        console.log('✅ Firebase Admin initialized with serviceAccountKey.json file at:', foundPath);
+        console.log(`[Firebase] Initialized Cloud Firestore from local key file for project: ${serviceAccount.project_id || projectId}`);
       }
     }
   } catch (error) {
-    console.error('❌ Firebase Admin initialization error:', error.message);
+    console.error('❌ [Firebase] Initialization error:', error.message);
   }
 
   // If cloud credentials were authenticated, use Google Cloud Firestore
@@ -349,12 +405,17 @@ const initFirebase = () => {
     return firestore;
   }
 
-  const isDeployedOrProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL) || Boolean(process.env.VERCEL_ENV);
+  const isDeployedOrProd =
+    process.env.NODE_ENV === 'production' ||
+    Boolean(process.env.VERCEL) ||
+    Boolean(process.env.VERCEL_ENV) ||
+    Boolean(process.env.NOW_REGION) ||
+    Boolean(process.env.AWS_REGION);
 
-  // In production or deployed environments, NEVER fall back to in-memory mock!
+  // In production or deployed environments, NEVER fall back to in-memory mock or .dev_db.json!
   // Return an error proxy so requests fail with an informative server error rather than silently losing data in RAM.
   if (isDeployedOrProd) {
-    const prodErrorMsg = `[Firebase Production Error] Live Cloud Firestore credentials for project '${projectId}' are missing or invalid in Vercel environment variables. Please configure FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY or FIREBASE_SERVICE_ACCOUNT_KEY in your Vercel Project Settings.`;
+    const prodErrorMsg = `[Firebase Production Error] Live Cloud Firestore credentials for project '${projectId}' are missing or invalid in Vercel environment variables. Please configure FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY in your Vercel Project Settings.`;
     console.error('❌ ' + prodErrorMsg);
 
     return new Proxy({}, {

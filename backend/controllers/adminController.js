@@ -55,6 +55,7 @@ exports.getAllUsers = async (req, res) => {
       data: users,
     });
   } catch (error) {
+    console.error('getAllUsers error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch users' });
   }
 };
