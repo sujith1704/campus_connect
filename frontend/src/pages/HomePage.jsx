@@ -123,13 +123,16 @@ const CategoryCard = ({ cat }) => (
 
 // Smooth counter component for real-time stats
 const AnimatedStatValue = ({ value, suffix = '' }) => {
-  const [displayValue, setDisplayValue] = useState(typeof value === 'number' ? value : 0);
+  const numericValue = typeof value === 'number' ? value : (parseInt(value, 10) || 0);
+  const [displayValue, setDisplayValue] = useState(numericValue);
 
+  // Sync immediately when incoming numeric value updates
   useEffect(() => {
-    const end = typeof value === 'number' ? value : 0;
+    const end = typeof value === 'number' ? value : (parseInt(value, 10) || 0);
     let start = displayValue;
     if (start === end) return;
 
+    // Animate smoothly between start and end
     const duration = 700; // ms
     const startTime = performance.now();
 
@@ -156,19 +159,38 @@ const AnimatedStatValue = ({ value, suffix = '' }) => {
 const HomePage = () => {
   const { user, isOrganizer, authSessionId } = useContext(AuthContext);
   const { platformStats, fetchPlatformStats } = useContext(DataContext);
-  const [stats, setStats] = useState({
-    eventsHosted: platformStats?.eventsHosted ?? 0,
-    activeRegistrations: platformStats?.activeRegistrations ?? 0,
-    organizers: platformStats?.organizers ?? 0,
-    verifiedEvents: 100,
-  });
 
+  // Retrieve cached stats from context or localStorage to display immediately on first login/mount
+  const getInitialStats = () => {
+    if (platformStats && (platformStats.eventsHosted > 0 || platformStats.activeRegistrations > 0 || platformStats.organizers > 0)) {
+      return platformStats;
+    }
+    try {
+      const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('cc_platform_stats') : null;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object') {
+          return parsed;
+        }
+      }
+    } catch {}
+    return {
+      eventsHosted: platformStats?.eventsHosted ?? 0,
+      activeRegistrations: platformStats?.activeRegistrations ?? 0,
+      organizers: platformStats?.organizers ?? 0,
+      verifiedEvents: 100,
+    };
+  };
+
+  const [stats, setStats] = useState(getInitialStats);
+
+  // Fetch fresh stats immediately whenever user is logged in or component mounts
   useEffect(() => {
     let cancelled = false;
 
     const loadStats = async () => {
       try {
-        const data = await fetchPlatformStats();
+        const data = await fetchPlatformStats(true);
         if (!cancelled && data) {
           setStats(data);
         }
@@ -182,12 +204,17 @@ const HomePage = () => {
     return () => {
       cancelled = true;
     };
-  }, [fetchPlatformStats]);
+  }, [fetchPlatformStats, user?.id, user?._id]);
 
-  // Sync from context when it updates (live cache mutations)
+  // Sync from context whenever it updates with fresh live data
   useEffect(() => {
     if (platformStats) {
-      setStats(platformStats);
+      setStats((prev) => ({
+        eventsHosted: typeof platformStats.eventsHosted === 'number' ? platformStats.eventsHosted : prev.eventsHosted,
+        activeRegistrations: typeof platformStats.activeRegistrations === 'number' ? platformStats.activeRegistrations : prev.activeRegistrations,
+        organizers: typeof platformStats.organizers === 'number' ? platformStats.organizers : prev.organizers,
+        verifiedEvents: 100,
+      }));
     }
   }, [platformStats]);
 

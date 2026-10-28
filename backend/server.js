@@ -87,18 +87,34 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(sanitizeInput);
 
 
-// Apply general API rate limiting to all /api routes
+// Apply general API rate limiting
 app.use('/api', apiLimiter);
 
-// API Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/events', require('./routes/eventRoutes'));
-app.use('/api/registrations', require('./routes/registrationRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
-app.use('/api/stats', require('./routes/statsRoutes'));
+// Route modules
+const authRoutes = require('./routes/authRoutes');
+const eventRoutes = require('./routes/eventRoutes');
+const registrationRoutes = require('./routes/registrationRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const statsRoutes = require('./routes/statsRoutes');
+
+// Mount on both /api/* and /* for dual standalone and serverless proxy compatibility
+app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
+app.use('/api/events', eventRoutes);
+app.use('/events', eventRoutes);
+
+app.use('/api/registrations', registrationRoutes);
+app.use('/registrations', registrationRoutes);
+
+app.use('/api/admin', adminRoutes);
+app.use('/admin', adminRoutes);
+
+app.use('/api/stats', statsRoutes);
+app.use('/stats', statsRoutes);
 
 // Test endpoint to verify Firestore connectivity & live collections
-app.get('/api/test-firestore', async (req, res) => {
+const handleTestFirestore = async (req, res) => {
   try {
     const testDoc = db.collection('_connection_test').doc('ping');
     const payload = {
@@ -140,16 +156,20 @@ app.get('/api/test-firestore', async (req, res) => {
       details: error.details || null,
     });
   }
-});
+};
+app.get('/api/test-firestore', handleTestFirestore);
+app.get('/test-firestore', handleTestFirestore);
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+const handleHealth = (req, res) => {
   res.json({
     status: 'ok',
     message: 'CampusConnect API Server is running',
     database: 'firestore',
   });
-});
+};
+app.get('/api/health', handleHealth);
+app.get('/health', handleHealth);
 
 // Root endpoint
 app.get('/', (req, res) => {

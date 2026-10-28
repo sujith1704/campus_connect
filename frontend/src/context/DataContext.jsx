@@ -6,6 +6,21 @@ export const DataContext = createContext();
 
 const CACHE_TTL = 300000; // 5 minutes session cache
 
+const PLATFORM_STATS_STORAGE_KEY = 'cc_platform_stats';
+
+const getStoredPlatformStats = () => {
+  try {
+    const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(PLATFORM_STATS_STORAGE_KEY) : null;
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed && typeof parsed === 'object') {
+        return parsed;
+      }
+    }
+  } catch {}
+  return DEFAULT_PLATFORM_STATS;
+};
+
 export const DEFAULT_PLATFORM_STATS = {
   eventsHosted: 0,
   activeRegistrations: 0,
@@ -21,7 +36,11 @@ export const DataProvider = ({ children }) => {
   const [studentRegistrations, setStudentRegistrations] = useState({ data: null, fetchedAt: 0 });
   const [deletedEvents, setDeletedEvents] = useState({ data: null, fetchedAt: 0 });
   const [approvedEvents, setApprovedEvents] = useState({ data: null, fetchedAt: 0 });
-  const [platformStats, setPlatformStats] = useState({ data: DEFAULT_PLATFORM_STATS, fetchedAt: 0 });
+  const [platformStats, setPlatformStats] = useState(() => {
+    const cached = getStoredPlatformStats();
+    const hasData = cached && (cached.eventsHosted > 0 || cached.activeRegistrations > 0 || cached.organizers > 0);
+    return { data: cached, fetchedAt: hasData ? Date.now() : 0 };
+  });
   const [adminData, setAdminData] = useState({ data: null, fetchedAt: 0 });
   const [eventDetailsCache, setEventDetailsCache] = useState({});
   const [eventAttendeesCache, setEventAttendeesCache] = useState({});
@@ -61,20 +80,6 @@ export const DataProvider = ({ children }) => {
   // Prevent concurrent duplicate fetches
   const activePromises = useRef({});
 
-  // Clear cache on logout
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setOrganizerEvents({ data: null, fetchedAt: 0 });
-      setStudentRegistrations({ data: null, fetchedAt: 0 });
-      setDeletedEvents({ data: null, fetchedAt: 0 });
-      setApprovedEvents({ data: null, fetchedAt: 0 });
-      setPlatformStats((prev) => ({ data: prev.data || DEFAULT_PLATFORM_STATS, fetchedAt: 0 }));
-      setAdminData({ data: null, fetchedAt: 0 });
-      setEventDetailsCache({});
-      setEventAttendeesCache({});
-      activePromises.current = {};
-    }
-  }, [isAuthenticated]);
 
   // 1. Fetch Organizer Events (Stable callback reference)
   const fetchOrganizerEvents = useCallback(async (force = false) => {
@@ -217,13 +222,15 @@ export const DataProvider = ({ children }) => {
   const fetchPlatformStats = useCallback(async (force = false) => {
     const now = Date.now();
     const current = platformStatsRef.current;
-    if (!force && current.data !== null && current.fetchedAt > 0 && (now - current.fetchedAt) < CACHE_TTL) {
+    const hasValidStats = current.data && (current.data.eventsHosted > 0 || current.data.activeRegistrations > 0 || current.data.organizers > 0);
+
+    if (!force && hasValidStats && current.fetchedAt > 0 && (now - current.fetchedAt) < CACHE_TTL) {
       return current.data;
     }
     if (activePromises.current.platformStats) {
       return activePromises.current.platformStats;
     }
-    if (!current.data) {
+    if (!hasValidStats) {
       setPlatformStatsLoading(true);
     }
     const promise = (async () => {
@@ -237,14 +244,22 @@ export const DataProvider = ({ children }) => {
             organizers: typeof raw.organizers === 'number' ? raw.organizers : (current.data?.organizers ?? DEFAULT_PLATFORM_STATS.organizers),
             verifiedEvents: 100,
           };
+          try {
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem(PLATFORM_STATS_STORAGE_KEY, JSON.stringify(formatted));
+            }
+          } catch {}
           setPlatformStats({ data: formatted, fetchedAt: Date.now() });
           return formatted;
         }
-        return current.data || DEFAULT_PLATFORM_STATS;
+        return current.data || getStoredPlatformStats() || DEFAULT_PLATFORM_STATS;
       } catch (error) {
         console.warn('Using platform stats fallback:', error?.message);
-        const fallback = current.data || DEFAULT_PLATFORM_STATS;
-        setPlatformStats({ data: fallback, fetchedAt: Date.now() });
+        const fallback = (current.data && (current.data.eventsHosted > 0 || current.data.activeRegistrations > 0 || current.data.organizers > 0))
+          ? current.data
+          : (getStoredPlatformStats() || DEFAULT_PLATFORM_STATS);
+        // Do NOT cache failure with Date.now() so retries can succeed promptly
+        setPlatformStats({ data: fallback, fetchedAt: 0 });
         return fallback;
       } finally {
         setPlatformStatsLoading(false);
@@ -254,6 +269,24 @@ export const DataProvider = ({ children }) => {
     activePromises.current.platformStats = promise;
     return promise;
   }, []);
+
+  // Clear user-specific cache on logout & immediately prefetch platform stats on login
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setOrganizerEvents({ data: null, fetchedAt: 0 });
+      setStudentRegistrations({ data: null, fetchedAt: 0 });
+      setDeletedEvents({ data: null, fetchedAt: 0 });
+      setApprovedEvents({ data: null, fetchedAt: 0 });
+      // Keep platformStats data intact (platform metrics are global), just clear in-flight requests
+      setAdminData({ data: null, fetchedAt: 0 });
+      setEventDetailsCache({});
+      setEventAttendeesCache({});
+      activePromises.current = {};
+    } else {
+      // User just authenticated / logged in: immediately fetch fresh real stats from Firestore
+      fetchPlatformStats(true);
+    }
+  }, [isAuthenticated, fetchPlatformStats]);
 
   // 6. Fetch Event Details by ID (Stable callback reference)
   const fetchEventDetails = useCallback(async (eventId, force = false) => {
@@ -426,11 +459,13 @@ export const DataProvider = ({ children }) => {
     // Live update College Events Hosted count
     setPlatformStats((prev) => {
       const cur = prev.data || DEFAULT_PLATFORM_STATS;
+      const updated = {
+        ...cur,
+        eventsHosted: (cur.eventsHosted || 0) + 1,
+      };
+      try { if (typeof localStorage !== 'undefined') localStorage.setItem(PLATFORM_STATS_STORAGE_KEY, JSON.stringify(updated)); } catch {}
       return {
-        data: {
-          ...cur,
-          eventsHosted: (cur.eventsHosted || 0) + 1,
-        },
+        data: updated,
         fetchedAt: Date.now(),
       };
     });
@@ -523,11 +558,13 @@ export const DataProvider = ({ children }) => {
     // Live update College Events Hosted count
     setPlatformStats((prev) => {
       const cur = prev.data || DEFAULT_PLATFORM_STATS;
+      const updated = {
+        ...cur,
+        eventsHosted: Math.max(0, (cur.eventsHosted || 0) - 1),
+      };
+      try { if (typeof localStorage !== 'undefined') localStorage.setItem(PLATFORM_STATS_STORAGE_KEY, JSON.stringify(updated)); } catch {}
       return {
-        data: {
-          ...cur,
-          eventsHosted: Math.max(0, (cur.eventsHosted || 0) - 1),
-        },
+        data: updated,
         fetchedAt: Date.now(),
       };
     });
@@ -579,11 +616,13 @@ export const DataProvider = ({ children }) => {
     // Live update College Events Hosted count
     setPlatformStats((prev) => {
       const cur = prev.data || DEFAULT_PLATFORM_STATS;
+      const updated = {
+        ...cur,
+        eventsHosted: (cur.eventsHosted || 0) + 1,
+      };
+      try { if (typeof localStorage !== 'undefined') localStorage.setItem(PLATFORM_STATS_STORAGE_KEY, JSON.stringify(updated)); } catch {}
       return {
-        data: {
-          ...cur,
-          eventsHosted: (cur.eventsHosted || 0) + 1,
-        },
+        data: updated,
         fetchedAt: Date.now(),
       };
     });
